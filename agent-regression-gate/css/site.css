@@ -180,6 +180,11 @@ h1 .line { display: block; }
 .verdict[data-verdict="invalid_run"] h3::before {
   width: 0.55rem; height: 0.55rem; margin-top: 0; border: 1.5px dashed var(--inv); background: transparent; border-radius: 99px; transform: none;
 }
+.verdict[data-verdict="insufficient"] { border-left-color: var(--muted); }
+.verdict[data-verdict="insufficient"] h3::before {
+  width: 0.55rem; height: 0; margin-top: 0; border: 0; border-top: 2px solid var(--accent);
+  background: transparent; transform: none; box-shadow: none;
+}
 .statline { display: grid; gap: 0; margin: 0 0 0.75rem; }
 .statline div { display: flex; justify-content: space-between; gap: 1rem; padding: 0.4rem 0; border-bottom: 1px solid var(--line); }
 .sheet {

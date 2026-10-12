@@ -238,6 +238,30 @@ test("method text colors meet WCAG AA contrast", () => {
   }
 });
 
+test("index.html does not use the retired gate phrases", () => {
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const lower = html.toLowerCase();
+  for (const phrase of [
+    "below zero",
+    "above zero",
+    "entire interval",
+    "full interval",
+    "twenty",
+    "five rollouts",
+    "five scheduled",
+    "20 baseline",
+    "5 candidate",
+  ]) {
+    assert.equal(lower.includes(phrase), false, phrase);
+  }
+  const visible = html.replace(/<span class="term-tip"[\s\S]*?<\/span>/g, " ");
+  const text = visible.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  const withoutWarning = text
+    .replace(/likely regression warning/gi, "")
+    .replace(/warning · likely regression/gi, "");
+  assert.equal(/likely regression/i.test(withoutWarning), false);
+});
+
 test("the method section markup carries the cards and both audiences", () => {
   const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
   const start = html.indexOf('id="method"');

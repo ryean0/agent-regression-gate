@@ -426,7 +426,7 @@ function renderResults(view) {
     ...armRows.map(([label, base, cand]) => el("div", { class: "sheet" }, [
       el("span", {}, label), el("strong", {}, String(base)), el("strong", {}, String(cand)),
     ])),
-    el("p", { class: "fine" }, "Environment misses may equal 5% of scheduled rollouts. Above that, on either arm, is over the cap. The suite check is the file’s likely_regression field."),
+    el("p", { class: "fine" }, "Environment misses may equal 5% of scheduled rollouts. Above that, on either arm, is over the cap. The check fails on Block. An invalid run isn't scored."),
     el("h3", { class: "block-title" }, "Scenario diagnostics"),
     el("table", { class: "diag" }, [
       el("caption", {}, "Diagnostics only. These rates do not pass or block a scenario."),
@@ -537,7 +537,7 @@ function renderDemo() {
       ]),
       el("div", { class: "runbar" }, [
         el("button", { type: "button", class: "btn btn-primary", id: "run-btn", onclick: run }, "Run"),
-        el("p", {}, "20 baseline · 5 candidate · paired by scenario"),
+        el("p", {}, "Repeated rollouts per arm · paired by scenario"),
       ]),
       el("ul", { class: "legend" }, [
         legendItem("pass", "Pass"),
