@@ -4,6 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const site = path.join(root, "agent-regression-gate");
 const prefix = "/agent-regression-gate";
 const port = Number(process.env.PORT || 4173);
 const types = {
@@ -26,24 +27,20 @@ function send(res, status, body, type = "text/plain; charset=utf-8") {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url ?? "/", `http://127.0.0.1:${port}`);
-  if (url.pathname === "/") {
+  if (url.pathname === "/" || url.pathname === prefix) {
     res.writeHead(302, { location: `${prefix}/` });
     res.end();
     return;
   }
-  if (url.pathname !== prefix && !url.pathname.startsWith(`${prefix}/`)) {
+  if (!url.pathname.startsWith(`${prefix}/`)) {
     send(res, 404, "not found");
     return;
   }
   let rel = decodeURIComponent(url.pathname.slice(prefix.length)).replace(/^\/+/, "");
   if (rel === "" || rel.endsWith("/")) rel += "index.html";
-  const file = path.resolve(root, rel);
-  if (file !== root && !file.startsWith(root + path.sep)) {
+  const file = path.resolve(site, rel);
+  if (file !== site && !file.startsWith(site + path.sep)) {
     send(res, 403, "forbidden");
-    return;
-  }
-  if (rel.split("/").some((part) => part.startsWith("."))) {
-    send(res, 404, "not found");
     return;
   }
   fs.readFile(file, (error, data) => {

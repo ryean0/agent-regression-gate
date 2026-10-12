@@ -2,10 +2,9 @@
   "name": "agent-regression-gate",
   "private": true,
   "type": "module",
-  "description": "Launch page for Agent Regression Gate, published with GitHub Pages.",
+  "description": "Launch page for the CI Agent Regression Harness, published with GitHub Pages.",
   "scripts": {
-    "test": "node --test",
-    "build": "node scripts/build.mjs",
+    "test": "npm --prefix agent-regression-gate test && node scripts/check-pages.mjs",
     "preview": "node scripts/preview.mjs"
   },
   "engines": {
