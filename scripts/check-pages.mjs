@@ -1,0 +1,88 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const site = path.join(root, "agent-regression-gate");
+const origin = "https://ryean0.github.io/agent-regression-gate/";
+const page = new URL(origin);
+const html = fs.readFileSync(path.join(site, "index.html"), "utf8");
+
+function attr(source, pattern) {
+  const match = source.match(pattern);
+  assert.ok(match, `missing ${pattern}`);
+  return match[1];
+}
+
+function fileFor(url, label) {
+  const resolved = new URL(url);
+  assert.equal(resolved.origin, page.origin, `${label} origin`);
+  assert.ok(
+    resolved.pathname === "/agent-regression-gate" || resolved.pathname.startsWith("/agent-regression-gate/"),
+    `${label} is outside /agent-regression-gate/: ${resolved.href}`,
+  );
+  const rel = decodeURIComponent(resolved.pathname.slice("/agent-regression-gate/".length));
+  const file = path.resolve(site, rel);
+  assert.ok(file === site || file.startsWith(site + path.sep), `${label} escapes the site folder`);
+  assert.equal(fs.existsSync(file), true, `${label} does not exist at ${rel}`);
+  return file;
+}
+
+const dataBase = attr(html, /<html[^>]*\sdata-base="([^"]*)"/);
+const assetBase = new URL(dataBase, page);
+assert.equal(assetBase.href, origin, "data-base resolves at the project page");
+
+assert.equal(attr(html, /<link rel="canonical" href="([^"]+)"/), origin);
+assert.equal(attr(html, /<meta property="og:url" content="([^"]+)"/), origin);
+assert.equal(attr(html, /<meta property="og:image" content="([^"]+)"/), `${origin}og.png`);
+assert.equal(attr(html, /<meta name="twitter:image" content="([^"]+)"/), `${origin}og.png`);
+assert.equal(attr(html, /<meta property="og:image:width" content="([^"]+)"/), "1200");
+assert.equal(attr(html, /<meta property="og:image:height" content="([^"]+)"/), "630");
+assert.match(html, /"url": "https:\/\/ryean0\.github\.io\/agent-regression-gate\/"/);
+
+const favicon = fileFor(new URL(attr(html, /<link rel="icon" href="([^"]+)"/), page).href, "favicon");
+assert.match(fs.readFileSync(favicon, "utf8"), /#ff7a1a|#070708/i);
+fileFor(new URL(attr(html, /<link rel="stylesheet" href="([^"]+)"/), page).href, "stylesheet");
+
+const seen = new Set();
+function walkScript(url) {
+  if (seen.has(url)) return;
+  seen.add(url);
+  const file = fileFor(url, url);
+  const source = fs.readFileSync(file, "utf8");
+  for (const match of source.matchAll(/from\s+"(\.[^"]+)"/g)) {
+    walkScript(new URL(match[1], url).href);
+  }
+  for (const match of source.matchAll(/asset\(\s*"([^"]+)"\s*\)/g)) {
+    const fetched = new URL(match[1], assetBase);
+    const results = fileFor(fetched.href, match[1]);
+    if (match[1].endsWith(".json")) {
+      const doc = JSON.parse(fs.readFileSync(results, "utf8"));
+      assert.equal(doc.version, 1);
+      assert.ok(doc.status === "preliminary" || doc.status === "final");
+    }
+  }
+}
+
+walkScript(new URL(attr(html, /<script type="module" src="([^"]+)"/), page).href);
+assert.ok(seen.has(`${origin}js/main.js`));
+assert.ok([...seen].some((url) => url.endsWith("/js/results.js")));
+
+const og = fileFor(`${origin}og.png`, "og.png");
+const png = fs.readFileSync(og);
+assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+assert.equal(png.readUInt32BE(16), 1200);
+assert.equal(png.readUInt32BE(20), 630);
+
+assert.equal(fs.existsSync(path.join(site, ".nojekyll")), true);
+assert.match(fs.readFileSync(path.join(site, "css/site.css"), "utf8"), /#ff7a1a/);
+assert.match(html, /Catch agent regressions/);
+
+const workflow = fs.readFileSync(path.join(root, ".github/workflows/pages.yml"), "utf8");
+assert.match(workflow, /pull_request:/);
+assert.match(workflow, /path:\s*agent-regression-gate/);
+assert.match(workflow, /include-hidden-files:\s*true/);
+assert.match(workflow, /needs:\s*test/);
+
+console.log(`pages check ok (${seen.size} scripts, results file, favicon, og.png)`);
