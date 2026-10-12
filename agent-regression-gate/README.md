@@ -15,7 +15,7 @@ This portfolio repository publishes only the Next.js `out/` directory. This fold
 
 ## Results file
 
-`data/results.preliminary.json` is the file the page reads on load. It follows results.json v1 (`schema/results.schema.json`): `version`, `status` (`preliminary` or `final`), `level: 0.9`, `likely_regression`, and per arm `scheduled_rollouts`, `environment_misses`, and `miss_counts`. Rates are strings, `3/5` or `0.6`.
+`data/results.preliminary.json` is the file the page reads on load. It follows results.json v1 (`schema/results.schema.json`): `version`, `status` (`preliminary` or `final`), `level: 0.9`, `likely_regression`, and per arm `scheduled_rollouts`, `environment_misses`, and `miss_counts`. Rates are strings, `3/5` or `0.6`. Version `2.0.0` (any `2.x.y` string) is the same file plus an optional one-sentence `caption` on each scenario and arm. Decimals such as `0.05` and amounts such as `$1.25` are caption text, not rates. Any other major version is rejected with `unsupported results version X`.
 
 The private harness repository was not readable from the environment that built this page, so this copy is a contract-faithful preliminary example, not a dump of `docs/examples/results.preliminary.json`. Replace the file in place when that example, and later the real run, is available. A `preliminary` status shows the banner. `final` removes it. The suite verdict is `likely_regression` only. Scenario rows stay diagnostics.
 
