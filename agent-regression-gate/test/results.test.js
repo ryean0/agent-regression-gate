@@ -16,7 +16,7 @@ test("the bundled preliminary file parses and banners", () => {
   assert.equal(view.banner.tone, "preliminary");
   assert.match(view.banner.title, /Preliminary/);
   assert.equal(view.verdict, "no_regression");
-  assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite");
+  assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
   assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
   assert.equal(view.likelyRegression, false);
   assert.equal(view.arms.candidate.passRateText, "3/5");
@@ -150,7 +150,7 @@ test("the page's shipped data file parses via the 2.0.0 path", () => {
   assert.equal(viaV2.version, "2.0.0");
   assert.equal(viaV2.headline, "Pass");
   assert.equal(viaV2.verdict, "no_regression");
-  assert.equal(viaV2.arms.baseline.modelId, "gemini-2.5-flash-lite");
+  assert.equal(viaV2.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
   assert.equal(viaV2.arms.candidate.modelId, "gemini-3.5-flash-lite");
   assert.match(viaV2.arms.baseline.caption, /0\.05/);
   assert.match(viaV2.arms.candidate.caption, /\$1\.25/);
