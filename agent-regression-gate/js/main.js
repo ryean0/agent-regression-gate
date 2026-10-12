@@ -232,7 +232,11 @@ function renderResults(view) {
       el("h3", {}, view.headline),
       el("p", { class: "why" }, view.why),
     ]),
-    el("div", { class: "sheet sheet-head" }, [el("span", {}, "Recorded"), el("strong", {}, "Baseline"), el("strong", {}, "Candidate")]),
+    el("div", { class: "sheet sheet-head" }, [
+      el("span", {}, "Recorded"),
+      armHead("Baseline", view.arms.baseline.caption),
+      armHead("Candidate", view.arms.candidate.caption),
+    ]),
     ...armRows.map(([label, base, cand]) => el("div", { class: "sheet" }, [
       el("span", {}, label), el("strong", {}, String(base)), el("strong", {}, String(cand)),
     ])),
@@ -242,7 +246,10 @@ function renderResults(view) {
       el("caption", {}, "Diagnostics only. These rates do not pass or block a scenario."),
       el("thead", {}, el("tr", {}, [el("th", { scope: "col" }, "Scenario"), el("th", { scope: "col" }, "Baseline rate"), el("th", { scope: "col" }, "Candidate rate")])),
       el("tbody", {}, view.scenarios.map((row) => el("tr", {}, [
-        el("th", { scope: "row" }, row.name),
+        el("th", { scope: "row", ...(row.caption ? { title: row.caption } : {}) }, [
+          row.name,
+          row.caption ? el("span", { class: "subtitle" }, row.caption) : null,
+        ]),
         el("td", {}, row.baselineText),
         el("td", {}, row.candidateText),
       ]))),
@@ -255,6 +262,13 @@ function renderResults(view) {
       ". level 0.9.",
     ]),
   ]));
+}
+
+function armHead(label, caption) {
+  return el("strong", caption ? { title: caption } : {}, [
+    label,
+    caption ? el("span", { class: "subtitle" }, caption) : null,
+  ]);
 }
 
 function renderChart(chart) {
@@ -296,18 +310,22 @@ function mdeSvg(chart) {
 }
 
 function renderResultsError(error) {
+  const message = error.message || "Could not read results.json";
+  const unsupported = message.startsWith("unsupported results version ");
   renderBanner({
-    tone: "error",
-    title: "Results file could not be read",
-    body: error.message,
+    tone: unsupported ? "unsupported" : "error",
+    title: unsupported ? "Unsupported results" : "Results file could not be read",
+    body: message,
   });
   document.getElementById("results-root").replaceChildren(
     el("div", { class: "panel" }, [
-      el("h3", {}, "The results file did not match version 1"),
-      el("p", { class: "why" }, error.message),
+      el("h3", {}, unsupported ? message : "The results file could not be read"),
+      el("p", { class: "why" }, unsupported ? "Supported files are results version 1 and 2.0.0." : message),
     ]),
   );
 }
+
+let recorded = null;
 
 function renderDemo() {
   const root = document.getElementById("demo-root");
@@ -444,30 +462,47 @@ function renderDemo() {
   }
 
   function gridBlock(set) {
+    const baselineCaption = recorded?.arms?.baseline?.caption || "";
+    const candidateCaption = recorded?.arms?.candidate?.caption || "";
     return el("div", { class: "dash-block" }, [
       el("h3", {}, "Rollouts"),
+      baselineCaption || candidateCaption ? el("div", { class: "arm-notes" }, [
+        captionNote("Baseline", baselineCaption),
+        captionNote("Candidate", candidateCaption),
+      ]) : null,
       ...set.scenarios.map((scenario) => {
         const raw = input.find((row) => row.id === scenario.id);
         const scored = result.scenarios.find((row) => row.id === scenario.id);
         const settled = phase === "done";
+        const caption = recordedCaption(scenario.id);
         return el("article", { class: "scenario" }, [
-          el("h3", {}, scenario.name),
+          el("h3", caption ? { title: caption } : {}, scenario.name),
+          caption ? el("p", { class: "subtitle" }, caption) : null,
           el("p", { class: "hash" }, scenario.id),
           el("div", { class: "arms" }, [
-            armGrid("Baseline", raw.baseline, settled ? scored.baseline : null),
-            armGrid("Candidate", raw.candidate, settled ? scored.candidate : null),
+            armGrid("Baseline", raw.baseline, settled ? scored.baseline : null, baselineCaption),
+            armGrid("Candidate", raw.candidate, settled ? scored.candidate : null, candidateCaption),
           ]),
         ]);
       }),
     ]);
   }
 
-  function armGrid(name, arm, official) {
+  function captionNote(label, caption) {
+    if (!caption) return null;
+    return el("p", { class: "subtitle", title: caption }, [
+      el("span", { class: "note-label" }, label),
+      " ",
+      caption,
+    ]);
+  }
+
+  function armGrid(name, arm, official, caption) {
     const label = official
       ? `${official.passes}/${official.valid} pass`
       : `${arm.scheduled} scheduled`;
     return el("div", {}, [
-      el("p", { class: "arm-label" }, [name, el("b", {}, label)]),
+      el("p", { class: "arm-label", ...(caption ? { title: caption } : {}) }, [name, el("b", {}, label)]),
       el("div", { class: "cells", "aria-hidden": "true" }, arm.slots.slice(0, arm.scheduled).map((slot) => el("i", {
         class: "cell",
         "data-kind": official ? slot : "",
@@ -563,7 +598,15 @@ function renderDemo() {
   }
 
   paint();
+  repaintConsole = paint;
 }
+
+function recordedCaption(id) {
+  const row = recorded?.scenarios?.find((item) => item.id === id);
+  return row?.caption || "";
+}
+
+let repaintConsole = () => {};
 
 initChrome();
 renderDemo();
@@ -573,5 +616,10 @@ fetch(asset("data/results.preliminary.json"))
     if (!response.ok) throw new Error(`Could not load results file (${response.status}).`);
     return response.json();
   })
-  .then((doc) => renderResults(parseResults(doc)))
+  .then((doc) => {
+    const view = parseResults(doc);
+    recorded = view;
+    renderResults(view);
+    repaintConsole();
+  })
   .catch((error) => renderResultsError(error instanceof Error ? error : new Error("Could not read results.json")));

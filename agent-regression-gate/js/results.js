@@ -1,21 +1,22 @@
 /**
- * results.json v1.
+ * results.json v1 and 2.0.0.
  *
  * The suite verdict is the file's own likely_regression (or invalid_run).
  * Scenario rows are diagnostics. They never become a per-scenario pass or block.
+ * Version 2.0.0 adds an optional one-sentence caption on each scenario and arm.
+ * A decimal such as 0.05 or an amount such as $1.25 is ordinary caption text.
  */
 
 import { exceedsRate, formatRatio, parseRational } from "./rational.js";
 
 const ARM_NAMES = ["baseline", "candidate"];
+const V2_VERSION = /^2\.\d+\.\d+$/;
 
 export function parseResults(doc) {
   if (!doc || typeof doc !== "object" || Array.isArray(doc)) {
     throw new Error("results.json must be an object");
   }
-  if (doc.version !== 1) {
-    throw new Error("results.json version must be 1");
-  }
+  const version = supportedVersion(doc.version);
   const status = doc.status;
   if (status !== "preliminary" && status !== "final") {
     throw new Error("status must be \"preliminary\" or \"final\"");
@@ -37,7 +38,7 @@ export function parseResults(doc) {
       : "no_regression";
 
   return {
-    version: 1,
+    version,
     status,
     level: 0.9,
     likelyRegression: doc.likely_regression,
@@ -65,6 +66,20 @@ export function parseResults(doc) {
       }),
     },
   };
+}
+
+function supportedVersion(version) {
+  if (version === 1) return 1;
+  if (typeof version === "string" && V2_VERSION.test(version)) return version;
+  throw new Error(`unsupported results version ${versionToken(version)}`);
+}
+
+function versionToken(version) {
+  if (typeof version === "string" || typeof version === "number" || typeof version === "boolean") {
+    return String(version);
+  }
+  if (version == null) return "missing";
+  return "unrecognized";
 }
 
 function assertLevel(level) {
@@ -95,7 +110,8 @@ function parseArm(raw, name) {
     );
   }
   const passRate = raw.pass_rate === undefined ? null : parseRational(raw.pass_rate);
-  return {
+  const caption = readCaption(raw.caption, `arms.${name}.caption`);
+  const arm = {
     scheduled,
     environmentMisses,
     missCounts,
@@ -103,6 +119,8 @@ function parseArm(raw, name) {
     passRateText: passRate ? formatRatio(passRate) : "—",
     overMissLimit: exceedsRate(environmentMisses, scheduled, 1, 20),
   };
+  if (caption) arm.caption = caption;
+  return arm;
 }
 
 function parseMissCounts(raw, arm) {
@@ -138,13 +156,24 @@ function parseScenarios(raw) {
     const name = typeof scenario.name === "string" && scenario.name ? scenario.name : id;
     const baseline = readScenarioRate(scenario, "baseline", index);
     const candidate = readScenarioRate(scenario, "candidate", index);
-    return {
+    const caption = readCaption(scenario.caption, `scenarios[${index}].caption`);
+    const row = {
       id,
       name,
       baselineText: formatRatio(baseline),
       candidateText: formatRatio(candidate),
     };
+    if (caption) row.caption = caption;
+    return row;
   });
+}
+
+function readCaption(value, label) {
+  if (value == null) return "";
+  if (typeof value !== "string") {
+    throw new Error(`${label} must be a string`);
+  }
+  return value.trim();
 }
 
 function readScenarioRate(scenario, arm, index) {
