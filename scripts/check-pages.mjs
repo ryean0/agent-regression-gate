@@ -85,9 +85,30 @@ assert.match(html, /"name": "Mullion"/);
 assert.doesNotMatch(html, /CI Agent Regression Harness/);
 assert.match(html, /id="integrations"/);
 assert.match(html, /adapter example/);
+assert.match(html, /Gemini 3\.5 Flash-Lite/);
+assert.match(html, /gemini-3\.5-flash-lite/);
+assert.match(html, /in progress/);
+assert.match(html, /OpenAI Agents SDK · adapter example/);
+assert.match(html, /Claude Agent SDK · adapter example/);
 assert.match(html, /GitHub Action · planned/);
 assert.match(html, /Record\/replay cassettes · planned/);
 assert.match(html, /No official partnerships/);
+assert.doesNotMatch(html, /gpt-4\.1-nano/i);
+assert.doesNotMatch(html, /GPT-4\.1-nano/);
+
+function rejectNano(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const file = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      rejectNano(file);
+      continue;
+    }
+    if (!/\.(html|js|css|md|json|svg)$/.test(entry.name)) continue;
+    const text = fs.readFileSync(file, "utf8");
+    assert.doesNotMatch(text, /gpt-4\.1-nano/i, `${path.relative(site, file)} mentions GPT-4.1-nano`);
+  }
+}
+rejectNano(site);
 assert.equal((html.match(/href="https:\/\/ryean0\.github\.io\/agent-regression-gate\/"/g) || []).length > 0, true);
 
 const workflow = fs.readFileSync(path.join(root, ".github/workflows/pages.yml"), "utf8");
