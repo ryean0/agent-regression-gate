@@ -56,6 +56,8 @@ code { font-family: var(--mono); font-size: 0.86em; letter-spacing: 0; }
 .banner[data-tone="final"] { background: #101012; color: var(--ink); border-bottom-color: var(--line-strong); }
 .banner[data-tone="final"] strong { color: var(--ink); }
 .banner[data-tone="error"] { background: #140e0c; color: var(--ink); border-bottom-color: rgba(var(--accent-rgb), 0.45); }
+.banner[data-tone="unsupported"] { background: #101012; color: var(--ink); border-bottom-color: var(--line-strong); }
+.banner[data-tone="unsupported"] strong { color: var(--ink); }
 
 .nav {
   position: sticky; top: 0; z-index: 30; height: 3.75rem; display: flex; align-items: center;
@@ -194,6 +196,29 @@ h1 .line { display: block; }
 .diag th, .diag td { text-align: left; padding: 0.5rem 0.35rem; border-bottom: 1px solid var(--line); font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0; font-weight: 500; }
 .diag th { font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--faint); }
 .diag caption { caption-side: bottom; text-align: left; color: var(--muted); padding-top: 0.55rem; font-size: 0.84rem; }
+.subtitle {
+  display: block;
+  margin-top: 0.22rem;
+  max-width: 36rem;
+  color: var(--muted);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: -0.011em;
+  text-transform: none;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.note-label {
+  margin-right: 0.45rem;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.arm-notes { display: grid; gap: 0.15rem; margin: 0.15rem 0 0.35rem; }
+.arm-notes .subtitle { margin-top: 0; }
 .block-title { margin-top: 1.35rem; font-size: 0.95rem; }
 
 .charts { display: grid; gap: 0.75rem; margin-top: 1rem; }

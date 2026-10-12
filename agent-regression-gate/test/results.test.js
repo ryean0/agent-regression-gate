@@ -114,6 +114,87 @@ test("miss_counts must sum to environment_misses", () => {
   assert.throws(() => parseResults(broken), /miss_counts/);
 });
 
+test("version 1 files stay free of caption fields", () => {
+  const view = parseResults(bundled);
+  assert.equal(view.version, 1);
+  assert.equal(view.verdict, "no_regression");
+  assert.equal("caption" in view.arms.baseline, false);
+  assert.equal("caption" in view.arms.candidate, false);
+  assert.equal(view.scenarios.every((row) => !("caption" in row)), true);
+});
+
+test("version 2.0.0 accepts arm and scenario captions, including decimals and amounts", () => {
+  const view = parseResults({
+    ...bundled,
+    version: "2.0.0",
+    arms: {
+      baseline: {
+        ...bundled.arms.baseline,
+        caption: "  Baseline stayed within 0.05 of the previous gate.  ",
+      },
+      candidate: {
+        ...bundled.arms.candidate,
+        caption: "Candidate fees stayed at $1.25. <b>not bold</b>",
+      },
+    },
+    scenarios: [
+      {
+        id: "reset-locked-account",
+        name: "Reset a locked account",
+        baseline_rate: "18/20",
+        candidate_rate: "0.6",
+        caption: "Locked resets missed by 0.05 after the $1.25 credit.",
+      },
+      {
+        id: "refund-duplicate-charge",
+        name: "Refund a duplicate charge",
+        baseline_rate: "17/20",
+        candidate_rate: "4/5",
+      },
+    ],
+  });
+  assert.equal(view.version, "2.0.0");
+  assert.equal(view.verdict, "no_regression");
+  assert.equal(view.arms.baseline.caption, "Baseline stayed within 0.05 of the previous gate.");
+  assert.equal(view.arms.candidate.caption, "Candidate fees stayed at $1.25. <b>not bold</b>");
+  assert.equal(view.arms.candidate.passRateText, "3/5");
+  assert.equal(view.scenarios[0].caption, "Locked resets missed by 0.05 after the $1.25 credit.");
+  assert.equal(view.scenarios[0].candidateText, "3/5");
+  assert.equal("caption" in view.scenarios[1], false);
+  assert.deepEqual(Object.keys(view.scenarios[0]).sort(), [
+    "baselineText",
+    "candidateText",
+    "caption",
+    "id",
+    "name",
+  ]);
+});
+
+test("a later 2.x file without captions still parses", () => {
+  const view = parseResults({ ...bundled, version: "2.1.0" });
+  assert.equal(view.version, "2.1.0");
+  assert.equal(view.scenarios[0].name, bundled.scenarios[0].name);
+  assert.equal("caption" in view.scenarios[0], false);
+});
+
+test("any other major version names itself instead of failing quietly", () => {
+  assert.throws(
+    () => parseResults({ ...bundled, version: "3.0.0" }),
+    (error) => {
+      assert.equal(error.message, "unsupported results version 3.0.0");
+      return true;
+    },
+  );
+  assert.throws(
+    () => parseResults({ ...bundled, version: 2 }),
+    /unsupported results version 2/,
+  );
+  assert.throws(
+    () => parseResults({ ...bundled, version: "1.0.0" }),
+    /unsupported results version 1\.0\.0/,
+  );
+});
+
 test("coming soon charts drop any stray series", () => {
   const view = parseResults({
     ...bundled,

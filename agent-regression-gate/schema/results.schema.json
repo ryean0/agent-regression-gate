@@ -1,13 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "results.schema.json",
-  "title": "CI Agent Regression Harness results v1",
-  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. The private harness repo was not readable when this page schema was written; extra fields are allowed so a real results.json can be dropped in.",
+  "title": "CI Agent Regression Harness results",
+  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. Version 1 is the original file. Version 2.0.0 (any 2.x.y string) adds an optional one-sentence caption on each scenario and arm. Decimals such as 0.05 and amounts such as $1.25 are valid caption text. Extra fields are allowed so a real results.json can be dropped in.",
   "type": "object",
   "additionalProperties": true,
   "required": ["version", "status", "level", "likely_regression", "arms"],
   "properties": {
-    "version": { "const": 1 },
+    "version": {
+      "description": "1, or a 2.x.y schema version such as 2.0.0. Other major versions are not supported.",
+      "oneOf": [
+        { "const": 1 },
+        { "type": "string", "pattern": "^2\\.\\d+\\.\\d+$" }
+      ]
+    },
     "status": { "enum": ["preliminary", "final"] },
     "level": { "const": 0.9 },
     "likely_regression": { "type": ["boolean", "null"] },
@@ -55,7 +61,11 @@
           "type": "object",
           "additionalProperties": { "type": "integer", "minimum": 0 }
         },
-        "pass_rate": { "type": "string" }
+        "pass_rate": { "type": "string" },
+        "caption": {
+          "description": "Optional one-sentence caption. Digits, decimals such as 0.05, and amounts such as $1.25 are valid text.",
+          "type": "string"
+        }
       }
     },
     "scenario": {
@@ -65,7 +75,11 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "baseline_rate": { "type": "string" },
-        "candidate_rate": { "type": "string" }
+        "candidate_rate": { "type": "string" },
+        "caption": {
+          "description": "Optional one-sentence caption. Digits, decimals such as 0.05, and amounts such as $1.25 are valid text.",
+          "type": "string"
+        }
       }
     },
     "chart": {
