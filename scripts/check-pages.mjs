@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { RESULTS_PATH, parseResultsV2 } from "../agent-regression-gate/js/results.js";
+
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const site = path.join(root, "agent-regression-gate");
 const origin = "https://ryean0.github.io/agent-regression-gate/";
@@ -59,7 +61,8 @@ function walkScript(url) {
     const results = fileFor(fetched.href, match[1]);
     if (match[1].endsWith(".json")) {
       const doc = JSON.parse(fs.readFileSync(results, "utf8"));
-      assert.equal(doc.version, 1);
+      const versionOk = doc.version === 1 || (typeof doc.version === "string" && /^2\.\d+\.\d+$/.test(doc.version));
+      assert.equal(versionOk, true, `${match[1]} version`);
       assert.ok(doc.status === "preliminary" || doc.status === "final");
     }
   }
@@ -68,6 +71,23 @@ function walkScript(url) {
 walkScript(new URL(attr(html, /<script type="module" src="([^"]+)"/), page).href);
 assert.ok(seen.has(`${origin}js/main.js`));
 assert.ok([...seen].some((url) => url.endsWith("/js/results.js")));
+
+assert.equal(RESULTS_PATH, "data/results.preliminary.json");
+const shipped = JSON.parse(fs.readFileSync(path.join(site, RESULTS_PATH), "utf8"));
+assert.equal(shipped.version, "2.0.0");
+assert.ok(shipped.status === "preliminary" || shipped.status === "final");
+const shippedView = parseResultsV2(shipped);
+assert.equal(shippedView.version, "2.0.0");
+assert.equal(shippedView.headline, "Pass");
+assert.equal(typeof shippedView.arms.baseline.modelId, "string");
+assert.equal(shippedView.arms.baseline.modelId.length > 0, true);
+assert.equal(typeof shippedView.arms.candidate.modelId, "string");
+assert.equal(shippedView.arms.candidate.modelId.length > 0, true);
+
+const mainSource = fs.readFileSync(path.join(site, "js/main.js"), "utf8");
+assert.match(mainSource, /parseResultsV2/);
+assert.match(mainSource, /RESULTS_PATH/);
+assert.doesNotMatch(mainSource, /asset\(\s*"data\/results\.preliminary\.json"\s*\)/);
 
 const og = fileFor(`${origin}og.png`, "og.png");
 const png = fs.readFileSync(og);

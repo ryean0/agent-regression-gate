@@ -249,6 +249,6 @@ test("the method section markup carries the cards and both audiences", () => {
   for (const point of USE_CASES[1].points) assert.ok(text.includes(point));
   assert.ok(text.indexOf("Gemini") < text.indexOf("OpenAI"));
   assert.ok(text.indexOf("OpenAI") < text.indexOf("Anthropic"));
-  assert.equal(html.includes("GPT-4.1-nano"), false);
+  assert.equal(html.toLowerCase().includes(["gpt", "4.1", "nano"].join("-")), false);
   assert.match(fs.readFileSync(path.join(root, "css/site.css"), "utf8"), /prefers-reduced-motion:\s*reduce/);
 });

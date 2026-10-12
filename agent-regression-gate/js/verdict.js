@@ -14,7 +14,7 @@ export const METHOD_NOTES = {
   coverage: "Each scenario needs at least ceil(0.6 × scheduled) valid rollouts on both arms. 0.6 is 3/5, and the ceiling uses integer arithmetic.",
   pairing: "The gap is the unweighted average of (candidate pass rate − baseline pass rate) across scenarios. Each scenario counts once. Scenarios are combined in id order, so the recorded order cannot change the verdict.",
   interval: "Uncertainty on each pass rate is a Jeffreys binomial variance, so an all-pass or all-fail arm still carries a little noise. The 90% interval is a normal approximation around the average gap.",
-  regression: "Likely regression means that entire 90% interval sits below zero. Otherwise no regression is called. An invalid run publishes neither.",
+  regression: "Block means that entire 90% interval sits below zero. Otherwise no regression is called, and the label is Pass. An invalid run publishes neither.",
   timeouts: "An agent timeout (a loop, or the step budget ran out) scores 0 and counts as a valid rollout. An infrastructure timeout — provider 5xx, a rate limit, or the CI runner being killed — is excluded from the score and counts toward the 5% miss limit. A missing result is treated the same way.",
 };
 
@@ -279,7 +279,7 @@ export function scoreRun(scenarios, options = {}) {
 
   return {
     verdict: likely ? "likely_regression" : "no_regression",
-    headline: likely ? "Likely regression" : "Pass",
+    headline: likely ? "Block" : "Pass",
     why,
     invalidReasons: [],
     confidence,

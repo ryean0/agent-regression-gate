@@ -8,7 +8,7 @@ import {
   presentationForMotion,
   reduceFlow,
 } from "./method.js";
-import { parseResults } from "./results.js";
+import { RESULTS_PATH, parseResults, parseResultsV2 } from "./results.js";
 import { METHOD_NOTES, armMissExceeds, formatPercent, formatPoints, formatSignedNumber, scoreRun } from "./verdict.js";
 
 const EMAIL = "ryanphua.dev@outlook.com";
@@ -413,6 +413,9 @@ function renderResults(view) {
     ["Pass rate", view.arms.baseline.passRateText, view.arms.candidate.passRateText],
     ["Over the 5% miss line", view.arms.baseline.overMissLimit ? "Yes" : "No", view.arms.candidate.overMissLimit ? "Yes" : "No"],
   ];
+  if (view.arms.baseline.modelId || view.arms.candidate.modelId) {
+    armRows.unshift(["Model", view.arms.baseline.modelId || "—", view.arms.candidate.modelId || "—"]);
+  }
 
   root.replaceChildren(el("div", { class: "panel" }, [
     el("p", { class: "kicker" }, "Suite check"),
@@ -429,7 +432,7 @@ function renderResults(view) {
     ...armRows.map(([label, base, cand]) => el("div", { class: "sheet" }, [
       el("span", {}, label), el("strong", {}, String(base)), el("strong", {}, String(cand)),
     ])),
-    el("p", { class: "fine" }, "Environment misses may equal 5% of scheduled rollouts. Above that, on either arm, is over the cap. The suite check is the file’s likely_regression field."),
+    el("p", { class: "fine" }, "Environment misses may equal 5% of scheduled rollouts. Above that, on either arm, is over the cap. The suite check is the file’s likely_regression field. The label is Pass, Block, Insufficient evidence, or Invalid run."),
     el("h3", { class: "block-title" }, "Scenario diagnostics"),
     el("table", { class: "diag" }, [
       el("caption", {}, "Diagnostics only. These rates do not pass or block a scenario."),
@@ -447,7 +450,7 @@ function renderResults(view) {
     view.summaryNote ? el("p", { class: "file-note" }, view.summaryNote) : null,
     el("p", { class: "file-note" }, [
       "Loaded from ",
-      el("a", { href: asset("data/results.preliminary.json") }, "data/results.preliminary.json"),
+      el("a", { href: asset(RESULTS_PATH) }, RESULTS_PATH),
       ". level 0.9.",
     ]),
   ]));
@@ -653,11 +656,15 @@ function renderDemo() {
   function gridBlock(set) {
     const baselineCaption = recorded?.arms?.baseline?.caption || "";
     const candidateCaption = recorded?.arms?.candidate?.caption || "";
+    const baselineModel = recorded?.arms?.baseline?.modelId || "";
+    const candidateModel = recorded?.arms?.candidate?.modelId || "";
+    const baselineNote = armNote(baselineCaption, baselineModel);
+    const candidateNote = armNote(candidateCaption, candidateModel);
     return el("div", { class: "dash-block" }, [
       el("h3", {}, "Rollouts"),
-      baselineCaption || candidateCaption ? el("div", { class: "arm-notes" }, [
-        captionNote("Baseline", baselineCaption),
-        captionNote("Candidate", candidateCaption),
+      baselineNote || candidateNote ? el("div", { class: "arm-notes" }, [
+        captionNote("Baseline", baselineNote),
+        captionNote("Candidate", candidateNote),
       ]) : null,
       ...set.scenarios.map((scenario) => {
         const raw = input.find((row) => row.id === scenario.id);
@@ -669,8 +676,8 @@ function renderDemo() {
           caption ? el("p", { class: "subtitle" }, caption) : null,
           el("p", { class: "hash" }, scenario.id),
           el("div", { class: "arms" }, [
-            armGrid("Baseline", raw.baseline, settled ? scored.baseline : null, baselineCaption),
-            armGrid("Candidate", raw.candidate, settled ? scored.candidate : null, candidateCaption),
+            armGrid("Baseline", raw.baseline, settled ? scored.baseline : null, baselineNote),
+            armGrid("Candidate", raw.candidate, settled ? scored.candidate : null, candidateNote),
           ]),
         ]);
       }),
@@ -684,6 +691,11 @@ function renderDemo() {
       " ",
       caption,
     ]);
+  }
+
+  function armNote(caption, modelId) {
+    if (modelId && caption) return `${modelId} — ${caption}`;
+    return modelId || caption || "";
   }
 
   function armGrid(name, arm, official, caption) {
@@ -800,13 +812,13 @@ let repaintConsole = () => {};
 initChrome();
 renderDemo();
 
-fetch(asset("data/results.preliminary.json"))
+fetch(asset(RESULTS_PATH))
   .then((response) => {
     if (!response.ok) throw new Error(`Could not load results file (${response.status}).`);
     return response.json();
   })
   .then((doc) => {
-    const view = parseResults(doc);
+    const view = doc && doc.version === 1 ? parseResults(doc) : parseResultsV2(doc);
     recorded = view;
     renderResults(view);
     repaintConsole();

@@ -412,7 +412,7 @@
             <p>The scorer does not import an agent SDK. It pairs scenarios, builds the 90% interval, and writes <code>likely_regression</code>. Scenario rows stay diagnostics. They are not individual gates.</p>
             <p>GitHub Action, planned. Trigger <code>pull_request</code> so the check can be required. The job runs both arms through the adapter and uploads <code>results.json</code>. It fails the check when the file says likely regression. An invalid run is reported as invalid and is not called a regression. A merge queue would also need the <code>merge_group</code> event. Buildkite, Jenkins, and your own runner are the same planned job, not separate products.</p>
             <p>Record/replay cassettes, planned. Record mode would store model and tool traffic keyed by the scenario hash and the arm. Replay mode would return that recording and would not call the provider. A hash mismatch is a miss, not a silent reuse. A cassette is an input to scoring. It is not a verdict.</p>
-            <p>The output file is <code>results.json</code> version <code>1</code>, or a <code>2.x.y</code> string such as <code>2.0.0</code>. Version 2.0.0 adds an optional one-sentence caption on a scenario or an arm. Decimals and amounts inside a caption are text. This page’s reader accepts those versions and rejects any other major version. promptfoo can also write a file named <code>results.json</code>. That file is a different contract.</p>
+            <p>The output file is <code>results.json</code> version <code>1</code>, or a <code>2.x.y</code> string such as <code>2.0.0</code>. Version 2.0.0 adds an optional one-sentence caption on a scenario or an arm, and an optional model id on an arm. Decimals and amounts inside a caption are text. A model id is shown when the file records one, and it does not change the suite verdict. This page’s reader accepts those versions and rejects any other major version. The page loads one path, <code>data/results.preliminary.json</code>. promptfoo can also write a file named <code>results.json</code>. That file is a different contract.</p>
             <p>OpenTelemetry GenAI spans, planned. If an agent already emits them, an adapter may attach the trace as a diagnostic. Spans do not set the suite status. Those semantic conventions are still marked Development. Inspect, promptfoo, LangSmith, Braintrust, and DeepEval are planned sources of scenarios or scores. They do not become the suite verdict.</p>
           </details>
         </div>
@@ -423,7 +423,7 @@
       <div class="wrap">
         <p class="kicker">results.json</p>
         <h2>Recorded suite status.</h2>
-        <p class="section-intro">This panel reads <code>data/results.preliminary.json</code>. Rates are fraction strings such as <code>3/5</code> or <code>0.6</code>. The status is the suite field <code>likely_regression</code>. Scenario rows are diagnostics.</p>
+        <p class="section-intro">This panel reads <code>data/results.preliminary.json</code>, the only file to replace with harness output. Rates are fraction strings such as <code>3/5</code> or <code>0.6</code>. The suite label is Pass, Block, Insufficient evidence, or Invalid run. Model ids appear when the file records them. Scenario rows are diagnostics.</p>
         <div id="results-root" class="results-panel" aria-live="polite">
           <p>Loading results…</p>
         </div>
