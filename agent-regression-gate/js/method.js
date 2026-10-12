@@ -5,6 +5,9 @@
 
 export const WIDE_LAYOUT_MIN = 1100;
 
+/** Non-inferiority rule, δ = 5 pp. One sentence, used as the suite technical line. */
+export const DECISION_RULE = "Pass if the 90% interval's lower bound is above −5 pp, block if its upper bound is below −5 pp, otherwise insufficient evidence; an invalid run isn't scored.";
+
 export const METHOD_STEPS = [
   {
     id: "scenarios",
@@ -29,19 +32,19 @@ export const METHOD_STEPS = [
     index: "03",
     node: "n3",
     title: "Baseline",
-    subtitle: "20 rollouts",
+    subtitle: "Repeated rollouts",
     pop: "down",
     plain: "The agent customers already have is tried many times, so today's behavior is a stable picture instead of one lucky answer.",
-    technical: "Often 20 rollouts. Agent timeouts score 0. Infrastructure is excluded.",
+    technical: "Repeated rollouts per arm. Agent timeouts score 0. Infrastructure is excluded.",
   },
   {
     id: "candidate",
     index: "04",
     node: "n3",
     title: "Candidate",
-    subtitle: "5 rollouts",
-    plain: "The new version is tried on those same tasks, usually fewer times, to see whether it still completes them.",
-    technical: "Often 5 rollouts. Each scenario still counts once.",
+    subtitle: "Repeated rollouts",
+    plain: "The new version is tried on those same tasks, so you can see whether it still completes them.",
+    technical: "Repeated rollouts per arm. Each scenario still counts once.",
   },
   {
     id: "scorer",
@@ -58,8 +61,8 @@ export const METHOD_STEPS = [
     node: "n5",
     title: "Suite check",
     subtitle: "One status",
-    plain: "You get one answer for the whole suite: pass, likely regression, or the run was not solid enough to score.",
-    technical: "An invalid run is not scored. Regression needs the 90% interval below zero.",
+    plain: "You get one suite answer: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a Likely regression warning.",
+    technical: DECISION_RULE,
   },
 ];
 
@@ -69,7 +72,7 @@ export const USE_CASES = [
     title: "For founders and teams new to AI",
     paragraphs: [
       "An AI agent can change its behavior between versions even when the screens around it look the same. Moving from Gemini Flash-Lite to a newer Flash, a prompt edit, or a new tool can make yesterday's request fail today.",
-      "This check runs the version you are about to ship against the one customers already have, on the same tasks, and catches that drop before customers notice. The check is provider-agnostic: Gemini comes first, and OpenAI and Anthropic are on the roadmap.",
+      "This check runs the version you are about to ship against the one customers already have, on the same tasks, and flags a drop larger than 5 points when the evidence is clear, and says when it can't tell yet. The check is provider-agnostic: Gemini comes first, and OpenAI and Anthropic are on the roadmap.",
     ],
   },
   {
@@ -78,7 +81,7 @@ export const USE_CASES = [
     points: [
       "CI gate on the candidate versus the agent already in production.",
       "Repeated rollouts, so one noisy try becomes a pass rate.",
-      "A 90% interval: a regression is called only when the whole interval lies below zero.",
+      `Non-inferiority, δ = 5 pp. ${DECISION_RULE}`,
       "Invalid-run detection when too many rollouts are missing or broken by infrastructure.",
     ],
   },
@@ -339,7 +342,7 @@ export function validateMethodContent(steps = METHOD_STEPS) {
     if (!step.plain || !step.plain.trim()) errors.push(`${step.id} missing plain language`);
     if (!step.technical || !step.technical.trim()) errors.push(`${step.id} missing technical line`);
     if (/\n/.test(step.technical)) errors.push(`${step.id} technical line has a line break`);
-    if (step.technical.length > 120) errors.push(`${step.id} technical line is too long`);
+    if (step.technical.length > 240) errors.push(`${step.id} technical line is too long`);
     if (step.plain === step.technical) errors.push(`${step.id} plain and technical are the same`);
   }
   if (steps.length !== 6) errors.push("expected 6 steps");
@@ -354,7 +357,8 @@ export function validateUseCases(cases = USE_CASES) {
   if (!engineers || engineers.title !== "For ML and platform engineers") errors.push("engineers title");
   const founderText = (founders?.paragraphs || []).join(" ");
   if (!/behavior between versions/i.test(founderText)) errors.push("founders behavior");
-  if (!/before customers notice/i.test(founderText)) errors.push("founders customers");
+  if (!/flags a drop larger than 5 points when the evidence is clear, and says when it can't tell yet/.test(founderText)) errors.push("founders evidence");
+  if (/before customers notice/i.test(founderText)) errors.push("old customer phrase");
   if (!/Gemini Flash-Lite to a newer Flash/.test(founderText)) errors.push("founders flash upgrade");
   const geminiAt = founderText.indexOf("Gemini");
   const openAiAt = founderText.indexOf("OpenAI");
@@ -368,5 +372,19 @@ export function validateUseCases(cases = USE_CASES) {
   if (!/repeated rollouts/i.test(points)) errors.push("engineers rollouts");
   if (!/90%/.test(points)) errors.push("engineers interval");
   if (!/invalid-run/i.test(points)) errors.push("engineers invalid");
+  if (!points.includes(DECISION_RULE)) errors.push("engineers decision rule");
+  if (!/non-inferiority, δ = 5 pp/i.test(points)) errors.push("engineers delta");
+  const suite = METHOD_STEPS.find((step) => step.id === "suite");
+  if (!suite || suite.technical !== DECISION_RULE) errors.push("suite decision rule");
+  if (!/Pass, Block, Insufficient evidence, or Invalid run/.test(suite?.plain || "")) errors.push("verdicts");
+  if (!/Likely regression warning/.test(suite?.plain || "")) errors.push("regression warning");
+  const stepText = METHOD_STEPS.map((step) => `${step.subtitle} ${step.plain} ${step.technical}`).join("\n");
+  if (/20 rollouts|5 rollouts|20 baseline|5 candidate/.test(stepText)) errors.push("fixed rollout budget");
+  if (!/repeated rollouts per arm/i.test(stepText)) errors.push("repeated rollouts per arm");
   return errors;
+}
+
+/** Escape closes a flowchart card only while focus is inside that flowchart. */
+export function flowEscapeApplies(state, targetInsideFlow) {
+  return Boolean(state?.openId) && targetInsideFlow === true;
 }

@@ -151,7 +151,7 @@
               <path class="draw" pathLength="1"></path>
             </svg>
             <div class="flow-step-wrap" data-step-id="scenarios" data-node="n1" style="--i:0">
-              <button type="button" class="flow-step" aria-describedby="flow-card-scenarios" aria-controls="flow-card-scenarios" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-scenarios">
                 <span class="flow-index" aria-hidden="true">01</span>
                 <span class="flow-title">Scenarios</span>
                 <span class="flow-sub">Content hash</span>
@@ -171,7 +171,7 @@
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="runner" data-node="n2" style="--i:1">
-              <button type="button" class="flow-step" aria-describedby="flow-card-runner" aria-controls="flow-card-runner" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-runner">
                 <span class="flow-index" aria-hidden="true">02</span>
                 <span class="flow-title">CI runner</span>
                 <span class="flow-sub">One job</span>
@@ -191,10 +191,10 @@
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="baseline" data-node="n3" data-pop="down" style="--i:2">
-              <button type="button" class="flow-step" aria-describedby="flow-card-baseline" aria-controls="flow-card-baseline" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-baseline">
                 <span class="flow-index" aria-hidden="true">03</span>
                 <span class="flow-title">Baseline</span>
-                <span class="flow-sub">20 rollouts</span>
+                <span class="flow-sub">Repeated rollouts</span>
               </button>
               <div class="flow-card" id="flow-card-baseline" role="tooltip">
                 <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
@@ -208,17 +208,17 @@
                     <rect x="96" y="16" width="11" height="11" rx="1"/>
                   </g>
                   <rect x="112" y="16" width="11" height="11" rx="1" fill="none" stroke="#ff7a1a" stroke-width="1.25"/>
-                  <text x="136" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">20 rollouts</text>
+                  <text x="136" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">per arm</text>
                 </svg>
                 <p class="flow-plain">The agent customers already have is tried many times, so today's behavior is a stable picture instead of one lucky answer.</p>
-                <p class="flow-tech">Often 20 rollouts. Agent timeouts score 0. Infrastructure is excluded.</p>
+                <p class="flow-tech">Repeated rollouts per arm. Agent timeouts score 0. Infrastructure is excluded.</p>
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="candidate" data-node="n3" style="--i:3">
-              <button type="button" class="flow-step" aria-describedby="flow-card-candidate" aria-controls="flow-card-candidate" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-candidate">
                 <span class="flow-index" aria-hidden="true">04</span>
                 <span class="flow-title">Candidate</span>
-                <span class="flow-sub">5 rollouts</span>
+                <span class="flow-sub">Repeated rollouts</span>
               </button>
               <div class="flow-card" id="flow-card-candidate" role="tooltip">
                 <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
@@ -227,14 +227,14 @@
                   <rect x="32" y="16" width="11" height="11" rx="1" fill="#f4f4f5"/>
                   <rect x="48" y="16" width="11" height="11" rx="1" fill="none" stroke="#ff7a1a" stroke-width="1.25"/>
                   <rect x="64" y="16" width="11" height="11" rx="1" fill="#f4f4f5"/>
-                  <text x="88" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">5 rollouts</text>
+                  <text x="88" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">per arm</text>
                 </svg>
-                <p class="flow-plain">The new version is tried on those same tasks, usually fewer times, to see whether it still completes them.</p>
-                <p class="flow-tech">Often 5 rollouts. Each scenario still counts once.</p>
+                <p class="flow-plain">The new version is tried on those same tasks, so you can see whether it still completes them.</p>
+                <p class="flow-tech">Repeated rollouts per arm. Each scenario still counts once.</p>
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="scorer" data-node="n4" style="--i:4">
-              <button type="button" class="flow-step" aria-describedby="flow-card-scorer" aria-controls="flow-card-scorer" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-scorer">
                 <span class="flow-index" aria-hidden="true">05</span>
                 <span class="flow-title">Scorer</span>
                 <span class="flow-sub">90% interval</span>
@@ -252,22 +252,25 @@
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="suite" data-node="n5" style="--i:5">
-              <button type="button" class="flow-step" aria-describedby="flow-card-suite" aria-controls="flow-card-suite" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-suite">
                 <span class="flow-index" aria-hidden="true">06</span>
                 <span class="flow-title">Suite check</span>
                 <span class="flow-sub">One status</span>
               </button>
               <div class="flow-card" id="flow-card-suite" role="tooltip">
-                <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
-                  <circle cx="6" cy="9" r="3" fill="#f4f4f5"/>
-                  <text x="16" y="12" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Pass</text>
-                  <circle cx="6" cy="24" r="3" fill="#ff7a1a"/>
-                  <text x="16" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="11">Likely regression</text>
-                  <circle cx="6" cy="39" r="3" fill="none" stroke="#d4d4dc" stroke-width="1.25" stroke-dasharray="1.6 1.4"/>
-                  <text x="16" y="42" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Invalid run</text>
+                <svg class="flow-ig" viewBox="0 0 280 72" aria-hidden="true" focusable="false">
+                  <circle cx="6" cy="8" r="2.5" fill="#f4f4f5"/>
+                  <text x="16" y="11" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Pass</text>
+                  <circle cx="6" cy="22" r="2.5" fill="#ff7a1a"/>
+                  <text x="16" y="25" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="11">Block</text>
+                  <circle cx="6" cy="36" r="2.5" fill="#f4f4f5"/>
+                  <text x="16" y="39" fill="#f4f4f5" font-family="ui-monospace,monospace" font-size="11">Insufficient evidence</text>
+                  <text x="28" y="52" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="10">warning · Likely regression</text>
+                  <circle cx="6" cy="64" r="2.5" fill="none" stroke="#d4d4dc" stroke-width="1.25" stroke-dasharray="1.6 1.4"/>
+                  <text x="16" y="67" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Invalid run</text>
                 </svg>
-                <p class="flow-plain">You get one answer for the whole suite: pass, likely regression, or the run was not solid enough to score.</p>
-                <p class="flow-tech">An invalid run is not scored. Regression needs the 90% interval below zero.</p>
+                <p class="flow-plain">You get one suite answer: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a Likely regression warning.</p>
+                <p class="flow-tech">Pass if the 90% interval's lower bound is above −5 pp, block if its upper bound is below −5 pp, otherwise insufficient evidence; an invalid run isn't scored.</p>
               </div>
             </div>
           </div>
@@ -278,14 +281,14 @@
             <article class="use-card" style="--i:0">
               <h3>For founders and teams new to AI</h3>
               <p>An AI agent can change its behavior between versions even when the screens around it look the same. Moving from Gemini Flash-Lite to a newer Flash, a prompt edit, or a new tool can make yesterday's request fail today.</p>
-              <p>This check runs the version you are about to ship against the one customers already have, on the same tasks, and catches that drop before customers notice. The check is provider-agnostic: Gemini comes first, and OpenAI and Anthropic are on the roadmap.</p>
+              <p>This check runs the version you are about to ship against the one customers already have, on the same tasks, and flags a drop larger than 5 points when the evidence is clear, and says when it can't tell yet. The check is provider-agnostic: Gemini comes first, and OpenAI and Anthropic are on the roadmap.</p>
             </article>
             <article class="use-card" style="--i:1">
               <h3>For ML and platform engineers</h3>
               <ul>
                 <li>CI gate on the candidate versus the agent already in production.</li>
                 <li>Repeated rollouts, so one noisy try becomes a pass rate.</li>
-                <li>A <code>90%</code> interval: a regression is called only when the whole interval lies below zero.</li>
+                <li>Non-inferiority, δ = 5 pp. Pass if the 90% interval's lower bound is above −5 pp, block if its upper bound is below −5 pp, otherwise insufficient evidence; an invalid run isn't scored.</li>
                 <li>Invalid-run detection when too many rollouts are missing or broken by infrastructure.</li>
               </ul>
             </article>

@@ -5,6 +5,7 @@ import {
   flowScrollState,
   methodConnectorPaths,
   placeFlowCard,
+  flowEscapeApplies,
   presentationForMotion,
   reduceFlow,
 } from "./method.js";
@@ -143,7 +144,6 @@ function initFlow(flow, reduceMotion, bindPlace) {
       const open = state.openId === id;
       wrap.classList.toggle("is-open", open);
       wrap.classList.toggle("is-dismissed", state.dismissedId === id);
-      wrap.querySelector(".flow-step").setAttribute("aria-expanded", open ? "true" : "false");
     }
     layoutConnectors();
     placeOpenCards();
@@ -189,15 +189,12 @@ function initFlow(flow, reduceMotion, bindPlace) {
     });
   }
 
-  window.addEventListener("keydown", (event) => {
+  flow.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" && event.key !== "Esc") return;
-    if (document.querySelector("dialog[open]")) return;
-    if (!state.openId) return;
+    if (!flowEscapeApplies(state, flow.contains(event.target))) return;
     state = reduceFlow(state, { type: "escape" });
     apply();
-    event.preventDefault();
-    event.stopPropagation();
-  }, true);
+  });
 
   document.addEventListener("pointerdown", (event) => {
     if (flow.contains(event.target)) return;

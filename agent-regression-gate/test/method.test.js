@@ -10,7 +10,9 @@ import {
   USE_CASES,
   contrastRatio,
   createFlowState,
+  DECISION_RULE,
   curvePath,
+  flowEscapeApplies,
   flowScrollState,
   layoutMode,
   methodConnectorPaths,
@@ -81,6 +83,21 @@ test("a mouse click does not pin, and touch hover does not stick", () => {
   assert.equal(state.hoverId, null);
   state = reduceFlow(state, { type: "activate", id: "suite", pointerType: "mouse", coarse: false, keyboard: true });
   assert.equal(state.openId, null);
+});
+
+test("Escape applies only while a flowchart card is open and focus is inside it", () => {
+  assert.equal(flowEscapeApplies({ openId: "suite" }, true), true);
+  assert.equal(flowEscapeApplies({ openId: "suite" }, false), false);
+  assert.equal(flowEscapeApplies({ openId: null }, true), false);
+  assert.equal(flowEscapeApplies(null, true), false);
+  assert.equal(DECISION_RULE.includes("−5 pp"), true);
+
+  const main = fs.readFileSync(path.join(root, "js/main.js"), "utf8");
+  const init = main.slice(main.indexOf("function initFlow"), main.indexOf("function initChrome"));
+  assert.match(init, /flow\.addEventListener\(\s*"keydown"/);
+  assert.equal(init.includes("preventDefault"), false);
+  assert.equal(init.includes("stopPropagation"), false);
+  assert.equal(init.includes("aria-expanded"), false);
 });
 
 test("Escape closes the visible card without revealing a different focused step", () => {
@@ -229,6 +246,8 @@ test("the method section markup carries the cards and both audiences", () => {
   const method = html.slice(start, end);
   assert.match(method, /aria-describedby="flow-card-/);
   assert.match(method, /role="tooltip"/);
+  assert.equal(method.includes("aria-expanded"), false);
+  assert.equal(method.includes("aria-controls"), false);
   let cursor = 0;
   for (const step of METHOD_STEPS) {
     const cardAt = method.indexOf(`id="flow-card-${step.id}"`, cursor);
