@@ -462,8 +462,14 @@ function renderDemo() {
   }
 
   function gridBlock(set) {
+    const baselineCaption = recorded?.arms?.baseline?.caption || "";
+    const candidateCaption = recorded?.arms?.candidate?.caption || "";
     return el("div", { class: "dash-block" }, [
       el("h3", {}, "Rollouts"),
+      baselineCaption || candidateCaption ? el("div", { class: "arm-notes" }, [
+        captionNote("Baseline", baselineCaption),
+        captionNote("Candidate", candidateCaption),
+      ]) : null,
       ...set.scenarios.map((scenario) => {
         const raw = input.find((row) => row.id === scenario.id);
         const scored = result.scenarios.find((row) => row.id === scenario.id);
@@ -474,11 +480,20 @@ function renderDemo() {
           caption ? el("p", { class: "subtitle" }, caption) : null,
           el("p", { class: "hash" }, scenario.id),
           el("div", { class: "arms" }, [
-            armGrid("Baseline", raw.baseline, settled ? scored.baseline : null, recorded?.arms?.baseline?.caption || ""),
-            armGrid("Candidate", raw.candidate, settled ? scored.candidate : null, recorded?.arms?.candidate?.caption || ""),
+            armGrid("Baseline", raw.baseline, settled ? scored.baseline : null, baselineCaption),
+            armGrid("Candidate", raw.candidate, settled ? scored.candidate : null, candidateCaption),
           ]),
         ]);
       }),
+    ]);
+  }
+
+  function captionNote(label, caption) {
+    if (!caption) return null;
+    return el("p", { class: "subtitle", title: caption }, [
+      el("span", { class: "note-label" }, label),
+      " ",
+      caption,
     ]);
   }
 
@@ -488,7 +503,6 @@ function renderDemo() {
       : `${arm.scheduled} scheduled`;
     return el("div", {}, [
       el("p", { class: "arm-label", ...(caption ? { title: caption } : {}) }, [name, el("b", {}, label)]),
-      caption ? el("p", { class: "subtitle" }, caption) : null,
       el("div", { class: "cells", "aria-hidden": "true" }, arm.slots.slice(0, arm.scheduled).map((slot) => el("i", {
         class: "cell",
         "data-kind": official ? slot : "",
