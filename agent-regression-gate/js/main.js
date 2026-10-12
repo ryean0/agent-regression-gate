@@ -193,9 +193,9 @@ function initChrome() {
       `Work email: ${String(data.get("email") || "").trim()}`,
       `Company: ${String(data.get("company") || "").trim()}`,
       "",
-      String(data.get("note") || "").trim() || "We would like to pilot the CI Agent Regression Harness.",
+      String(data.get("note") || "").trim() || "We would like to pilot Mullion.",
     ].join("\n");
-    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent("Pilot: CI Agent Regression Harness")}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent("Pilot: Mullion")}&body=${encodeURIComponent(body)}`;
     document.getElementById("pilot-note").textContent = `If your email app did not open, write to ${EMAIL}.`;
   });
 }

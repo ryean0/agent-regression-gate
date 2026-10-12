@@ -1,4 +1,4 @@
-# CI Agent Regression Harness
+# Mullion
 
 Self-contained static site. Copy this folder into the public repo `ryean0/agent-regression-gate` unchanged. Every asset path is relative (`./css`, `./js`, `./data`), so the same files work at the project-page URL `https://ryean0.github.io/agent-regression-gate/` and at a domain root.
 
