@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en" data-base="./">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CI Agent Regression Harness</title>
+  <meta name="description" content="Catch agent regressions before they ship. One suite-level status at 90% confidence, and no verdict when the run is not valid.">
+  <link rel="canonical" href="https://ryean0.github.io/agent-regression-gate/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ryean0.github.io/agent-regression-gate/">
+  <meta property="og:title" content="CI Agent Regression Harness">
+  <meta property="og:description" content="Catch agent regressions before they ship. Paired scenarios, a 90% interval, and no verdict on an invalid run.">
+  <meta property="og:image" content="https://ryean0.github.io/agent-regression-gate/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="CI Agent Regression Harness">
+  <meta name="twitter:description" content="Catch agent regressions before they ship.">
+  <meta name="twitter:image" content="https://ryean0.github.io/agent-regression-gate/og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "CI Agent Regression Harness",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "CI",
+    "url": "https://ryean0.github.io/agent-regression-gate/",
+    "description": "Catch agent regressions before they ship."
+  }
+  </script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#product">
+        <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="29" rx="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 12.5h16M8 19.5h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/></svg>
+        Harness
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Product">
+        <a href="#product">Product</a>
+        <a href="#method">Method</a>
+        <a href="#trust">Gate</a>
+        <a href="#results">Results</a>
+        <a href="#demo">Console</a>
+        <a href="#faq">FAQ</a>
+        <button type="button" class="btn btn-primary" data-pilot>Request a pilot</button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="content">
+    <section class="hero" id="product">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">CI Agent Regression Harness</p>
+          <h1>
+            <span class="line">Catch agent regressions</span>
+            <span class="line">before they ship.</span>
+          </h1>
+          <p class="lede">
+            Compare a candidate agent with the one already in production, on the same scenarios.
+            The harness returns one suite status at 90% confidence:
+            <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-regression">likely regression</button><span class="term-tip" id="tip-regression" role="tooltip">Suite status. The entire 90% interval for the pass-rate gap lies below zero. Scenarios are diagnostics, not individual gates.</span></span>,
+            pass, or invalid run.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="#results">View results</a>
+            <a class="btn btn-ghost" href="#demo">Open console</a>
+            <button type="button" class="btn btn-ghost" data-pilot>Request a pilot</button>
+          </div>
+          <p class="fine">Results are read from a results file. The console replays a sample configuration in the browser.</p>
+        </div>
+        <aside class="shot" aria-label="Sample suite check. The candidate grid fills in, the interval sits below zero, and the status resolves to likely regression.">
+          <div class="shot-card">
+            <header class="shot-bar">
+              <span>Suite check</span>
+              <span>sample · v2.2</span>
+            </header>
+            <div class="shot-arm">
+              <p><span>Baseline</span><b>18/20</b></p>
+              <div class="shot-cells" aria-hidden="true">
+                <i style="--i:0" data-kind="pass"></i><i style="--i:1" data-kind="pass"></i><i style="--i:2" data-kind="pass"></i><i style="--i:3" data-kind="pass"></i><i style="--i:4" data-kind="fail"></i><i style="--i:5" data-kind="pass"></i><i style="--i:6" data-kind="pass"></i><i style="--i:7" data-kind="pass"></i><i style="--i:8" data-kind="pass"></i><i style="--i:9" data-kind="fail"></i><i style="--i:10" data-kind="pass"></i><i style="--i:11" data-kind="pass"></i>
+              </div>
+            </div>
+            <div class="shot-arm">
+              <p><span>Candidate</span><b>2/5</b></p>
+              <div class="shot-cells" aria-hidden="true">
+                <i style="--i:12" data-kind="pass"></i><i style="--i:13" data-kind="fail"></i><i style="--i:14" data-kind="fail"></i><i style="--i:15" data-kind="pass"></i><i style="--i:16" data-kind="fail"></i>
+              </div>
+            </div>
+            <div class="shot-gap">
+              <span>Gap</span>
+              <b>−37.5 pp</b>
+              <span class="shot-ci" aria-hidden="true"><i></i></span>
+              <span>90% below 0</span>
+            </div>
+            <p class="shot-status">
+              <span class="pending">Scoring</span>
+              <span class="resolved">Likely regression</span>
+            </p>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section reveal" aria-labelledby="spec-title">
+      <div class="wrap">
+        <p class="kicker">Specification</p>
+        <h2 id="spec-title">The decision rules.</h2>
+        <p class="section-intro">A <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-rollout">rollout</button><span class="term-tip" id="tip-rollout" role="tooltip">One execution of one scenario. A pass scores 1. A fail scores 0.</span></span> is one execution. Pass is 1. Fail is 0. The status applies to the suite. Five scheduled rollouts need 3 usable. Twenty need 12. Scenarios are SHA-256 hashes.</p>
+        <div class="spec-grid">
+          <article class="spec"><b>90<span>%</span></b><p>Confidence. A regression is called only when the full interval lies below zero.</p></article>
+          <article class="spec"><b>5<span>%</span></b><p>Miss cap. Above this on either arm, the run is invalid. Exactly 5% still scores.</p></article>
+          <article class="spec"><b>0.6</b><p>Coverage floor. Each scenario needs at least ceil(0.6 × scheduled) usable rollouts on both arms.</p></article>
+          <article class="spec"><b class="spec-word">Paired</b><p>By scenario. Each one counts once. Order does not change the result.</p></article>
+        </div>
+        <div class="logo-strip" aria-label="Where the harness runs">
+          <p>Runs in the CI you already use</p>
+          <ul>
+            <li>GitHub Actions</li>
+            <li>Buildkite</li>
+            <li>Jenkins</li>
+            <li>Your runner</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="method">
+      <div class="wrap">
+        <p class="kicker">Method</p>
+        <h2>Same scenarios. Both versions. One check.</h2>
+        <p class="section-intro">The job runs in CI, after the change is built and before it merges.</p>
+        <figure class="flow" data-step="0">
+          <figcaption class="sr-only">Pipeline from hashed scenarios, through a CI runner, into baseline and candidate rollouts, a scorer, and one suite check.</figcaption>
+          <svg class="flow-wide" viewBox="0 0 1040 340" role="img" aria-labelledby="flow-title">
+            <title id="flow-title">Scenarios, CI runner, baseline and candidate, scorer, suite check</title>
+            <path class="draw" pathLength="1" d="M184 166 H236"/>
+            <path class="draw" pathLength="1" d="M404 166 C432 166 432 66 456 66"/>
+            <path class="draw" pathLength="1" d="M404 166 C432 166 432 266 456 266"/>
+            <path class="draw" pathLength="1" d="M632 66 C660 66 660 166 684 166"/>
+            <path class="draw" pathLength="1" d="M632 266 C660 266 660 166 684 166"/>
+            <path class="draw" pathLength="1" d="M844 166 H892"/>
+            <g class="node n1"><rect x="16" y="124" width="168" height="84" rx="12"/><text x="100" y="160">Scenarios</text><text class="sub" x="100" y="182">Content hash</text></g>
+            <g class="node n2"><rect x="236" y="124" width="168" height="84" rx="12"/><text x="320" y="160">CI runner</text><text class="sub" x="320" y="182">One job</text></g>
+            <g class="node n3"><rect x="456" y="28" width="176" height="76" rx="12"/><text x="544" y="60">Baseline</text><text class="sub" x="544" y="80">20 rollouts</text></g>
+            <g class="node n3"><rect x="456" y="228" width="176" height="76" rx="12"/><text x="544" y="260">Candidate</text><text class="sub" x="544" y="280">5 rollouts</text></g>
+            <g class="node n4"><rect x="684" y="124" width="160" height="84" rx="12"/><text x="764" y="160">Scorer</text><text class="sub" x="764" y="182">90% interval</text></g>
+            <g class="node n5"><rect x="892" y="112" width="132" height="108" rx="12"/><text x="958" y="158">Suite</text><text x="958" y="178">check</text></g>
+          </svg>
+          <svg class="flow-narrow" viewBox="0 0 360 640" aria-hidden="true">
+            <path class="draw" pathLength="1" d="M180 86 V118"/>
+            <path class="draw" pathLength="1" d="M180 204 V246"/>
+            <path class="draw" pathLength="1" d="M92 322 V364 H180"/>
+            <path class="draw" pathLength="1" d="M268 322 V364 H180"/>
+            <path class="draw" pathLength="1" d="M180 450 V492"/>
+            <g class="node n1"><rect x="40" y="8" width="280" height="78" rx="12"/><text x="180" y="42">Scenarios</text><text class="sub" x="180" y="62">Content hash</text></g>
+            <g class="node n2"><rect x="40" y="118" width="280" height="78" rx="12"/><text x="180" y="152">CI runner</text><text class="sub" x="180" y="172">One job</text></g>
+            <g class="node n3"><rect x="8" y="246" width="168" height="76" rx="12"/><text x="92" y="278">Baseline</text><text class="sub" x="92" y="298">20 rollouts</text></g>
+            <g class="node n3"><rect x="184" y="246" width="168" height="76" rx="12"/><text x="268" y="278">Candidate</text><text class="sub" x="268" y="298">5 rollouts</text></g>
+            <g class="node n4"><rect x="40" y="364" width="280" height="78" rx="12"/><text x="180" y="398">Scorer</text><text class="sub" x="180" y="418">90% interval</text></g>
+            <g class="node n5"><rect x="40" y="492" width="280" height="86" rx="12"/><text x="180" y="532">Suite check</text></g>
+          </svg>
+          <ol class="callouts">
+            <li><span>01</span><h3>Scenarios</h3><p>Tasks are sealed with a content hash before the run starts.</p></li>
+            <li><span>02</span><h3>CI runner</h3><p>One job executes the same suite on both versions.</p></li>
+            <li><span>03</span><h3>Two arms</h3><p>Often 20 baseline rollouts and 5 candidate rollouts. An agent timeout scores 0. Infrastructure is excluded.</p></li>
+            <li><span>04</span><h3>Scorer</h3><p>Pass rates are paired by scenario. The gap gets a 90% interval.</p></li>
+            <li><span>05</span><h3>Suite check</h3><p>Pass, likely regression, or invalid run. An invalid run is not scored.</p></li>
+          </ol>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section trust-section" id="trust">
+      <div class="trust-stage" data-step="0">
+        <div class="trust-pin">
+          <div class="wrap trust-layout">
+            <div class="trust-copy">
+              <p class="kicker">Gate behavior</p>
+              <h2>No verdict when the run cannot support one.</h2>
+              <ol class="trust-list">
+                <li>
+                  <h3>Paired comparison</h3>
+                  <p>Each scenario contributes one difference: candidate pass rate minus baseline pass rate. Those differences are averaged without weights. List order does not change the result.</p>
+                  <p class="annotation">unweighted mean of per-scenario gaps</p>
+                  <div class="tvis" aria-hidden="true">
+                    <p class="tvis-kicker">Gap</p>
+                    <p class="tvis-eq"><span>candidate</span> − <span>baseline</span></p>
+                    <ul>
+                      <li><span>reset-locked</span><b>−0.30</b></li>
+                      <li><span>refund</span><b>−0.05</b></li>
+                      <li><span>shipping</span><b>−0.15</b></li>
+                    </ul>
+                    <p class="tvis-foot">mean, one vote each</p>
+                  </div>
+                </li>
+                <li>
+                  <h3>Timeout policy</h3>
+                  <p>A loop or an exhausted step budget scores 0 and stays in the sample. Provider 5xx, rate limits, and a killed CI runner are excluded from the score and counted toward the miss cap.</p>
+                  <p class="annotation">agent timeout → 0 · infrastructure timeout → excluded</p>
+                  <div class="tvis" aria-hidden="true">
+                    <p class="tvis-kicker">Outcome</p>
+                    <p class="tvis-row"><span>Step budget</span><b>Score 0</b></p>
+                    <p class="tvis-row"><span>Provider 5xx</span><b>Excluded</b></p>
+                    <p class="tvis-row"><span>Rate limit</span><b>Excluded</b></p>
+                    <p class="tvis-row"><span>Runner killed</span><b>Excluded</b></p>
+                  </div>
+                </li>
+                <li>
+                  <h3>Validity</h3>
+                  <p>More than 5% of scheduled rollouts missing or infrastructure-broken, on either arm, invalidates the run. Exactly 5% remains valid. Each scenario also has a coverage floor on both arms.</p>
+                  <p class="annotation">5 → 3 usable · 7 → 5 · 20 → 12 · 6% on one arm → invalid</p>
+                  <div class="tvis" aria-hidden="true">
+                    <p class="tvis-kicker">Miss rate</p>
+                    <p class="tvis-row"><span>Exactly 5%</span><b>Valid</b></p>
+                    <div class="tvis-meter"><i style="width:25%"></i><em></em></div>
+                    <p class="tvis-row"><span>6% on one arm</span><b>Invalid</b></p>
+                    <div class="tvis-meter is-over"><i style="width:30%"></i><em></em></div>
+                  </div>
+                </li>
+                <li>
+                  <h3>Content hashes</h3>
+                  <p>Each scenario is hashed. If the recorded text does not match the suite, the run is invalid before a score is published.</p>
+                  <p class="annotation">SHA-256 of the scenario text</p>
+                  <div class="tvis" aria-hidden="true">
+                    <p class="tvis-kicker">SHA-256</p>
+                    <p class="tvis-hash">cbb85ce6…0ebed1</p>
+                    <p class="tvis-row"><span>Recorded text</span><b>Match</b></p>
+                    <p class="tvis-foot">A mismatch invalidates the run</p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="results">
+      <div class="wrap">
+        <p class="kicker">results.json</p>
+        <h2>Recorded suite status.</h2>
+        <p class="section-intro">This panel reads <code>data/results.preliminary.json</code>. Rates are fraction strings such as <code>3/5</code> or <code>0.6</code>. The status is the suite field <code>likely_regression</code>. Scenario rows are diagnostics.</p>
+        <div id="results-root" class="results-panel" aria-live="polite">
+          <p>Loading results…</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="demo">
+      <div class="wrap">
+        <p class="kicker">Product console</p>
+        <h2>Sample run viewer.</h2>
+        <p class="section-intro">Replay a configuration locally. This view does not read the results file and it is not a customer benchmark.</p>
+        <div id="demo-root"></div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="faq">
+      <div class="wrap">
+        <p class="kicker">FAQ</p>
+        <h2>Operational questions.</h2>
+        <div class="faq-list">
+          <details><summary>What does the harness decide?</summary><p>Whether a candidate agent regressed relative to the one already running, before the change ships. The output is one suite status, not a pass or a block on each scenario.</p></details>
+          <details><summary>What is a rollout?</summary><p>One execution of one scenario. Pass scores 1. Fail scores 0. Scenarios are repeated because a single execution is not a stable estimate.</p></details>
+          <details><summary>Why does the candidate have fewer rollouts?</summary><p>Twenty baseline rollouts against five candidate rollouts is a normal budget. Each scenario becomes a pass rate, then each scenario counts once. Additional rollouts do not add weight.</p></details>
+          <details><summary>What does 90% confidence mean here?</summary><p>A likely regression is reported only when the entire 90% interval for the pass-rate gap lies below zero. If the interval still includes no change, the harness does not call a regression.</p></details>
+          <details><summary>When is a run invalid?</summary><p>When more than 5% of scheduled rollouts on either arm are missing or broken by infrastructure. Exactly 5% is still scored. Each scenario also needs at least 60% of its scheduled rollouts usable, rounded up: 5 needs 3, 7 needs 5, 20 needs 12.</p></details>
+          <details><summary>Does a timeout count as a failure?</summary><p>A loop or an exhausted step budget scores 0. A provider error, a rate limit, or a killed CI runner is excluded and counts toward the 5% miss cap.</p></details>
+          <details><summary>Are the figures on this page customer results?</summary><p>No. The results panel shows the bundled preliminary file. The console replays labeled sample configurations. Neither is a customer benchmark.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="close">
+      <div class="wrap">
+        <div class="close-panel">
+          <p class="kicker">Pilot</p>
+          <h2>Put the next agent change behind a check.</h2>
+          <p class="lede">Bring a suite you already run. We connect the baseline, the candidate, and a status your CI can fail.</p>
+          <div class="cta-row">
+            <button type="button" class="btn btn-primary" data-pilot>Request a pilot</button>
+            <a class="btn btn-ghost" href="#demo">Open console</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand">Harness</p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="On this page">
+        <p>Product</p>
+        <a href="#product">Overview</a>
+        <a href="#method">Method</a>
+        <a href="#trust">Gate</a>
+        <a href="#demo">Console</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <a href="mailto:ryanphua.dev@outlook.com">Email</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
