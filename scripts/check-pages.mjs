@@ -78,6 +78,17 @@ assert.equal(png.readUInt32BE(20), 630);
 assert.equal(fs.existsSync(path.join(site, ".nojekyll")), true);
 assert.match(fs.readFileSync(path.join(site, "css/site.css"), "utf8"), /#ff7a1a/);
 assert.match(html, /Catch agent regressions/);
+assert.match(html, /<title>Mullion<\/title>/);
+assert.match(html, /property="og:title" content="Mullion"/);
+assert.match(html, /name="twitter:title" content="Mullion"/);
+assert.match(html, /"name": "Mullion"/);
+assert.doesNotMatch(html, /CI Agent Regression Harness/);
+assert.match(html, /id="integrations"/);
+assert.match(html, /adapter example/);
+assert.match(html, /GitHub Action · planned/);
+assert.match(html, /Record\/replay cassettes · planned/);
+assert.match(html, /No official partnerships/);
+assert.equal((html.match(/href="https:\/\/ryean0\.github\.io\/agent-regression-gate\/"/g) || []).length > 0, true);
 
 const workflow = fs.readFileSync(path.join(root, ".github/workflows/pages.yml"), "utf8");
 assert.match(workflow, /pull_request:/);
