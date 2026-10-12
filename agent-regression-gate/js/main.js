@@ -1,4 +1,13 @@
 import { CANDIDATES, SCENARIO_SETS, buildRun } from "./demo-data.js";
+import {
+  WIDE_LAYOUT_MIN,
+  createFlowState,
+  flowScrollState,
+  methodConnectorPaths,
+  placeFlowCard,
+  presentationForMotion,
+  reduceFlow,
+} from "./method.js";
 import { parseResults } from "./results.js";
 import { METHOD_NOTES, armMissExceeds, formatPercent, formatPoints, formatSignedNumber, scoreRun } from "./verdict.js";
 
@@ -31,6 +40,181 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 
+function initFlow(flow, reduceMotion, bindPlace) {
+  flow.dataset.cardMotion = presentationForMotion(reduceMotion).cardMotion;
+  let state = createFlowState();
+  const wideQuery = window.matchMedia(`(min-width: ${WIDE_LAYOUT_MIN}px)`);
+  const coarseQuery = window.matchMedia("(pointer: coarse)");
+  let blockHoverUntil = 0;
+  let lastPointer = "mouse";
+  const wraps = () => [...flow.querySelectorAll(".flow-step-wrap")];
+
+  function boxWithin(element, ancestor) {
+    let x = 0;
+    let y = 0;
+    let node = element;
+    while (node && node !== ancestor) {
+      x += node.offsetLeft;
+      y += node.offsetTop;
+      const parent = node.offsetParent;
+      if (!parent || (parent !== ancestor && !ancestor.contains(parent))) {
+        const boardRect = ancestor.getBoundingClientRect();
+        const rect = element.getBoundingClientRect();
+        return {
+          x: rect.left - boardRect.left,
+          y: rect.top - boardRect.top,
+          w: element.offsetWidth,
+          h: element.offsetHeight,
+        };
+      }
+      node = parent;
+    }
+    return { x, y, w: element.offsetWidth, h: element.offsetHeight };
+  }
+
+  function layoutConnectors() {
+    const board = flow.querySelector(".flow-board");
+    const svg = board.querySelector(".flow-svg");
+    const width = board.clientWidth;
+    const height = board.clientHeight;
+    if (width < 2 || height < 2) return;
+    svg.setAttribute("viewBox", `0 0 ${Math.round(width)} ${Math.round(height)}`);
+    const boxes = {};
+    for (const wrap of wraps()) {
+      boxes[wrap.dataset.stepId] = boxWithin(wrap.querySelector(".flow-step"), board);
+    }
+    const paths = methodConnectorPaths(boxes, wideQuery.matches ? "wide" : "narrow");
+    const els = [...svg.querySelectorAll(".draw")];
+    paths.forEach((d, index) => {
+      if (els[index]) els[index].setAttribute("d", d);
+    });
+  }
+
+  function placeOpenCards() {
+    const narrow = !wideQuery.matches;
+    for (const wrap of wraps()) {
+      const card = wrap.querySelector(".flow-card");
+      const show = wrap.classList.contains("is-open") && !wrap.classList.contains("is-dismissed");
+      if (narrow || !show) {
+        card.classList.remove("is-fixed");
+        card.style.top = "";
+        card.style.bottom = "";
+        card.style.left = "";
+        card.style.width = "";
+        card.style.removeProperty("--caret");
+        if (!show) card.removeAttribute("data-placement");
+        continue;
+      }
+      const anchor = wrap.getBoundingClientRect();
+      const width = Math.min(304, Math.max(220, window.innerWidth - 24));
+      card.style.width = `${Math.round(width)}px`;
+      const height = card.offsetHeight;
+      const obstacles = wraps()
+        .filter((other) => other !== wrap)
+        .map((other) => {
+          const rect = other.querySelector(".flow-step").getBoundingClientRect();
+          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+        });
+      const place = placeFlowCard(
+        {
+          left: anchor.left,
+          top: anchor.top,
+          width: anchor.width,
+          height: anchor.height,
+          right: anchor.right,
+          bottom: anchor.bottom,
+        },
+        { width, height },
+        { width: window.innerWidth, height: window.innerHeight },
+        wrap.dataset.pop === "down" ? "below" : "above",
+        { margin: 12, topInset: 72, obstacles },
+      );
+      card.style.bottom = "auto";
+      card.style.top = `${place.top - anchor.top}px`;
+      card.style.left = `${place.left - anchor.left}px`;
+      card.dataset.placement = place.placement;
+      card.style.setProperty("--caret", `${place.caret}px`);
+    }
+  }
+
+  function apply() {
+    for (const wrap of wraps()) {
+      const id = wrap.dataset.stepId;
+      const open = state.openId === id;
+      wrap.classList.toggle("is-open", open);
+      wrap.classList.toggle("is-dismissed", state.dismissedId === id);
+      wrap.querySelector(".flow-step").setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    layoutConnectors();
+    placeOpenCards();
+  }
+
+  bindPlace(placeOpenCards);
+
+  for (const wrap of wraps()) {
+    const id = wrap.dataset.stepId;
+    const button = wrap.querySelector(".flow-step");
+    wrap.addEventListener("pointerenter", (event) => {
+      if (event.pointerType === "touch" || coarseQuery.matches || Date.now() < blockHoverUntil) return;
+      state = reduceFlow(state, { type: "pointerenter", id, pointerType: event.pointerType || "mouse" });
+      apply();
+    });
+    wrap.addEventListener("pointerleave", (event) => {
+      if (event.pointerType === "touch") return;
+      state = reduceFlow(state, { type: "pointerleave", id });
+      apply();
+    });
+    wrap.addEventListener("focusin", () => {
+      state = reduceFlow(state, { type: "focus", id });
+      apply();
+    });
+    wrap.addEventListener("focusout", (event) => {
+      if (wrap.contains(event.relatedTarget)) return;
+      state = reduceFlow(state, { type: "blur", id });
+      apply();
+    });
+    button.addEventListener("pointerdown", (event) => {
+      lastPointer = event.pointerType || "mouse";
+      if (lastPointer === "touch" || lastPointer === "pen") blockHoverUntil = Date.now() + 800;
+    });
+    button.addEventListener("click", (event) => {
+      state = reduceFlow(state, {
+        type: "activate",
+        id,
+        pointerType: lastPointer,
+        coarse: coarseQuery.matches || lastPointer === "touch" || lastPointer === "pen",
+        keyboard: event.detail === 0,
+      });
+      apply();
+    });
+  }
+
+  window.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" && event.key !== "Esc") return;
+    if (document.querySelector("dialog[open]")) return;
+    if (!state.openId) return;
+    state = reduceFlow(state, { type: "escape" });
+    apply();
+    event.preventDefault();
+    event.stopPropagation();
+  }, true);
+
+  document.addEventListener("pointerdown", (event) => {
+    if (flow.contains(event.target)) return;
+    if (!state.pinnedId && !state.openId) return;
+    state = reduceFlow(state, { type: "outside" });
+    apply();
+  });
+
+  wideQuery.addEventListener("change", apply);
+  window.addEventListener("resize", () => {
+    layoutConnectors();
+    placeOpenCards();
+  });
+  window.addEventListener("load", layoutConnectors);
+  layoutConnectors();
+}
+
 function initChrome() {
   const nav = document.getElementById("nav");
   const toggle = document.getElementById("nav-toggle");
@@ -41,6 +225,7 @@ function initChrome() {
   if (canAnimate) document.documentElement.classList.add("motion");
   const flow = document.querySelector(".flow");
   const trust = document.querySelector(".trust-stage");
+  let placeFlowCards = () => {};
   let ticking = false;
   const onScroll = () => {
     if (ticking) return;
@@ -52,11 +237,11 @@ function initChrome() {
       nav.classList.toggle("is-scrolled", window.scrollY > 8);
       if (!reduceMotion && canAnimate && flow) {
         const rect = flow.getBoundingClientRect();
-        const view = window.innerHeight;
-        const drawn = Math.min(1, Math.max(0, (view * 0.9 - rect.top) / (view * 0.38)));
+        const { drawn, step } = flowScrollState(rect.top, window.innerHeight);
         flow.style.setProperty("--draw", drawn.toFixed(3));
-        flow.dataset.step = String(Math.min(4, Math.floor(drawn * 5)));
+        flow.dataset.step = String(step);
       }
+      placeFlowCards();
       if (!reduceMotion && trust && trust.offsetHeight > window.innerHeight + 80) {
         const start = trust.getBoundingClientRect().top + window.scrollY;
         const span = trust.offsetHeight - window.innerHeight;
@@ -72,9 +257,11 @@ function initChrome() {
   if (reduceMotion) {
     document.documentElement.classList.remove("motion");
     if (flow) {
+      const presentation = presentationForMotion(true);
       flow.classList.add("is-settled");
-      flow.dataset.step = "4";
-      flow.style.setProperty("--draw", "1");
+      flow.dataset.step = String(presentation.step);
+      flow.style.setProperty("--draw", String(presentation.drawn));
+      flow.dataset.cardMotion = presentation.cardMotion;
     }
     if (trust) trust.dataset.step = "3";
     document.querySelectorAll(".reveal").forEach((node) => node.classList.add("is-in"));
@@ -185,6 +372,8 @@ function initChrome() {
     button.addEventListener("click", () => dialog.showModal());
   }
   document.getElementById("pilot-cancel").addEventListener("click", () => dialog.close());
+  if (flow) initFlow(flow, reduceMotion, (place) => { placeFlowCards = place; });
+
   document.getElementById("pilot-form").addEventListener("submit", (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
