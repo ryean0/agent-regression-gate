@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "status": "preliminary",
+  "level": 0.9,
+  "likely_regression": false,
+  "invalid_run": false,
+  "suite": "preliminary-example",
+  "notes": {
+    "summary": "Preliminary example bundled with this page so the results panel has a file to read. These figures are not a customer result and not a final gate. Replace data/results.preliminary.json with the real run when it is ready.",
+    "mde": "Smallest drop we can reliably catch, set against how many rollouts you budget. This chart is preliminary.",
+    "aa": "The gate doesn't cry wolf. An A/A check runs the same agent on both arms. It is not in this file yet."
+  },
+  "arms": {
+    "baseline": {
+      "scheduled_rollouts": 80,
+      "environment_misses": 0,
+      "miss_counts": { "missing": 0, "infrastructure": 0 },
+      "pass_rate": "72/80"
+    },
+    "candidate": {
+      "scheduled_rollouts": 20,
+      "environment_misses": 1,
+      "miss_counts": { "missing": 0, "infrastructure": 1 },
+      "pass_rate": "3/5"
+    }
+  },
+  "scenarios": [
+    {
+      "id": "reset-locked-account",
+      "name": "Reset a locked account",
+      "baseline_rate": "18/20",
+      "candidate_rate": "0.6"
+    },
+    {
+      "id": "refund-duplicate-charge",
+      "name": "Refund a duplicate charge",
+      "baseline_rate": "17/20",
+      "candidate_rate": "4/5"
+    },
+    {
+      "id": "explain-shipping-delay",
+      "name": "Explain a shipping delay",
+      "baseline_rate": "19/20",
+      "candidate_rate": "0.8"
+    },
+    {
+      "id": "escalate-safety-complaint",
+      "name": "Escalate a safety complaint",
+      "baseline_rate": "16/20",
+      "candidate_rate": "3/5"
+    }
+  ],
+  "charts": {
+    "mde": {
+      "status": "preliminary",
+      "title": "Smallest drop we can reliably catch",
+      "x_label": "Rollout budget",
+      "y_label": "Smallest drop"
+    },
+    "aa": {
+      "status": "coming_soon",
+      "title": "The gate doesn't cry wolf"
+    }
+  }
+}

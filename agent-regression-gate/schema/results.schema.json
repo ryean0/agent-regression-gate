@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "results.schema.json",
+  "title": "CI Agent Regression Harness results v1",
+  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. The private harness repo was not readable when this page schema was written; extra fields are allowed so a real results.json can be dropped in.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["version", "status", "level", "likely_regression", "arms"],
+  "properties": {
+    "version": { "const": 1 },
+    "status": { "enum": ["preliminary", "final"] },
+    "level": { "const": 0.9 },
+    "likely_regression": { "type": ["boolean", "null"] },
+    "invalid_run": { "type": "boolean" },
+    "suite": { "type": "string" },
+    "notes": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "properties": {
+        "summary": { "type": "string" },
+        "mde": { "type": "string" },
+        "aa": { "type": "string" }
+      }
+    },
+    "arms": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline", "candidate"],
+      "properties": {
+        "baseline": { "$ref": "#/$defs/arm" },
+        "candidate": { "$ref": "#/$defs/arm" }
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/scenario" }
+    },
+    "charts": {
+      "type": "object",
+      "properties": {
+        "mde": { "$ref": "#/$defs/chart" },
+        "aa": { "$ref": "#/$defs/chart" }
+      }
+    }
+  },
+  "$defs": {
+    "arm": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["scheduled_rollouts", "environment_misses", "miss_counts"],
+      "properties": {
+        "scheduled_rollouts": { "type": "integer", "minimum": 0 },
+        "environment_misses": { "type": "integer", "minimum": 0 },
+        "miss_counts": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "pass_rate": { "type": "string" }
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "baseline_rate": { "type": "string" },
+        "candidate_rate": { "type": "string" }
+      }
+    },
+    "chart": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "status": { "enum": ["preliminary", "final", "coming_soon"] },
+        "title": { "type": "string" },
+        "notes": { "type": "string" },
+        "x_label": { "type": "string" },
+        "y_label": { "type": "string" },
+        "points": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["budget", "drop"],
+            "properties": {
+              "budget": { "type": "integer", "minimum": 0 },
+              "drop": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
