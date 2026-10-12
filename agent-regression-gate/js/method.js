@@ -68,8 +68,8 @@ export const USE_CASES = [
     id: "founders",
     title: "For founders and teams new to AI",
     paragraphs: [
-      "An AI agent can change its behavior between versions even when the screens around it look the same. A model swap, a prompt edit, or a new tool can make yesterday's request fail today.",
-      "This check runs the version you are about to ship against the one customers already have, on the same tasks, and catches that drop before customers notice.",
+      "An AI agent can change its behavior between versions even when the screens around it look the same. Moving from Gemini Flash-Lite to a newer Flash, a prompt edit, or a new tool can make yesterday's request fail today.",
+      "This check runs the version you are about to ship against the one customers already have, on the same tasks, and catches that drop before customers notice. The check is provider-agnostic: Gemini comes first, and OpenAI and Anthropic are on the roadmap.",
     ],
   },
   {
@@ -107,12 +107,13 @@ export function createFlowState() {
     hoverId: null,
     focusId: null,
     dismissedId: null,
+    heldFocusId: null,
   };
 }
 
 function computeOpen(state) {
   if (state.hoverId && state.hoverId !== state.dismissedId) return state.hoverId;
-  if (state.focusId && state.focusId !== state.dismissedId) return state.focusId;
+  if (state.focusId && state.focusId !== state.dismissedId && state.focusId !== state.heldFocusId) return state.focusId;
   if (state.pinnedId && state.pinnedId !== state.dismissedId) return state.pinnedId;
   return null;
 }
@@ -129,6 +130,7 @@ export function reduceFlow(state, event) {
     hoverId: state.hoverId,
     focusId: state.focusId,
     dismissedId: state.dismissedId,
+    heldFocusId: state.heldFocusId,
   };
   const id = event.id;
   switch (event.type) {
@@ -145,6 +147,7 @@ export function reduceFlow(state, event) {
       break;
     case "blur":
       if (next.focusId === id) next.focusId = null;
+      if (next.heldFocusId === id) next.heldFocusId = null;
       if (next.dismissedId === id && next.hoverId !== id) next.dismissedId = null;
       break;
     case "activate": {
@@ -166,6 +169,7 @@ export function reduceFlow(state, event) {
         next.dismissedId = next.openId;
         if (next.pinnedId === next.openId) next.pinnedId = null;
         if (next.hoverId === next.openId) next.hoverId = null;
+        if (next.focusId) next.heldFocusId = next.focusId;
       }
       break;
     case "outside":
@@ -255,33 +259,53 @@ export function methodConnectorPaths(boxes, layout) {
  * Place a card near its step and keep it inside the viewport.
  * `topInset` leaves room for the sticky navigation bar.
  */
+function overlaps(a, b, pad = 6) {
+  return a.left < b.right - pad && a.right > b.left + pad && a.top < b.bottom - pad && a.bottom > b.top + pad;
+}
+
+function placementCandidate(anchor, card, viewport, placement, margin, topInset) {
+  const top = placement === "below" ? anchor.bottom + margin : anchor.top - card.height - margin;
+  const maxLeft = Math.max(margin, viewport.width - margin - card.width);
+  const left = Math.min(Math.max(margin, anchor.left + anchor.width / 2 - card.width / 2), maxLeft);
+  const fits = top >= topInset && top + card.height <= viewport.height - margin;
+  return {
+    top,
+    left,
+    placement,
+    fits,
+    caret: anchor.left + anchor.width / 2 - left,
+  };
+}
+
+/**
+ * Place a card near its step and keep it inside the viewport.
+ * `topInset` leaves room for the sticky navigation bar.
+ * `obstacles` are other step boxes the card should not cover when another side fits.
+ */
 export function placeFlowCard(anchor, card, viewport, preference = "above", options = {}) {
   const margin = options.margin ?? 12;
   const topInset = options.topInset ?? margin;
-  const aboveTop = anchor.top - card.height - margin;
-  const belowTop = anchor.bottom + margin;
-  let placement = preference === "below" ? "below" : "above";
-  let top = placement === "below" ? belowTop : aboveTop;
-  if (top < topInset) {
-    top = belowTop;
-    placement = "below";
+  const preferred = preference === "below" ? "below" : "above";
+  const opposite = preferred === "above" ? "below" : "above";
+  const first = placementCandidate(anchor, card, viewport, preferred, margin, topInset);
+  const second = placementCandidate(anchor, card, viewport, opposite, margin, topInset);
+  const obstacles = options.obstacles || [];
+  const hits = (place) => {
+    const rect = { left: place.left, top: place.top, right: place.left + card.width, bottom: place.top + card.height };
+    return obstacles.some((box) => overlaps(rect, box));
+  };
+  let chosen = first;
+  if ((!first.fits || hits(first)) && second.fits && !hits(second)) chosen = second;
+  else if (!first.fits && second.fits) chosen = second;
+  else if (!first.fits && !second.fits) {
+    const top = Math.max(topInset, Math.min(first.top, viewport.height - margin - card.height));
+    chosen = { ...first, top };
   }
-  if (top + card.height > viewport.height - margin) {
-    if (aboveTop >= topInset) {
-      top = aboveTop;
-      placement = "above";
-    } else {
-      top = Math.max(topInset, viewport.height - margin - card.height);
-    }
-  }
-  const maxLeft = Math.max(margin, viewport.width - margin - card.width);
-  const left = Math.min(Math.max(margin, anchor.left + anchor.width / 2 - card.width / 2), maxLeft);
-  const caret = anchor.left + anchor.width / 2 - left;
   return {
-    top: Math.round(top),
-    left: Math.round(left),
-    placement,
-    caret: Math.round(caret),
+    top: Math.round(chosen.top),
+    left: Math.round(chosen.left),
+    placement: chosen.placement,
+    caret: Math.round(chosen.caret),
   };
 }
 
@@ -331,6 +355,14 @@ export function validateUseCases(cases = USE_CASES) {
   const founderText = (founders?.paragraphs || []).join(" ");
   if (!/behavior between versions/i.test(founderText)) errors.push("founders behavior");
   if (!/before customers notice/i.test(founderText)) errors.push("founders customers");
+  if (!/Gemini Flash-Lite to a newer Flash/.test(founderText)) errors.push("founders flash upgrade");
+  const geminiAt = founderText.indexOf("Gemini");
+  const openAiAt = founderText.indexOf("OpenAI");
+  const anthropicAt = founderText.indexOf("Anthropic");
+  if (geminiAt < 0 || openAiAt < geminiAt || anthropicAt < openAiAt) errors.push("provider order");
+  if (!/provider-agnostic/i.test(founderText)) errors.push("founders provider-agnostic");
+  if (!/roadmap/i.test(founderText)) errors.push("founders roadmap");
+  if (/GPT-4\.1-nano/i.test(founderText)) errors.push("forbidden model name");
   const points = (engineers?.points || []).join(" ");
   if (!/CI gate/i.test(points)) errors.push("engineers ci");
   if (!/repeated rollouts/i.test(points)) errors.push("engineers rollouts");

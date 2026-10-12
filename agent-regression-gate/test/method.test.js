@@ -83,6 +83,19 @@ test("a mouse click does not pin, and touch hover does not stick", () => {
   assert.equal(state.openId, null);
 });
 
+test("Escape closes the visible card without revealing a different focused step", () => {
+  let state = createFlowState();
+  state = reduceFlow(state, { type: "focus", id: "baseline" });
+  state = reduceFlow(state, { type: "pointerenter", id: "scorer", pointerType: "mouse" });
+  assert.equal(state.openId, "scorer");
+  state = reduceFlow(state, { type: "escape" });
+  assert.equal(state.openId, null);
+  assert.equal(state.heldFocusId, "baseline");
+  state = reduceFlow(state, { type: "blur", id: "baseline" });
+  state = reduceFlow(state, { type: "focus", id: "suite" });
+  assert.equal(state.openId, "suite");
+});
+
 test("focus moves from one step to the next", () => {
   let state = createFlowState();
   state = reduceFlow(state, { type: "focus", id: "scenarios" });
@@ -179,6 +192,15 @@ test("cards stay on screen and remember which side they opened", () => {
   assert.equal(clamped.left, 12);
   assert.equal(clamped.caret, 8);
 
+  const avoided = placeFlowCard(
+    { left: 400, top: 200, width: 80, height: 40, right: 480, bottom: 240 },
+    { width: 180, height: 80 },
+    viewport,
+    "below",
+    { obstacles: [{ left: 390, top: 250, right: 590, bottom: 360 }] },
+  );
+  assert.equal(avoided.placement, "above");
+
   const below = placeFlowCard(
     { left: 400, top: 200, width: 80, height: 40, right: 480, bottom: 240 },
     { width: 180, height: 80 },
@@ -225,5 +247,8 @@ test("the method section markup carries the cards and both audiences", () => {
   const text = method.replace(/<[^>]+>/g, "");
   for (const paragraph of USE_CASES[0].paragraphs) assert.ok(text.includes(paragraph));
   for (const point of USE_CASES[1].points) assert.ok(text.includes(point));
+  assert.ok(text.indexOf("Gemini") < text.indexOf("OpenAI"));
+  assert.ok(text.indexOf("OpenAI") < text.indexOf("Anthropic"));
+  assert.equal(html.includes("GPT-4.1-nano"), false);
   assert.match(fs.readFileSync(path.join(root, "css/site.css"), "utf8"), /prefers-reduced-motion:\s*reduce/);
 });

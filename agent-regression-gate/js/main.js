@@ -109,6 +109,12 @@ function initFlow(flow, reduceMotion, bindPlace) {
       const width = Math.min(304, Math.max(220, window.innerWidth - 24));
       card.style.width = `${Math.round(width)}px`;
       const height = card.offsetHeight;
+      const obstacles = wraps()
+        .filter((other) => other !== wrap)
+        .map((other) => {
+          const rect = other.querySelector(".flow-step").getBoundingClientRect();
+          return { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+        });
       const place = placeFlowCard(
         {
           left: anchor.left,
@@ -121,7 +127,7 @@ function initFlow(flow, reduceMotion, bindPlace) {
         { width, height },
         { width: window.innerWidth, height: window.innerHeight },
         wrap.dataset.pop === "down" ? "below" : "above",
-        { margin: 12, topInset: 72 },
+        { margin: 12, topInset: 72, obstacles },
       );
       card.style.bottom = "auto";
       card.style.top = `${place.top - anchor.top}px`;
