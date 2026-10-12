@@ -1,0 +1,340 @@
+/**
+ * Method flowchart: step copy, pop-up state, connector geometry, and contrast.
+ * This module does not touch the DOM.
+ */
+
+export const WIDE_LAYOUT_MIN = 1100;
+
+export const METHOD_STEPS = [
+  {
+    id: "scenarios",
+    index: "01",
+    node: "n1",
+    title: "Scenarios",
+    subtitle: "Content hash",
+    plain: "Both versions face the same tasks. The tasks are locked in before the run starts, so neither side gets an easier set.",
+    technical: "Each scenario is sealed with a SHA-256 content hash.",
+  },
+  {
+    id: "runner",
+    index: "02",
+    node: "n2",
+    title: "CI runner",
+    subtitle: "One job",
+    plain: "After the build, one job in your existing CI runs the suite on both versions before the change merges.",
+    technical: "One job runs both arms and can fail the check.",
+  },
+  {
+    id: "baseline",
+    index: "03",
+    node: "n3",
+    title: "Baseline",
+    subtitle: "20 rollouts",
+    pop: "down",
+    plain: "The agent customers already have is tried many times, so today's behavior is a stable picture instead of one lucky answer.",
+    technical: "Often 20 rollouts. Agent timeouts score 0. Infrastructure is excluded.",
+  },
+  {
+    id: "candidate",
+    index: "04",
+    node: "n3",
+    title: "Candidate",
+    subtitle: "5 rollouts",
+    plain: "The new version is tried on those same tasks, usually fewer times, to see whether it still completes them.",
+    technical: "Often 5 rollouts. Each scenario still counts once.",
+  },
+  {
+    id: "scorer",
+    index: "05",
+    node: "n4",
+    title: "Scorer",
+    subtitle: "90% interval",
+    plain: "For each task, the harness compares how often the two versions pass, then checks whether the gap is real.",
+    technical: "Pass rates are paired by scenario. The gap gets a 90% interval.",
+  },
+  {
+    id: "suite",
+    index: "06",
+    node: "n5",
+    title: "Suite check",
+    subtitle: "One status",
+    plain: "You get one answer for the whole suite: pass, likely regression, or the run was not solid enough to score.",
+    technical: "An invalid run is not scored. Regression needs the 90% interval below zero.",
+  },
+];
+
+export const USE_CASES = [
+  {
+    id: "founders",
+    title: "For founders and teams new to AI",
+    paragraphs: [
+      "An AI agent can change its behavior between versions even when the screens around it look the same. A model swap, a prompt edit, or a new tool can make yesterday's request fail today.",
+      "This check runs the version you are about to ship against the one customers already have, on the same tasks, and catches that drop before customers notice.",
+    ],
+  },
+  {
+    id: "engineers",
+    title: "For ML and platform engineers",
+    points: [
+      "CI gate on the candidate versus the agent already in production.",
+      "Repeated rollouts, so one noisy try becomes a pass rate.",
+      "A 90% interval: a regression is called only when the whole interval lies below zero.",
+      "Invalid-run detection when too many rollouts are missing or broken by infrastructure.",
+    ],
+  },
+];
+
+/** Text and surface colors used in the method section. */
+export const METHOD_TEXT_PAIRS = [
+  ["#f4f4f5", "#070708"],
+  ["#f4f4f5", "#16161c"],
+  ["#f4f4f5", "#141416"],
+  ["#d4d4dc", "#16161c"],
+  ["#d4d4dc", "#141416"],
+  ["#d4d4dc", "#101012"],
+  ["#ff7a1a", "#141416"],
+  ["#ff7a1a", "#16161c"],
+  ["#ff7a1a", "#070708"],
+  ["#ff7a1a", "#101012"],
+  ["#a1a1aa", "#101012"],
+  ["#a1a1aa", "#070708"],
+];
+
+export function createFlowState() {
+  return {
+    openId: null,
+    pinnedId: null,
+    hoverId: null,
+    focusId: null,
+    dismissedId: null,
+  };
+}
+
+function computeOpen(state) {
+  if (state.hoverId && state.hoverId !== state.dismissedId) return state.hoverId;
+  if (state.focusId && state.focusId !== state.dismissedId) return state.focusId;
+  if (state.pinnedId && state.pinnedId !== state.dismissedId) return state.pinnedId;
+  return null;
+}
+
+/**
+ * Hover, keyboard focus, and touch/pen tap all open a card. Escape dismisses
+ * the open card until the pointer and focus leave it. A mouse click does not
+ * pin the card; hover and focus already show it.
+ */
+export function reduceFlow(state, event) {
+  const next = {
+    openId: state.openId,
+    pinnedId: state.pinnedId,
+    hoverId: state.hoverId,
+    focusId: state.focusId,
+    dismissedId: state.dismissedId,
+  };
+  const id = event.id;
+  switch (event.type) {
+    case "pointerenter":
+      if (event.pointerType === "touch") break;
+      next.hoverId = id;
+      break;
+    case "pointerleave":
+      if (next.hoverId === id) next.hoverId = null;
+      if (next.dismissedId === id && next.focusId !== id) next.dismissedId = null;
+      break;
+    case "focus":
+      next.focusId = id;
+      break;
+    case "blur":
+      if (next.focusId === id) next.focusId = null;
+      if (next.dismissedId === id && next.hoverId !== id) next.dismissedId = null;
+      break;
+    case "activate": {
+      if (event.keyboard) break;
+      const pin = event.pointerType === "touch" || event.pointerType === "pen" || event.coarse === true;
+      if (!pin) break;
+      if (next.pinnedId === id && next.dismissedId !== id) {
+        next.pinnedId = null;
+        next.dismissedId = id;
+        next.hoverId = null;
+      } else {
+        next.pinnedId = id;
+        next.dismissedId = null;
+      }
+      break;
+    }
+    case "escape":
+      if (next.openId) {
+        next.dismissedId = next.openId;
+        if (next.pinnedId === next.openId) next.pinnedId = null;
+        if (next.hoverId === next.openId) next.hoverId = null;
+      }
+      break;
+    case "outside":
+      next.pinnedId = null;
+      next.hoverId = null;
+      break;
+    default:
+      break;
+  }
+  next.openId = computeOpen(next);
+  return next;
+}
+
+export function layoutMode(viewportWidth) {
+  return viewportWidth >= WIDE_LAYOUT_MIN ? "wide" : "narrow";
+}
+
+export function presentationForMotion(prefersReduced) {
+  if (prefersReduced) {
+    return { animate: false, settled: true, drawn: 1, step: 4, cardMotion: "none" };
+  }
+  return { animate: true, settled: false, drawn: 0, step: 0, cardMotion: "rise" };
+}
+
+/** Scroll progress for the method connectors. Matches the page's draw curve. */
+export function flowScrollState(rectTop, viewHeight) {
+  const view = Number(viewHeight);
+  if (!Number.isFinite(view) || view <= 0 || !Number.isFinite(rectTop)) {
+    return { drawn: 0, step: 0 };
+  }
+  const drawn = Math.min(1, Math.max(0, (view * 0.9 - rectTop) / (view * 0.38)));
+  const step = Math.min(4, Math.floor(drawn * 5));
+  return { drawn, step };
+}
+
+export function edgePoint(box, side) {
+  if (side === "left") return { x: box.x, y: box.y + box.h / 2 };
+  if (side === "right") return { x: box.x + box.w, y: box.y + box.h / 2 };
+  if (side === "top") return { x: box.x + box.w / 2, y: box.y };
+  if (side === "bottom") return { x: box.x + box.w / 2, y: box.y + box.h };
+  throw new Error(`unknown side ${side}`);
+}
+
+function round(value) {
+  return Math.round(value * 10) / 10;
+}
+
+export function curvePath(from, to) {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  if (Math.abs(dx) >= Math.abs(dy)) {
+    const mid = from.x + dx / 2;
+    return `M${round(from.x)} ${round(from.y)} C${round(mid)} ${round(from.y)} ${round(mid)} ${round(to.y)} ${round(to.x)} ${round(to.y)}`;
+  }
+  const mid = from.y + dy / 2;
+  return `M${round(from.x)} ${round(from.y)} C${round(from.x)} ${round(mid)} ${round(to.x)} ${round(mid)} ${round(to.x)} ${round(to.y)}`;
+}
+
+const STEP_IDS = ["scenarios", "runner", "baseline", "candidate", "scorer", "suite"];
+
+export function methodConnectorPaths(boxes, layout) {
+  for (const id of STEP_IDS) {
+    if (!boxes[id]) throw new Error(`missing box ${id}`);
+  }
+  const side = (id, edge) => edgePoint(boxes[id], edge);
+  if (layout === "narrow") {
+    return [
+      curvePath(side("scenarios", "bottom"), side("runner", "top")),
+      curvePath(side("runner", "bottom"), side("baseline", "top")),
+      curvePath(side("runner", "bottom"), side("candidate", "top")),
+      curvePath(side("baseline", "bottom"), side("scorer", "top")),
+      curvePath(side("candidate", "bottom"), side("scorer", "top")),
+      curvePath(side("scorer", "bottom"), side("suite", "top")),
+    ];
+  }
+  return [
+    curvePath(side("scenarios", "right"), side("runner", "left")),
+    curvePath(side("runner", "right"), side("baseline", "left")),
+    curvePath(side("runner", "right"), side("candidate", "left")),
+    curvePath(side("baseline", "right"), side("scorer", "left")),
+    curvePath(side("candidate", "right"), side("scorer", "left")),
+    curvePath(side("scorer", "right"), side("suite", "left")),
+  ];
+}
+
+/**
+ * Place a card near its step and keep it inside the viewport.
+ * `topInset` leaves room for the sticky navigation bar.
+ */
+export function placeFlowCard(anchor, card, viewport, preference = "above", options = {}) {
+  const margin = options.margin ?? 12;
+  const topInset = options.topInset ?? margin;
+  const aboveTop = anchor.top - card.height - margin;
+  const belowTop = anchor.bottom + margin;
+  let placement = preference === "below" ? "below" : "above";
+  let top = placement === "below" ? belowTop : aboveTop;
+  if (top < topInset) {
+    top = belowTop;
+    placement = "below";
+  }
+  if (top + card.height > viewport.height - margin) {
+    if (aboveTop >= topInset) {
+      top = aboveTop;
+      placement = "above";
+    } else {
+      top = Math.max(topInset, viewport.height - margin - card.height);
+    }
+  }
+  const maxLeft = Math.max(margin, viewport.width - margin - card.width);
+  const left = Math.min(Math.max(margin, anchor.left + anchor.width / 2 - card.width / 2), maxLeft);
+  const caret = anchor.left + anchor.width / 2 - left;
+  return {
+    top: Math.round(top),
+    left: Math.round(left),
+    placement,
+    caret: Math.round(caret),
+  };
+}
+
+function channel(value) {
+  const s = value / 255;
+  return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+}
+
+export function relativeLuminance(hex) {
+  const h = hex.replace("#", "");
+  const full = h.length === 3 ? h.split("").map((part) => part + part).join("") : h;
+  const n = Number.parseInt(full, 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+export function contrastRatio(foreground, background) {
+  const lighter = Math.max(relativeLuminance(foreground), relativeLuminance(background));
+  const darker = Math.min(relativeLuminance(foreground), relativeLuminance(background));
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+export function validateMethodContent(steps = METHOD_STEPS) {
+  const errors = [];
+  const ids = new Set();
+  for (const step of steps) {
+    if (ids.has(step.id)) errors.push(`duplicate id ${step.id}`);
+    ids.add(step.id);
+    if (!step.plain || !step.plain.trim()) errors.push(`${step.id} missing plain language`);
+    if (!step.technical || !step.technical.trim()) errors.push(`${step.id} missing technical line`);
+    if (/\n/.test(step.technical)) errors.push(`${step.id} technical line has a line break`);
+    if (step.technical.length > 120) errors.push(`${step.id} technical line is too long`);
+    if (step.plain === step.technical) errors.push(`${step.id} plain and technical are the same`);
+  }
+  if (steps.length !== 6) errors.push("expected 6 steps");
+  return errors;
+}
+
+export function validateUseCases(cases = USE_CASES) {
+  const errors = [];
+  const founders = cases.find((item) => item.id === "founders");
+  const engineers = cases.find((item) => item.id === "engineers");
+  if (!founders || founders.title !== "For founders and teams new to AI") errors.push("founders title");
+  if (!engineers || engineers.title !== "For ML and platform engineers") errors.push("engineers title");
+  const founderText = (founders?.paragraphs || []).join(" ");
+  if (!/behavior between versions/i.test(founderText)) errors.push("founders behavior");
+  if (!/before customers notice/i.test(founderText)) errors.push("founders customers");
+  const points = (engineers?.points || []).join(" ");
+  if (!/CI gate/i.test(points)) errors.push("engineers ci");
+  if (!/repeated rollouts/i.test(points)) errors.push("engineers rollouts");
+  if (!/90%/.test(points)) errors.push("engineers interval");
+  if (!/invalid-run/i.test(points)) errors.push("engineers invalid");
+  return errors;
+}
