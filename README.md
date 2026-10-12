@@ -6,7 +6,7 @@ Live site: https://ryean0.github.io/agent-regression-gate/
 
 The site files live in `agent-regression-gate/`. GitHub Actions uploads that folder as the Pages artifact, so the project site is served at the URL above.
 
-The owner must set **Settings → Pages → Source** to **GitHub Actions**. Until that setting is saved, a green workflow can still leave the live URL as a 404.
+The owner must set **Settings → Pages → Source** to **GitHub Actions**. The deploy job tries to turn that source on. If the token cannot, the job stays green and prints a reminder, and the live URL stays a 404 until the setting is saved and the workflow is re-run.
 
 ## Local preview
 

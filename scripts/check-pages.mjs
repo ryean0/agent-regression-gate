@@ -84,5 +84,7 @@ assert.match(workflow, /pull_request:/);
 assert.match(workflow, /path:\s*agent-regression-gate/);
 assert.match(workflow, /include-hidden-files:\s*true/);
 assert.match(workflow, /needs:\s*test/);
+assert.match(workflow, /enablement:\s*true/);
+assert.match(workflow, /continue-on-error:\s*true/);
 
 console.log(`pages check ok (${seen.size} scripts, results file, favicon, og.png)`);
