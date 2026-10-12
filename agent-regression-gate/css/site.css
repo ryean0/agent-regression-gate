@@ -728,16 +728,34 @@ html.motion .reveal.is-in .use-card {
 .how-rail { position: relative; }
 .how-skip {
   position: absolute;
-  left: 0.25rem;
-  top: -4rem;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
   background: var(--ink);
   color: var(--bg);
-  padding: 0.45rem 0.7rem;
-  border-radius: 0.4rem;
-  z-index: 2;
   text-decoration: none;
 }
-.how-skip:focus { top: 0.35rem; color: var(--bg); }
+.how-skip:focus {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  height: auto;
+  min-height: 2.75rem;
+  margin: 0;
+  clip: auto;
+  overflow: visible;
+  left: 0.25rem;
+  top: 0.35rem;
+  z-index: 3;
+  padding: 0.45rem 0.7rem;
+  border-radius: 0.4rem;
+  color: var(--bg);
+}
 .how-rail-count {
   margin: 0.45rem 0 0;
   font-family: var(--mono);
@@ -822,6 +840,7 @@ html.motion .reveal.is-in .use-card {
 .how-support { color: var(--muted); max-width: 38rem; }
 .how-fig {
   margin: 0;
+  width: min(100%, 15rem);
   background: var(--elev);
   border: 1px solid var(--line);
   border-radius: 0.7rem;
