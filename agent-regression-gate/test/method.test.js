@@ -10,7 +10,9 @@ import {
   USE_CASES,
   contrastRatio,
   createFlowState,
+  DECISION_RULE,
   curvePath,
+  flowEscapeApplies,
   flowScrollState,
   layoutMode,
   methodConnectorPaths,
@@ -81,6 +83,21 @@ test("a mouse click does not pin, and touch hover does not stick", () => {
   assert.equal(state.hoverId, null);
   state = reduceFlow(state, { type: "activate", id: "suite", pointerType: "mouse", coarse: false, keyboard: true });
   assert.equal(state.openId, null);
+});
+
+test("Escape applies only while a flowchart card is open and focus is inside it", () => {
+  assert.equal(flowEscapeApplies({ openId: "suite" }, true), true);
+  assert.equal(flowEscapeApplies({ openId: "suite" }, false), false);
+  assert.equal(flowEscapeApplies({ openId: null }, true), false);
+  assert.equal(flowEscapeApplies(null, true), false);
+  assert.equal(DECISION_RULE.includes("−5 pp"), true);
+
+  const main = fs.readFileSync(path.join(root, "js/main.js"), "utf8");
+  const init = main.slice(main.indexOf("function initFlow"), main.indexOf("function initChrome"));
+  assert.match(init, /flow\.addEventListener\(\s*"keydown"/);
+  assert.equal(init.includes("preventDefault"), false);
+  assert.equal(init.includes("stopPropagation"), false);
+  assert.equal(init.includes("aria-expanded"), false);
 });
 
 test("Escape closes the visible card without revealing a different focused step", () => {
@@ -221,6 +238,30 @@ test("method text colors meet WCAG AA contrast", () => {
   }
 });
 
+test("index.html does not use the retired gate phrases", () => {
+  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const lower = html.toLowerCase();
+  for (const phrase of [
+    "below zero",
+    "above zero",
+    "entire interval",
+    "full interval",
+    "twenty",
+    "five rollouts",
+    "five scheduled",
+    "20 baseline",
+    "5 candidate",
+  ]) {
+    assert.equal(lower.includes(phrase), false, phrase);
+  }
+  const visible = html.replace(/<span class="term-tip"[\s\S]*?<\/span>/g, " ");
+  const text = visible.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+  const withoutWarning = text
+    .replace(/likely regression warning/gi, "")
+    .replace(/warning · likely regression/gi, "");
+  assert.equal(/likely regression/i.test(withoutWarning), false);
+});
+
 test("the method section markup carries the cards and both audiences", () => {
   const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
   const start = html.indexOf('id="method"');
@@ -229,6 +270,8 @@ test("the method section markup carries the cards and both audiences", () => {
   const method = html.slice(start, end);
   assert.match(method, /aria-describedby="flow-card-/);
   assert.match(method, /role="tooltip"/);
+  assert.equal(method.includes("aria-expanded"), false);
+  assert.equal(method.includes("aria-controls"), false);
   let cursor = 0;
   for (const step of METHOD_STEPS) {
     const cardAt = method.indexOf(`id="flow-card-${step.id}"`, cursor);
@@ -249,6 +292,6 @@ test("the method section markup carries the cards and both audiences", () => {
   for (const point of USE_CASES[1].points) assert.ok(text.includes(point));
   assert.ok(text.indexOf("Gemini") < text.indexOf("OpenAI"));
   assert.ok(text.indexOf("OpenAI") < text.indexOf("Anthropic"));
-  assert.equal(html.includes("GPT-4.1-nano"), false);
+  assert.equal(html.toLowerCase().includes(["gpt", "4.1", "nano"].join("-")), false);
   assert.match(fs.readFileSync(path.join(root, "css/site.css"), "utf8"), /prefers-reduced-motion:\s*reduce/);
 });

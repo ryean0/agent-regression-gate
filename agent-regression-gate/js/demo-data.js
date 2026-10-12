@@ -73,19 +73,19 @@ export const SCENARIO_SETS = [
   {
     id: "support",
     name: "support-desk",
-    summary: "4 scenarios · 20 baseline · 5 candidate",
+    summary: "4 scenarios · repeated rollouts per arm",
     scenarios: SUPPORT,
   },
   {
     id: "checkout",
     name: "checkout",
-    summary: "3 scenarios · 20 baseline · 5 candidate",
+    summary: "3 scenarios · repeated rollouts per arm",
     scenarios: CHECKOUT,
   },
 ];
 
 export const CANDIDATES = [
-  { id: "stable", name: "Candidate v2.1: stable", summary: "Pass rates hold against the current agent." },
+  { id: "stable", name: "Candidate v2.1: stable", summary: "Rates stay close. The interval is too wide to pass." },
   { id: "subtle", name: "Candidate v2.2: regression", summary: "Pass rates drop on the same scenarios." },
   { id: "loops", name: "Candidate v2.3: step-budget timeouts", summary: "Step-budget timeouts score as fails." },
   { id: "flaky", name: "Infra degradation: provider 5xx", summary: "Infrastructure misses exceed the 5% cap." },
