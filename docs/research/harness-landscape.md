@@ -57,7 +57,7 @@ A **harness**, in the sense these projects now use, is the runtime around a mode
 
 ## Eval tools
 
-These tools measure prompts, traces, or tasks. Several already fail a CI job. None of them is the paired suite verdict this gate defines (`likely_regression` only when the whole 90% interval lies below zero, and no verdict on an invalid run).
+These tools measure prompts, traces, or tasks. Several already fail a CI job. None of them is the paired suite verdict this gate defines (non-inferiority, δ = 5 pp: Pass when the 90% interval's lower bound is above −5 pp, Block when its upper bound is below −5 pp, otherwise insufficient evidence, and an invalid run isn't scored).
 
 **Inspect AI** (UK AI Security Institute, with Meridian Labs named on the project home page) is a code-first eval framework. A task is a dataset, a solver, and a scorer. It runs tool-using agents in sandboxes and can drive external agents such as Claude Code, Codex CLI, and Gemini CLI. The changelog’s 0.3.277 entry is dated 6 October 2026.
 

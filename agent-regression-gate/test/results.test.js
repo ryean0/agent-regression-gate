@@ -61,7 +61,7 @@ test("a final file does not use the preliminary banner", () => {
 test("suite likely_regression true is the only regression call", () => {
   const view = parseResults({ ...bundled, likely_regression: true });
   assert.equal(view.verdict, "likely_regression");
-  assert.equal(view.headline, "Likely regression");
+  assert.equal(view.headline, "Block");
   assert.equal(view.scenarios.some((row) => "verdict" in row), false);
 });
 

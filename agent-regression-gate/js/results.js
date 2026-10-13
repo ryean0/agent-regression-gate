@@ -230,19 +230,19 @@ function stringNote(value) {
 }
 
 function headlineFor(verdict) {
-  if (verdict === "likely_regression") return "Likely regression";
+  if (verdict === "likely_regression") return "Block";
   if (verdict === "invalid_run") return "Invalid run";
   return "Pass";
 }
 
 function whyFor(verdict) {
   if (verdict === "likely_regression") {
-    return "Suite check failed. likely_regression is true at level 0.9. Scenario rows are diagnostics, not separate gates.";
+    return "The check fails on Block. Scenario rows are diagnostics, not separate gates.";
   }
   if (verdict === "invalid_run") {
-    return "No suite verdict is published. Scenario rows remain diagnostics.";
+    return "An invalid run isn't scored. Scenario rows remain diagnostics.";
   }
-  return "Suite check passed. likely_regression is false at level 0.9. Scenario rows are diagnostics, not separate gates.";
+  return "The suite check passes. Scenario rows are diagnostics, not separate gates.";
 }
 
 export function bannerFor(status) {

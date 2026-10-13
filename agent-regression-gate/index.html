@@ -70,8 +70,10 @@
           <p class="lede">
             Compare a candidate agent with the one already in production, on the same scenarios.
             Mullion returns one suite status at 90% confidence:
-            <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-regression">likely regression</button><span class="term-tip" id="tip-regression" role="tooltip">Suite status. The entire 90% interval for the pass-rate gap lies below zero. Scenarios are diagnostics, not individual gates.</span></span>,
-            pass, or invalid run.
+            Pass, Block, Insufficient evidence, or Invalid run.
+            Insufficient evidence can carry a
+            <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-regression">Likely regression</button><span class="term-tip" id="tip-regression" role="tooltip">A warning on insufficient evidence, not a separate status. Pass if the 90% interval's lower bound is above −5 pp. Block if its upper bound is below −5 pp. An invalid run isn't scored. Scenarios are diagnostics, not individual gates.</span></span>
+            warning.
           </p>
           <div class="cta-row">
             <a class="btn btn-primary" href="#results">View results</a>
@@ -80,7 +82,7 @@
           </div>
           <p class="fine">Results are read from a results file. The console replays a sample configuration in the browser.</p>
         </div>
-        <aside class="shot" aria-label="Sample suite check. The candidate grid fills in, the interval sits below zero, and the status resolves to likely regression.">
+        <aside class="shot" aria-label="Sample suite check. The candidate grid fills in, the interval's upper bound is below −5 pp, and the status resolves to Block.">
           <div class="shot-card">
             <header class="shot-bar">
               <span>Suite check</span>
@@ -102,11 +104,11 @@
               <span>Gap</span>
               <b>−37.5 pp</b>
               <span class="shot-ci" aria-hidden="true"><i></i></span>
-              <span>90% below 0</span>
+              <span>upper below −5 pp</span>
             </div>
             <p class="shot-status">
               <span class="pending">Scoring</span>
-              <span class="resolved">Likely regression</span>
+              <span class="resolved">Block</span>
             </p>
           </div>
         </aside>
@@ -117,9 +119,9 @@
       <div class="wrap">
         <p class="kicker">Specification</p>
         <h2 id="spec-title">The decision rules.</h2>
-        <p class="section-intro">A <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-rollout">rollout</button><span class="term-tip" id="tip-rollout" role="tooltip">One execution of one scenario. A pass scores 1. A fail scores 0.</span></span> is one execution. Pass is 1. Fail is 0. The status applies to the suite. Five scheduled rollouts need 3 usable. Twenty need 12. Scenarios are SHA-256 hashes.</p>
+        <p class="section-intro">A <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-rollout">rollout</button><span class="term-tip" id="tip-rollout" role="tooltip">One execution of one scenario. A pass scores 1. A fail scores 0.</span></span> is one execution. Pass is 1. Fail is 0. The status applies to the suite. Repeated rollouts per arm. Scenarios are SHA-256 hashes.</p>
         <div class="spec-grid">
-          <article class="spec"><b>90<span>%</span></b><p>Confidence. A regression is called only when the full interval lies below zero.</p></article>
+          <article class="spec"><b>90<span>%</span></b><p>Confidence. Non-inferiority, δ = 5 pp. Pass when the lower bound is above −5 pp. Block when the upper bound is below −5 pp.</p></article>
           <article class="spec"><b>5<span>%</span></b><p>Miss cap. Above this on either arm, the run is invalid. Exactly 5% still scores.</p></article>
           <article class="spec"><b>0.6</b><p>Coverage floor. Each scenario needs at least ceil(0.6 × scheduled) usable rollouts on both arms.</p></article>
           <article class="spec"><b class="spec-word">Paired</b><p>By scenario. Each one counts once. Order does not change the result.</p></article>
@@ -164,7 +166,7 @@
               <path class="draw" pathLength="1"></path>
             </svg>
             <div class="flow-step-wrap" data-step-id="scenarios" data-node="n1" style="--i:0">
-              <button type="button" class="flow-step" aria-describedby="flow-card-scenarios" aria-controls="flow-card-scenarios" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-scenarios">
                 <span class="flow-index" aria-hidden="true">01</span>
                 <span class="flow-title">Scenarios</span>
                 <span class="flow-sub">Content hash</span>
@@ -184,7 +186,7 @@
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="runner" data-node="n2" style="--i:1">
-              <button type="button" class="flow-step" aria-describedby="flow-card-runner" aria-controls="flow-card-runner" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-runner">
                 <span class="flow-index" aria-hidden="true">02</span>
                 <span class="flow-title">CI runner</span>
                 <span class="flow-sub">One job</span>
@@ -204,10 +206,10 @@
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="baseline" data-node="n3" data-pop="down" style="--i:2">
-              <button type="button" class="flow-step" aria-describedby="flow-card-baseline" aria-controls="flow-card-baseline" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-baseline">
                 <span class="flow-index" aria-hidden="true">03</span>
                 <span class="flow-title">Baseline</span>
-                <span class="flow-sub">20 rollouts</span>
+                <span class="flow-sub">Repeated rollouts</span>
               </button>
               <div class="flow-card" id="flow-card-baseline" role="tooltip">
                 <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
@@ -221,17 +223,17 @@
                     <rect x="96" y="16" width="11" height="11" rx="1"/>
                   </g>
                   <rect x="112" y="16" width="11" height="11" rx="1" fill="none" stroke="#ff7a1a" stroke-width="1.25"/>
-                  <text x="136" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">20 rollouts</text>
+                  <text x="136" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">per arm</text>
                 </svg>
                 <p class="flow-plain">The agent customers already have is tried many times, so today's behavior is a stable picture instead of one lucky answer.</p>
-                <p class="flow-tech">Often 20 rollouts. Agent timeouts score 0. Infrastructure is excluded.</p>
+                <p class="flow-tech">Repeated rollouts per arm. Agent timeouts score 0. Infrastructure is excluded.</p>
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="candidate" data-node="n3" style="--i:3">
-              <button type="button" class="flow-step" aria-describedby="flow-card-candidate" aria-controls="flow-card-candidate" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-candidate">
                 <span class="flow-index" aria-hidden="true">04</span>
                 <span class="flow-title">Candidate</span>
-                <span class="flow-sub">5 rollouts</span>
+                <span class="flow-sub">Repeated rollouts</span>
               </button>
               <div class="flow-card" id="flow-card-candidate" role="tooltip">
                 <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
@@ -240,14 +242,14 @@
                   <rect x="32" y="16" width="11" height="11" rx="1" fill="#f4f4f5"/>
                   <rect x="48" y="16" width="11" height="11" rx="1" fill="none" stroke="#ff7a1a" stroke-width="1.25"/>
                   <rect x="64" y="16" width="11" height="11" rx="1" fill="#f4f4f5"/>
-                  <text x="88" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">5 rollouts</text>
+                  <text x="88" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">per arm</text>
                 </svg>
-                <p class="flow-plain">The new version is tried on those same tasks, usually fewer times, to see whether it still completes them.</p>
-                <p class="flow-tech">Often 5 rollouts. Each scenario still counts once.</p>
+                <p class="flow-plain">The new version is tried on those same tasks, so you can see whether it still completes them.</p>
+                <p class="flow-tech">Repeated rollouts per arm. Each scenario still counts once.</p>
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="scorer" data-node="n4" style="--i:4">
-              <button type="button" class="flow-step" aria-describedby="flow-card-scorer" aria-controls="flow-card-scorer" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-scorer">
                 <span class="flow-index" aria-hidden="true">05</span>
                 <span class="flow-title">Scorer</span>
                 <span class="flow-sub">90% interval</span>
@@ -265,22 +267,25 @@
               </div>
             </div>
             <div class="flow-step-wrap" data-step-id="suite" data-node="n5" style="--i:5">
-              <button type="button" class="flow-step" aria-describedby="flow-card-suite" aria-controls="flow-card-suite" aria-expanded="false">
+              <button type="button" class="flow-step" aria-describedby="flow-card-suite">
                 <span class="flow-index" aria-hidden="true">06</span>
                 <span class="flow-title">Suite check</span>
                 <span class="flow-sub">One status</span>
               </button>
               <div class="flow-card" id="flow-card-suite" role="tooltip">
-                <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
-                  <circle cx="6" cy="9" r="3" fill="#f4f4f5"/>
-                  <text x="16" y="12" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Pass</text>
-                  <circle cx="6" cy="24" r="3" fill="#ff7a1a"/>
-                  <text x="16" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="11">Likely regression</text>
-                  <circle cx="6" cy="39" r="3" fill="none" stroke="#d4d4dc" stroke-width="1.25" stroke-dasharray="1.6 1.4"/>
-                  <text x="16" y="42" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Invalid run</text>
+                <svg class="flow-ig" viewBox="0 0 280 72" aria-hidden="true" focusable="false">
+                  <circle cx="6" cy="8" r="2.5" fill="#f4f4f5"/>
+                  <text x="16" y="11" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Pass</text>
+                  <circle cx="6" cy="22" r="2.5" fill="#ff7a1a"/>
+                  <text x="16" y="25" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="11">Block</text>
+                  <circle cx="6" cy="36" r="2.5" fill="#f4f4f5"/>
+                  <text x="16" y="39" fill="#f4f4f5" font-family="ui-monospace,monospace" font-size="11">Insufficient evidence</text>
+                  <text x="16" y="52" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="14">warning · Likely regression</text>
+                  <circle cx="6" cy="64" r="2.5" fill="none" stroke="#d4d4dc" stroke-width="1.25" stroke-dasharray="1.6 1.4"/>
+                  <text x="16" y="67" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Invalid run</text>
                 </svg>
-                <p class="flow-plain">You get one answer for the whole suite: pass, likely regression, or the run was not solid enough to score.</p>
-                <p class="flow-tech">An invalid run is not scored. Regression needs the 90% interval below zero.</p>
+                <p class="flow-plain">You get one suite answer: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a Likely regression warning.</p>
+                <p class="flow-tech">Pass if the 90% interval's lower bound is above −5 pp, block if its upper bound is below −5 pp, otherwise insufficient evidence; an invalid run isn't scored.</p>
               </div>
             </div>
           </div>
@@ -291,14 +296,14 @@
             <article class="use-card" style="--i:0">
               <h3>For founders and teams new to AI</h3>
               <p>An AI agent can change its behavior between versions even when the screens around it look the same. Moving from Gemini Flash-Lite to a newer Flash, a prompt edit, or a new tool can make yesterday's request fail today.</p>
-              <p>This check runs the version you are about to ship against the one customers already have, on the same tasks, and catches that drop before customers notice. The check is provider-agnostic: Gemini comes first, and OpenAI and Anthropic are on the roadmap.</p>
+              <p>This check runs the version you are about to ship against the one customers already have, on the same tasks, and flags a drop larger than 5 points when the evidence is clear, and says when it can't tell yet. The check is provider-agnostic: Gemini comes first, and OpenAI and Anthropic are on the roadmap.</p>
             </article>
             <article class="use-card" style="--i:1">
               <h3>For ML and platform engineers</h3>
               <ul>
                 <li>CI gate on the candidate versus the agent already in production.</li>
                 <li>Repeated rollouts, so one noisy try becomes a pass rate.</li>
-                <li>A <code>90%</code> interval: a regression is called only when the whole interval lies below zero.</li>
+                <li>Non-inferiority, δ = 5 pp. Pass if the 90% interval's lower bound is above −5 pp, block if its upper bound is below −5 pp, otherwise insufficient evidence; an invalid run isn't scored.</li>
                 <li>Invalid-run detection when too many rollouts are missing or broken by infrastructure.</li>
               </ul>
             </article>
@@ -381,7 +386,7 @@
           <article class="spec"><b class="spec-word">Wrap</b><p>The agent under test sits behind a small adapter. The gate does not import a provider SDK. The first backend is Gemini. It is in progress, not merged.</p></article>
           <article class="spec"><b class="spec-word">Action</b><p>A GitHub Action on the pull request is how the check is meant to run. That Action is planned. It is not in this repository.</p></article>
           <article class="spec"><b class="spec-word">Replay</b><p>Record/replay cassettes are planned. A later run could reuse a recorded trace instead of calling the model again.</p></article>
-          <article class="spec"><b class="spec-word">Results</b><p>The run writes <code>results.json</code>. This page reads version 1 and version 2.0.0. The suite field is the only regression call.</p></article>
+          <article class="spec"><b class="spec-word">Results</b><p>The run writes <code>results.json</code>. This page reads version 1 and version 2.0.0. The check fails on Block.</p></article>
         </div>
         <div class="logo-strip" aria-label="First backend, in progress">
           <p>In progress</p>
@@ -421,8 +426,8 @@
             <summary>Technical details</summary>
             <p>The adapter contract is provider-agnostic, and it is the intended seam. This repository does not ship an adapter. One rollout is one call: scenario id, SHA-256 of the scenario text, arm (<code>baseline</code> or <code>candidate</code>), and a step budget. The adapter returns pass, fail, agent timeout, or an infrastructure miss. An agent timeout scores 0. A provider error, a rate limit, or a killed runner is excluded from the score and counted toward the 5% miss cap. The model name does not enter the suite verdict.</p>
             <p>First backend, in progress. The harness calls Gemini 3.5 Flash-Lite at the stable id <code>gemini-3.5-flash-lite</code>, the pin published 21 July 2026. That id is a specific stable model. The floating alias <code>gemini-flash-latest</code> is not the pin, because it moves. The adapter stays labeled in progress until it merges. OpenAI Agents SDK, Claude Agent SDK, LangGraph, LlamaIndex, CrewAI, AutoGen, and Microsoft Agent Framework are roadmap adapter examples, not backends in development, and not partnerships.</p>
-            <p>The scorer does not import an agent SDK. It pairs scenarios, builds the 90% interval, and writes <code>likely_regression</code>. Scenario rows stay diagnostics. They are not individual gates.</p>
-            <p>GitHub Action, planned. Trigger <code>pull_request</code> so the check can be required. The job runs both arms through the adapter and uploads <code>results.json</code>. It fails the check when the file says likely regression. An invalid run is reported as invalid and is not called a regression. A merge queue would also need the <code>merge_group</code> event. Buildkite, Jenkins, and your own runner are the same planned job, not separate products.</p>
+            <p>The scorer does not import an agent SDK. It pairs scenarios, builds the 90% interval, and the check fails on Block. Scenario rows stay diagnostics. They are not individual gates.</p>
+            <p>GitHub Action, planned. Trigger <code>pull_request</code> so the check can be required. The job runs both arms through the adapter and uploads <code>results.json</code>. It fails the check on Block. An invalid run is reported as invalid and isn't scored. A merge queue would also need the <code>merge_group</code> event. Buildkite, Jenkins, and your own runner are the same planned job, not separate products.</p>
             <p>Record/replay cassettes, planned. Record mode would store model and tool traffic keyed by the scenario hash and the arm. Replay mode would return that recording and would not call the provider. A hash mismatch is a miss, not a silent reuse. A cassette is an input to scoring. It is not a verdict.</p>
             <p>The output file is <code>results.json</code> version <code>1</code>, or a <code>2.x.y</code> string such as <code>2.0.0</code>. Version 2.0.0 adds an optional one-sentence caption on a scenario or an arm. Decimals and amounts inside a caption are text. This page’s reader accepts those versions and rejects any other major version. promptfoo can also write a file named <code>results.json</code>. That file is a different contract.</p>
             <p>OpenTelemetry GenAI spans, planned. If an agent already emits them, an adapter may attach the trace as a diagnostic. Spans do not set the suite status. Those semantic conventions are still marked Development. Inspect, promptfoo, LangSmith, Braintrust, and DeepEval are planned sources of scenarios or scores. They do not become the suite verdict.</p>
@@ -435,7 +440,7 @@
       <div class="wrap">
         <p class="kicker">results.json</p>
         <h2>Recorded suite status.</h2>
-        <p class="section-intro">This panel reads <code>data/results.preliminary.json</code>. Rates are fraction strings such as <code>3/5</code> or <code>0.6</code>. The status is the suite field <code>likely_regression</code>. Scenario rows are diagnostics.</p>
+        <p class="section-intro">This panel reads <code>data/results.preliminary.json</code>. Rates are fraction strings such as <code>3/5</code> or <code>0.6</code>. The check fails on Block. An invalid run isn't scored. Scenario rows are diagnostics.</p>
         <div id="results-root" class="results-panel" aria-live="polite">
           <p>Loading results…</p>
         </div>
@@ -456,11 +461,11 @@
         <p class="kicker">FAQ</p>
         <h2>Operational questions.</h2>
         <div class="faq-list">
-          <details><summary>What does Mullion decide?</summary><p>Whether a candidate agent regressed relative to the one already running, before the change ships. The output is one suite status, not a pass or a block on each scenario.</p></details>
+          <details><summary>What does Mullion decide?</summary><p>Whether a candidate agent regressed relative to the one already running, before the change ships. The output is one suite status: Pass, Block, Insufficient evidence, or Invalid run. Scenarios are diagnostics, not individual gates.</p></details>
           <details><summary>What is a rollout?</summary><p>One execution of one scenario. Pass scores 1. Fail scores 0. Scenarios are repeated because a single execution is not a stable estimate.</p></details>
-          <details><summary>Why does the candidate have fewer rollouts?</summary><p>Twenty baseline rollouts against five candidate rollouts is a normal budget. Each scenario becomes a pass rate, then each scenario counts once. Additional rollouts do not add weight.</p></details>
-          <details><summary>What does 90% confidence mean here?</summary><p>A likely regression is reported only when the entire 90% interval for the pass-rate gap lies below zero. If the interval still includes no change, Mullion does not call a regression.</p></details>
-          <details><summary>When is a run invalid?</summary><p>When more than 5% of scheduled rollouts on either arm are missing or broken by infrastructure. Exactly 5% is still scored. Each scenario also needs at least 60% of its scheduled rollouts usable, rounded up: 5 needs 3, 7 needs 5, 20 needs 12.</p></details>
+          <details><summary>Why repeated rollouts?</summary><p>Repeated rollouts per arm. Each scenario becomes a pass rate, then each scenario counts once. Additional rollouts do not add weight.</p></details>
+          <details><summary>What does 90% confidence mean here?</summary><p>Non-inferiority, δ = 5 pp. Pass if the 90% interval's lower bound is above −5 pp. Block if its upper bound is below −5 pp. Otherwise the result is insufficient evidence, which can carry a Likely regression warning. An invalid run isn't scored.</p></details>
+          <details><summary>When is a run invalid?</summary><p>When more than 5% of scheduled rollouts on either arm are missing or broken by infrastructure. Exactly 5% is still scored. Each scenario also needs at least 60% of its scheduled rollouts usable, rounded up. Repeated rollouts per arm.</p></details>
           <details><summary>Does a timeout count as a failure?</summary><p>A loop or an exhausted step budget scores 0. A provider error, a rate limit, or a killed CI runner is excluded and counts toward the 5% miss cap.</p></details>
           <details><summary>Are the figures on this page customer results?</summary><p>No. The results panel shows the bundled preliminary file. The console replays labeled sample configurations. Neither is a customer benchmark.</p></details>
           <details><summary>Which frameworks does it work with?</summary><p>None are official integrations. The gate stays provider-agnostic. The first backend is Gemini 3.5 Flash-Lite, pinned to <code>gemini-3.5-flash-lite</code>, and that adapter is in progress until it merges. OpenAI Agents SDK, Claude Agent SDK, and the other framework names are roadmap adapter examples. The GitHub Action and the record/replay cassettes are planned. This page does read the results file.</p></details>
