@@ -21,9 +21,9 @@ Open http://127.0.0.1:4173/agent-regression-gate/
 
 ## Swap in a real results file
 
-The page fetches `agent-regression-gate/data/results.preliminary.json` on load. That path is the only place to drop real harness output. Replace the file in place around 30 October 2026, when the harness run is ready. Keep the filename: the page requests that path and no other. The shipped sample is harness results schema 2.0.0. Version 1 files still parse. The shape is described in `agent-regression-gate/schema/results.schema.json`.
+The page fetches `agent-regression-gate/data/results.preliminary.json` on load. That path is the only place to drop real harness output. Replace the file in place around 30 October 2026, when the harness run is ready. Keep the filename: the page requests that path and no other. The shipped sample is harness results schema 2.1.0. Version 1 and 2.0.0 files still parse. The shape is described in `agent-regression-gate/schema/results.schema.json`.
 
-The checked-in file is a preliminary example (`"status": "preliminary"`, `"version": "2.0.0"`), so the results panel renders before a real run is copied in. Each arm may record a `model_id`. The page shows those ids when they are present.
+The checked-in file is a preliminary example (`"status": "preliminary"`, `"version": "2.1.0"`, `"schema_version": "2.1.0"`), so the results panel renders before a real run is copied in. Each arm may record a `model_id`. Schema 2.1.0 may also record `verdicts.overall.model_ids.baseline` and `.candidate`; those are preferred when present. Optional gate settings (`delta`, `alpha`, `min_valid`, `ci_level`, `miss_cap`) are shown from the file. When they are missing the panel shows δ = 5 pp / 90%.
 
 - Preliminary: copy the product example (`docs/examples/results.preliminary.json` from the product repository) over `data/results.preliminary.json`. Leave `"status": "preliminary"`. The page shows the preliminary banner.
 - Final: copy the harness final results file over the same path. Set `"status": "final"`. The preliminary banner is replaced by the final banner. `likely_regression: false` is Pass. `likely_regression: true` is Block. `likely_regression: null` without `invalid_run` is Insufficient evidence. `invalid_run: true` is Invalid run.

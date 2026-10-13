@@ -437,6 +437,7 @@ function renderResults(view) {
       el("h3", {}, view.headline),
       el("p", { class: "why" }, view.why),
     ]),
+    el("p", { class: "fine", "data-gate": view.gate.fromFile ? "file" : "fallback" }, view.gate.text),
     el("div", { class: "sheet sheet-head" }, [
       el("span", {}, "Recorded"),
       armHead("Baseline", view.arms.baseline.caption),
@@ -526,7 +527,7 @@ function renderResultsError(error) {
   document.getElementById("results-root").replaceChildren(
     el("div", { class: "panel" }, [
       el("h3", {}, unsupported ? message : "The results file could not be read"),
-      el("p", { class: "why" }, unsupported ? "Supported files are results version 1 and 2.0.0." : message),
+      el("p", { class: "why" }, unsupported ? "Supported files are results version 1, 2.0.0, and 2.1.0." : message),
     ]),
   );
 }

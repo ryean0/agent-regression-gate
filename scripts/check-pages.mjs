@@ -142,11 +142,16 @@ resolveRef(path.join(site, "index.html"), attr(home, /<link rel="stylesheet" hre
 
 assert.equal(RESULTS_PATH, "data/results.preliminary.json");
 const shipped = JSON.parse(fs.readFileSync(path.join(site, RESULTS_PATH), "utf8"));
-assert.equal(shipped.version, "2.0.0");
+assert.equal(shipped.version, "2.1.0");
+assert.equal(shipped.schema_version, "2.1.0");
 assert.ok(shipped.status === "preliminary" || shipped.status === "final");
 const shippedView = parseResultsV2(shipped);
-assert.equal(shippedView.version, "2.0.0");
+assert.equal(shippedView.version, "2.1.0");
+assert.equal(shippedView.schemaVersion, "2.1.0");
 assert.equal(shippedView.headline, "Pass");
+assert.equal(shippedView.gate.fromFile, true);
+assert.equal(shippedView.modelIdSources.baseline, "overall");
+assert.equal(shippedView.modelIdSources.candidate, "overall");
 assert.equal(typeof shippedView.arms.baseline.modelId, "string");
 assert.equal(shippedView.arms.baseline.modelId.length > 0, true);
 assert.equal(typeof shippedView.arms.candidate.modelId, "string");

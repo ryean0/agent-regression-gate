@@ -1,12 +1,12 @@
 /**
- * results.json v1 and harness schema 2.0.0.
+ * results.json v1, harness schema 2.0.0, and schema 2.1.0.
  *
  * RESULTS_PATH is the only file the page loads. Replace that file in place
  * with real harness output (expected around 30 October 2026). No other path
  * is consulted.
  *
- * parseResults still accepts version 1. A 2.x.y file, including the shipped
- * 2.0.0 sample, is read by parseResultsV2.
+ * parseResults still accepts version 1. A 2.x.y file, including 2.0.0 and
+ * 2.1.0, is read by parseResultsV2.
  *
  * Suite labels come from the file, not from scenario rows:
  *   likely_regression false → Pass
@@ -19,12 +19,25 @@
  * and an optional model_id on each arm. A decimal such as 0.05 or an amount
  * such as $1.25 is ordinary caption text. A model id is shown when present and
  * does not change the suite label.
+ *
+ * Version 2.1.0 may also set schema_version to "2.1.0", record
+ * verdicts.overall.model_ids.baseline and .candidate, and copy gate settings
+ * from suite.yaml. Those ids are preferred over the per-arm model_id when they
+ * are present. Gate settings are display-only. When they are missing the page
+ * shows δ = 5 pp / 90%.
+ *
+ * Harness PR #13 was not readable here, so the optional gate keys this reader
+ * accepts are delta, alpha, min_valid, ci_level, and miss_cap, either under
+ * gate or at the top level of the file.
  */
 
 import { exceedsRate, formatRatio, parseRational } from "./rational.js";
 
 const ARM_NAMES = ["baseline", "candidate"];
 const V2_VERSION = /^2\.\d+\.\d+$/;
+const GATE_KEYS = ["delta", "alpha", "min_valid", "ci_level", "miss_cap"];
+/** Shown when the file does not record gate settings. */
+export const GATE_FALLBACK = "δ = 5 pp / 90%";
 
 /** Drop real harness output at this path. The page requests nothing else. */
 export const RESULTS_PATH = "data/results.preliminary.json";
@@ -35,7 +48,7 @@ export function parseResults(doc) {
   return parseResultsV2(doc);
 }
 
-/** Harness results schema 2.0.0, and any later 2.x.y file. Version 1 is rejected here. */
+/** Harness results schema 2.0.0 and 2.1.0, and any later 2.x.y file. Version 1 is rejected here. */
 export function parseResultsV2(doc) {
   const version = requireSupported(doc);
   if (version === 1) throw new Error("unsupported results version 1");
@@ -46,7 +59,7 @@ function requireSupported(doc) {
   if (!doc || typeof doc !== "object" || Array.isArray(doc)) {
     throw new Error("results.json must be an object");
   }
-  return supportedVersion(doc.version);
+  return supportedVersion(doc);
 }
 
 function buildView(doc, version) {
@@ -59,9 +72,13 @@ function buildView(doc, version) {
     throw new Error("likely_regression must be true, false, or null");
   }
   const invalidRun = doc.invalid_run === true;
+  const overallModels = readOverallModelIds(doc);
+  const modelIdSources = {};
   const arms = {};
   for (const name of ARM_NAMES) {
-    arms[name] = parseArm(doc.arms?.[name], name);
+    const resolved = resolveModelId(doc.arms?.[name], name, overallModels?.[name] ?? "");
+    modelIdSources[name] = resolved.source;
+    arms[name] = parseArm(doc.arms?.[name], name, resolved.modelId);
   }
 
   const verdict = invalidRun
@@ -74,6 +91,7 @@ function buildView(doc, version) {
 
   return {
     version,
+    schemaVersion: schemaVersionOf(doc),
     status,
     level: 0.9,
     likelyRegression: doc.likely_regression,
@@ -84,6 +102,12 @@ function buildView(doc, version) {
     banner: bannerFor(status),
     summaryNote: noteText(doc.notes, "summary"),
     suite: typeof doc.suite === "string" ? doc.suite : "",
+    modelIds: {
+      baseline: arms.baseline.modelId || "",
+      candidate: arms.candidate.modelId || "",
+    },
+    modelIdSources,
+    gate: readGate(doc),
     arms,
     scenarios: parseScenarios(doc.scenarios),
     charts: {
@@ -103,10 +127,28 @@ function buildView(doc, version) {
   };
 }
 
-function supportedVersion(version) {
-  if (version === 1) return 1;
-  if (typeof version === "string" && V2_VERSION.test(version)) return version;
+function supportedVersion(doc) {
+  const version = doc.version;
+  const schemaVersion = doc.schema_version;
+  if (schemaVersion != null && (typeof schemaVersion !== "string" || !V2_VERSION.test(schemaVersion))) {
+    throw new Error("schema_version must be a 2.x.y string");
+  }
+  if (version === 1) {
+    if (schemaVersion != null) throw new Error("schema_version is not used on results version 1");
+    return 1;
+  }
+  if (typeof version === "string" && V2_VERSION.test(version)) {
+    if (schemaVersion != null && schemaVersion !== version) {
+      throw new Error("schema_version must match version");
+    }
+    return version;
+  }
+  if ((version == null || version === "") && schemaVersion) return schemaVersion;
   throw new Error(`unsupported results version ${versionToken(version)}`);
+}
+
+function schemaVersionOf(doc) {
+  return typeof doc.schema_version === "string" ? doc.schema_version : null;
 }
 
 function versionToken(version) {
@@ -126,7 +168,39 @@ function assertLevel(level) {
   throw new Error("level must be 0.9");
 }
 
-function parseArm(raw, name) {
+function readOverallModelIds(doc) {
+  if (doc.verdicts == null) return null;
+  if (typeof doc.verdicts !== "object" || Array.isArray(doc.verdicts)) {
+    throw new Error("verdicts must be an object");
+  }
+  if (doc.verdicts.overall == null) return null;
+  if (typeof doc.verdicts.overall !== "object" || Array.isArray(doc.verdicts.overall)) {
+    throw new Error("verdicts.overall must be an object");
+  }
+  if (doc.verdicts.overall.model_ids == null) return null;
+  const modelIds = doc.verdicts.overall.model_ids;
+  if (typeof modelIds !== "object" || Array.isArray(modelIds)) {
+    throw new Error("verdicts.overall.model_ids must be an object");
+  }
+  return {
+    baseline: readNamedModelId(modelIds, "baseline"),
+    candidate: readNamedModelId(modelIds, "candidate"),
+  };
+}
+
+function readNamedModelId(modelIds, name) {
+  if (!Object.prototype.hasOwnProperty.call(modelIds, name)) return "";
+  return readModelId(modelIds[name], `verdicts.overall.model_ids.${name}`);
+}
+
+function resolveModelId(raw, name, preferred) {
+  const fromArm = readModelId(raw?.model_id, `arms.${name}.model_id`);
+  if (preferred) return { modelId: preferred, source: "overall" };
+  if (fromArm) return { modelId: fromArm, source: "arm" };
+  return { modelId: "", source: "none" };
+}
+
+function parseArm(raw, name, modelId) {
   if (!raw || typeof raw !== "object") {
     throw new Error(`arms.${name} is required`);
   }
@@ -146,7 +220,6 @@ function parseArm(raw, name) {
   }
   const passRate = raw.pass_rate === undefined ? null : parseRational(raw.pass_rate);
   const caption = readCaption(raw.caption, `arms.${name}.caption`);
-  const modelId = readModelId(raw.model_id, `arms.${name}.model_id`);
   const arm = {
     scheduled,
     environmentMisses,
@@ -219,6 +292,103 @@ function readModelId(value, label) {
     throw new Error(`${label} must be a string`);
   }
   return value.trim();
+}
+
+function readGate(doc) {
+  const nested = doc.gate != null;
+  if (nested && (typeof doc.gate !== "object" || Array.isArray(doc.gate))) {
+    throw new Error("gate must be an object");
+  }
+  const bag = nested ? doc.gate : doc;
+  const prefix = nested ? "gate." : "";
+  const values = {};
+  let fromFile = false;
+  for (const key of GATE_KEYS) {
+    if (!Object.prototype.hasOwnProperty.call(bag, key)) {
+      values[key] = null;
+      continue;
+    }
+    values[key] = readGateValue(bag[key], `${prefix}${key}`);
+    if (values[key] != null) fromFile = true;
+  }
+  return {
+    fromFile,
+    text: gateText(values, fromFile),
+    delta: values.delta,
+    alpha: values.alpha,
+    minValid: values.min_valid,
+    ciLevel: values.ci_level,
+    missCap: values.miss_cap,
+  };
+}
+
+function readGateValue(value, label) {
+  if (value == null) return null;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value) || value < 0) {
+      throw new Error(`${label} must be a non-negative number or a string`);
+    }
+    return value;
+  }
+  if (typeof value === "string") {
+    const text = value.trim();
+    return text ? text : null;
+  }
+  throw new Error(`${label} must be a non-negative number or a string`);
+}
+
+function gateText(values, fromFile) {
+  if (!fromFile) return GATE_FALLBACK;
+  const parts = [values.delta == null ? "δ = 5 pp" : formatDelta(values.delta)];
+  if (values.alpha != null) parts.push(`α = ${rawText(values.alpha)}`);
+  if (values.min_valid != null) parts.push(`min valid ${formatRate(values.min_valid)}`);
+  parts.push(values.ci_level == null ? "90%" : formatCi(values.ci_level));
+  if (values.miss_cap != null) parts.push(`miss cap ${formatRate(values.miss_cap)}`);
+  return parts.join(" · ");
+}
+
+function rawText(value) {
+  return typeof value === "string" ? value.trim() : String(value);
+}
+
+function ratioOf(value) {
+  try {
+    return parseRational(rawText(value));
+  } catch {
+    return null;
+  }
+}
+
+function ratePercent(value) {
+  const ratio = ratioOf(value);
+  if (!ratio || ratio.numerator > ratio.denominator) return null;
+  const scaled = ratio.numerator * 100;
+  if (scaled % ratio.denominator === 0) return `${scaled / ratio.denominator}%`;
+  const tenths = Math.round((scaled * 10) / ratio.denominator);
+  const whole = Math.trunc(tenths / 10);
+  const frac = Math.abs(tenths % 10);
+  return `${whole}.${frac}%`;
+}
+
+function formatRate(value) {
+  return ratePercent(value) || rawText(value);
+}
+
+function formatDelta(value) {
+  const raw = rawText(value);
+  if (/pp/i.test(raw)) return raw.includes("δ") ? raw : `δ = ${raw}`;
+  const pct = ratePercent(value);
+  if (pct) return `δ = ${pct.slice(0, -1)} pp`;
+  return `δ = ${raw} pp`;
+}
+
+function formatCi(value) {
+  const raw = rawText(value);
+  if (/ci/i.test(raw)) return raw;
+  if (raw.includes("%")) return `${raw} CI`;
+  const pct = ratePercent(value);
+  if (pct) return `${pct} CI`;
+  return `${raw} CI`;
 }
 
 function readScenarioRate(scenario, arm, index) {

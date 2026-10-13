@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { parseResults, parseResultsV2 } from "../js/results.js";
+import { GATE_FALLBACK, parseResults, parseResultsV2 } from "../js/results.js";
 
 const bundled = JSON.parse(
   readFileSync(new URL("../data/results.preliminary.json", import.meta.url), "utf8"),
@@ -10,7 +10,8 @@ const bundled = JSON.parse(
 
 test("the bundled preliminary file parses and banners", () => {
   const view = parseResults(bundled);
-  assert.equal(view.version, "2.0.0");
+  assert.equal(view.version, "2.1.0");
+  assert.equal(view.schemaVersion, "2.1.0");
   assert.equal(view.headline, "Pass");
   assert.equal(view.status, "preliminary");
   assert.equal(view.banner.tone, "preliminary");
@@ -18,6 +19,12 @@ test("the bundled preliminary file parses and banners", () => {
   assert.equal(view.verdict, "no_regression");
   assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
   assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
+  assert.equal(view.modelIdSources.baseline, "overall");
+  assert.equal(view.modelIdSources.candidate, "overall");
+  assert.equal(view.modelIds.baseline, "gemini-2.5-flash-lite-001");
+  assert.equal(view.modelIds.candidate, "gemini-3.5-flash-lite");
+  assert.equal(view.gate.fromFile, true);
+  assert.equal(view.gate.text, "δ = 5 pp · α = 0.1 · min valid 60% · 90% CI · miss cap 5%");
   assert.equal(view.likelyRegression, false);
   assert.equal(view.arms.candidate.passRateText, "3/5");
   assert.equal(view.arms.candidate.environmentMisses, 1);
@@ -143,19 +150,43 @@ test("a version 1 file still shows a model id when one is recorded", () => {
   assert.equal(view.headline, "Pass");
 });
 
-test("the page's shipped data file parses via the 2.0.0 path", () => {
-  assert.equal(bundled.version, "2.0.0");
+test("the page's shipped data file parses via the 2.1.0 path", () => {
+  assert.equal(bundled.version, "2.1.0");
+  assert.equal(bundled.schema_version, "2.1.0");
   const viaV2 = parseResultsV2(bundled);
   assert.deepEqual(parseResults(bundled), viaV2);
-  assert.equal(viaV2.version, "2.0.0");
+  assert.equal(viaV2.version, "2.1.0");
+  assert.equal(viaV2.schemaVersion, "2.1.0");
   assert.equal(viaV2.headline, "Pass");
   assert.equal(viaV2.verdict, "no_regression");
   assert.equal(viaV2.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
   assert.equal(viaV2.arms.candidate.modelId, "gemini-3.5-flash-lite");
+  assert.equal(viaV2.modelIdSources.baseline, "overall");
+  assert.equal(viaV2.modelIdSources.candidate, "overall");
+  assert.equal(viaV2.gate.fromFile, true);
   assert.match(viaV2.arms.baseline.caption, /0\.05/);
   assert.match(viaV2.arms.candidate.caption, /\$1\.25/);
   assert.equal(viaV2.scenarios.every((row) => typeof row.caption === "string" && row.caption.length > 0), true);
   assert.throws(() => parseResultsV2(asVersion1()), /unsupported results version 1/);
+});
+
+test("version 2.0.0 still parses from per-arm model ids and falls back the gate line", () => {
+  const doc = asVersion2();
+  const view = parseResultsV2(doc);
+  assert.equal(view.version, "2.0.0");
+  assert.equal(view.schemaVersion, null);
+  assert.equal(view.headline, "Pass");
+  assert.equal(view.verdict, "no_regression");
+  assert.equal(view.modelIdSources.baseline, "arm");
+  assert.equal(view.modelIdSources.candidate, "arm");
+  assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
+  assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
+  assert.equal(view.modelIds.baseline, view.arms.baseline.modelId);
+  assert.equal(view.modelIds.candidate, view.arms.candidate.modelId);
+  assert.equal(view.gate.fromFile, false);
+  assert.equal(view.gate.text, GATE_FALLBACK);
+  assert.match(view.arms.baseline.caption, /0\.05/);
+  assert.match(view.arms.candidate.caption, /\$1\.25/);
 });
 
 test("verdict labels are Pass, Block, Insufficient evidence, and Invalid run", () => {
@@ -175,14 +206,19 @@ test("model ids are omitted when the file does not record them", () => {
   const doc = structuredClone(bundled);
   delete doc.arms.baseline.model_id;
   delete doc.arms.candidate.model_id;
+  delete doc.verdicts;
+  delete doc.schema_version;
   const view = parseResultsV2(doc);
   assert.equal("modelId" in view.arms.baseline, false);
   assert.equal("modelId" in view.arms.candidate, false);
-  assert.equal(view.version, "2.0.0");
+  assert.equal(view.modelIdSources.baseline, "none");
+  assert.equal(view.modelIdSources.candidate, "none");
+  assert.equal(view.version, "2.1.0");
+  assert.equal(view.gate.fromFile, true);
 });
 
 test("version 2.0.0 accepts arm and scenario captions, including decimals and amounts", () => {
-  const view = parseResults({
+  const doc = {
     ...bundled,
     version: "2.0.0",
     arms: {
@@ -210,7 +246,9 @@ test("version 2.0.0 accepts arm and scenario captions, including decimals and am
         candidate_rate: "4/5",
       },
     ],
-  });
+  };
+  delete doc.schema_version;
+  const view = parseResults(doc);
   assert.equal(view.version, "2.0.0");
   assert.equal(view.verdict, "no_regression");
   assert.equal(view.arms.baseline.caption, "Baseline stayed within 0.05 of the previous gate.");
@@ -274,9 +312,144 @@ test("coming soon charts drop any stray series", () => {
   assert.deepEqual(view.charts.aa.points, []);
 });
 
+test("schema 2.1.0 prefers verdicts.overall.model_ids over the per-arm model_id", () => {
+  const doc = structuredClone(bundled);
+  doc.arms.baseline.model_id = "arm-baseline-id";
+  doc.arms.candidate.model_id = "arm-candidate-id";
+  doc.verdicts.overall.model_ids.baseline = "gemini-2.5-flash-lite-001";
+  doc.verdicts.overall.model_ids.candidate = "gemini-3.5-flash-lite";
+  const view = parseResults(doc);
+  assert.equal(view.version, "2.1.0");
+  assert.equal(view.schemaVersion, "2.1.0");
+  assert.equal(view.headline, "Pass");
+  assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
+  assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
+  assert.equal(view.modelIdSources.baseline, "overall");
+  assert.equal(view.modelIdSources.candidate, "overall");
+});
+
+test("a 2.1.0 file without overall model ids keeps the per-arm model_id", () => {
+  const doc = structuredClone(bundled);
+  delete doc.verdicts;
+  const view = parseResultsV2(doc);
+  assert.equal(view.version, "2.1.0");
+  assert.equal(view.modelIdSources.baseline, "arm");
+  assert.equal(view.modelIdSources.candidate, "arm");
+  assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
+  assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
+  assert.equal(view.headline, "Pass");
+});
+
+test("one overall model id does not erase the other arm's model id", () => {
+  const doc = structuredClone(bundled);
+  delete doc.verdicts.overall.model_ids.candidate;
+  doc.arms.baseline.model_id = "arm-baseline-id";
+  const view = parseResults(doc);
+  assert.equal(view.modelIdSources.baseline, "overall");
+  assert.equal(view.modelIdSources.candidate, "arm");
+  assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
+  assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
+});
+
+test("gate settings are optional and fall back to δ = 5 pp / 90%", () => {
+  const missing = structuredClone(bundled);
+  delete missing.gate;
+  const blank = parseResults(missing);
+  assert.equal(blank.gate.fromFile, false);
+  assert.equal(blank.gate.text, "δ = 5 pp / 90%");
+  assert.equal(blank.gate.text, GATE_FALLBACK);
+  assert.equal(blank.headline, "Pass");
+
+  const version1 = parseResults(asVersion1());
+  assert.equal(version1.version, 1);
+  assert.equal(version1.schemaVersion, null);
+  assert.equal(version1.gate.fromFile, false);
+  assert.equal(version1.gate.text, GATE_FALLBACK);
+
+  const partial = structuredClone(bundled);
+  partial.gate = { alpha: "0.1", min_valid: "3/5" };
+  const partialView = parseResults(partial);
+  assert.equal(partialView.gate.fromFile, true);
+  assert.equal(partialView.gate.text, "δ = 5 pp · α = 0.1 · min valid 60% · 90%");
+  assert.equal(partialView.headline, "Pass");
+});
+
+test("top-level gate keys are read when the gate object is absent", () => {
+  const doc = asVersion2();
+  doc.delta = "0.05";
+  doc.alpha = 0.1;
+  doc.min_valid = "0.6";
+  doc.ci_level = "0.9";
+  doc.miss_cap = "1/20";
+  const view = parseResultsV2(doc);
+  assert.equal(view.version, "2.0.0");
+  assert.equal(view.gate.fromFile, true);
+  assert.equal(view.gate.delta, "0.05");
+  assert.equal(view.gate.alpha, 0.1);
+  assert.equal(view.gate.minValid, "0.6");
+  assert.equal(view.gate.ciLevel, "0.9");
+  assert.equal(view.gate.missCap, "1/20");
+  assert.equal(view.gate.text, "δ = 5 pp · α = 0.1 · min valid 60% · 90% CI · miss cap 5%");
+  assert.equal(view.headline, "Pass");
+});
+
+test("schema_version 2.1.0 can stand in for version and must agree when both are set", () => {
+  const doc = structuredClone(bundled);
+  delete doc.version;
+  const view = parseResults(doc);
+  assert.equal(view.version, "2.1.0");
+  assert.equal(view.schemaVersion, "2.1.0");
+  assert.equal(view.headline, "Pass");
+
+  const mismatch = structuredClone(bundled);
+  mismatch.version = "2.0.0";
+  assert.throws(() => parseResults(mismatch), /schema_version must match version/);
+
+  const bad = structuredClone(bundled);
+  bad.schema_version = 2.1;
+  assert.throws(() => parseResults(bad), /schema_version must be a 2\.x\.y string/);
+});
+
+test("a non-string overall model id is rejected", () => {
+  const doc = structuredClone(bundled);
+  doc.verdicts.overall.model_ids.candidate = 3;
+  assert.throws(
+    () => parseResultsV2(doc),
+    /verdicts\.overall\.model_ids\.candidate must be a string/,
+  );
+});
+
+test("gate settings do not change Pass, Block, Insufficient evidence, or Invalid run", () => {
+  const withGate = (likely, invalid) => parseResults({
+    ...bundled,
+    likely_regression: likely,
+    invalid_run: invalid,
+  }).headline;
+  assert.equal(withGate(false, false), "Pass");
+  assert.equal(withGate(true, false), "Block");
+  assert.equal(withGate(null, false), "Insufficient evidence");
+  assert.equal(withGate(true, true), "Invalid run");
+
+  const broken = structuredClone(bundled);
+  broken.gate = { delta: { pp: 5 } };
+  assert.throws(() => parseResults(broken), /gate\.delta must be a non-negative number or a string/);
+});
+
+function asVersion2(doc = bundled) {
+  const copy = structuredClone(doc);
+  copy.version = "2.0.0";
+  delete copy.schema_version;
+  delete copy.verdicts;
+  delete copy.gate;
+  return copy;
+}
+
 function asVersion1(doc = bundled) {
   const copy = structuredClone(doc);
   copy.version = 1;
+  delete copy.schema_version;
+  delete copy.verdicts;
+  delete copy.gate;
   for (const name of ["baseline", "candidate"]) {
     delete copy.arms[name].caption;
     delete copy.arms[name].model_id;

@@ -103,11 +103,11 @@ A check created by a workflow job is a required pull-request check only when the
 
 4. **Cost control is record/replay, under several names.** promptfoo caches model calls in CI. Braintrust’s proxy caches them too. A cassette keyed by scenario hash is the provider-agnostic version of that idea. It is not shipped in this repository.
 
-5. **The adapter is the stable seam.** Each SDK’s run function is different (`Runner.run`, `query()`, `graph.invoke`, `kickoff`, a Flow). The contract that can stay still is narrower than any of them: one scenario in, one scored rollout out, then a results file the page already knows how to read (version `1` or `2.0.0`).
+5. **The adapter is the stable seam.** Each SDK’s run function is different (`Runner.run`, `query()`, `graph.invoke`, `kickoff`, a Flow). The contract that can stay still is narrower than any of them: one scenario in, one scored rollout out, then a results file the page already knows how to read (version `1`, `2.0.0`, or `2.1.0`).
 
 ## What this repository should and should not say
 
-Shipped here: a static page and a results reader for results.json version `1` and `2.x.y` (the 2.0.0 caption revision). The reader is the contract the page enforces. It is not an adapter, an Action, or a cassette player.
+Shipped here: a static page and a results reader for results.json version `1` and `2.x.y` (the 2.0.0 caption revision and the 2.1.0 model-id and gate-settings revision). The reader is the contract the page enforces. It is not an adapter, an Action, or a cassette player.
 
 The first backend the harness is being built against is **Gemini 3.5 Flash-Lite**, pinned to the stable model id `gemini-3.5-flash-lite`. Google’s model page lists that id as the stable code, and the Vertex model page dates the GA release 21 July 2026. Stable ids are the pin production apps are told to use. `gemini-flash-latest` is a different string: it is an alias that moves when a new release ships. The site labels this adapter **in progress** until it merges. It is not an official Google partnership, and the suite verdict still does not depend on the provider. OpenAI Agents SDK, Claude Agent SDK, and the other framework wrappers are **roadmap adapter examples**, not backends in development.
 
