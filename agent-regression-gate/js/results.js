@@ -1,10 +1,24 @@
 /**
- * results.json v1 and 2.0.0.
+ * results.json v1 and harness schema 2.0.0.
  *
- * The suite verdict is the file's own likely_regression (or invalid_run).
+ * RESULTS_PATH is the only file the page loads. Replace that file in place
+ * with real harness output (expected around 30 October 2026). No other path
+ * is consulted.
+ *
+ * parseResults still accepts version 1. A 2.x.y file, including the shipped
+ * 2.0.0 sample, is read by parseResultsV2.
+ *
+ * Suite labels come from the file, not from scenario rows:
+ *   likely_regression false → Pass
+ *   likely_regression true → Block
+ *   likely_regression null, and invalid_run is not true → Insufficient evidence
+ *   invalid_run true → Invalid run
+ *
  * Scenario rows are diagnostics. They never become a per-scenario pass or block.
- * Version 2.0.0 adds an optional one-sentence caption on each scenario and arm.
- * A decimal such as 0.05 or an amount such as $1.25 is ordinary caption text.
+ * Version 2.0.0 adds an optional one-sentence caption on each scenario and arm,
+ * and an optional model_id on each arm. A decimal such as 0.05 or an amount
+ * such as $1.25 is ordinary caption text. A model id is shown when present and
+ * does not change the suite label.
  */
 
 import { exceedsRate, formatRatio, parseRational } from "./rational.js";
@@ -12,11 +26,30 @@ import { exceedsRate, formatRatio, parseRational } from "./rational.js";
 const ARM_NAMES = ["baseline", "candidate"];
 const V2_VERSION = /^2\.\d+\.\d+$/;
 
+/** Drop real harness output at this path. The page requests nothing else. */
+export const RESULTS_PATH = "data/results.preliminary.json";
+
 export function parseResults(doc) {
+  const version = requireSupported(doc);
+  if (version === 1) return buildView(doc, version);
+  return parseResultsV2(doc);
+}
+
+/** Harness results schema 2.0.0, and any later 2.x.y file. Version 1 is rejected here. */
+export function parseResultsV2(doc) {
+  const version = requireSupported(doc);
+  if (version === 1) throw new Error("unsupported results version 1");
+  return buildView(doc, version);
+}
+
+function requireSupported(doc) {
   if (!doc || typeof doc !== "object" || Array.isArray(doc)) {
     throw new Error("results.json must be an object");
   }
-  const version = supportedVersion(doc.version);
+  return supportedVersion(doc.version);
+}
+
+function buildView(doc, version) {
   const status = doc.status;
   if (status !== "preliminary" && status !== "final") {
     throw new Error("status must be \"preliminary\" or \"final\"");
@@ -25,7 +58,7 @@ export function parseResults(doc) {
   if (doc.likely_regression !== true && doc.likely_regression !== false && doc.likely_regression !== null) {
     throw new Error("likely_regression must be true, false, or null");
   }
-  const invalidRun = doc.invalid_run === true || doc.likely_regression === null;
+  const invalidRun = doc.invalid_run === true;
   const arms = {};
   for (const name of ARM_NAMES) {
     arms[name] = parseArm(doc.arms?.[name], name);
@@ -33,9 +66,11 @@ export function parseResults(doc) {
 
   const verdict = invalidRun
     ? "invalid_run"
-    : doc.likely_regression
-      ? "likely_regression"
-      : "no_regression";
+    : doc.likely_regression === null
+      ? "insufficient_evidence"
+      : doc.likely_regression
+        ? "likely_regression"
+        : "no_regression";
 
   return {
     version,
@@ -111,6 +146,7 @@ function parseArm(raw, name) {
   }
   const passRate = raw.pass_rate === undefined ? null : parseRational(raw.pass_rate);
   const caption = readCaption(raw.caption, `arms.${name}.caption`);
+  const modelId = readModelId(raw.model_id, `arms.${name}.model_id`);
   const arm = {
     scheduled,
     environmentMisses,
@@ -120,6 +156,7 @@ function parseArm(raw, name) {
     overMissLimit: exceedsRate(environmentMisses, scheduled, 1, 20),
   };
   if (caption) arm.caption = caption;
+  if (modelId) arm.modelId = modelId;
   return arm;
 }
 
@@ -169,6 +206,14 @@ function parseScenarios(raw) {
 }
 
 function readCaption(value, label) {
+  if (value == null) return "";
+  if (typeof value !== "string") {
+    throw new Error(`${label} must be a string`);
+  }
+  return value.trim();
+}
+
+function readModelId(value, label) {
   if (value == null) return "";
   if (typeof value !== "string") {
     throw new Error(`${label} must be a string`);
@@ -231,6 +276,7 @@ function stringNote(value) {
 
 function headlineFor(verdict) {
   if (verdict === "likely_regression") return "Block";
+  if (verdict === "insufficient_evidence") return "Insufficient evidence";
   if (verdict === "invalid_run") return "Invalid run";
   return "Pass";
 }
@@ -238,6 +284,9 @@ function headlineFor(verdict) {
 function whyFor(verdict) {
   if (verdict === "likely_regression") {
     return "The check fails on Block. Scenario rows are diagnostics, not separate gates.";
+  }
+  if (verdict === "insufficient_evidence") {
+    return "No suite verdict is published. likely_regression is null and the run is not marked invalid. Scenario rows remain diagnostics.";
   }
   if (verdict === "invalid_run") {
     return "An invalid run isn't scored. Scenario rows remain diagnostics.";

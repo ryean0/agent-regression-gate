@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { parseResults } from "../js/results.js";
+import { parseResults, parseResultsV2 } from "../js/results.js";
 
 const bundled = JSON.parse(
   readFileSync(new URL("../data/results.preliminary.json", import.meta.url), "utf8"),
@@ -10,10 +10,14 @@ const bundled = JSON.parse(
 
 test("the bundled preliminary file parses and banners", () => {
   const view = parseResults(bundled);
+  assert.equal(view.version, "2.0.0");
+  assert.equal(view.headline, "Pass");
   assert.equal(view.status, "preliminary");
   assert.equal(view.banner.tone, "preliminary");
   assert.match(view.banner.title, /Preliminary/);
   assert.equal(view.verdict, "no_regression");
+  assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
+  assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
   assert.equal(view.likelyRegression, false);
   assert.equal(view.arms.candidate.passRateText, "3/5");
   assert.equal(view.arms.candidate.environmentMisses, 1);
@@ -65,10 +69,13 @@ test("suite likely_regression true is the only regression call", () => {
   assert.equal(view.scenarios.some((row) => "verdict" in row), false);
 });
 
-test("null likely_regression is an invalid run, not a per-scenario block", () => {
+test("null likely_regression without invalid_run is insufficient evidence", () => {
   const view = parseResults({ ...bundled, likely_regression: null });
-  assert.equal(view.verdict, "invalid_run");
+  assert.equal(view.verdict, "insufficient_evidence");
+  assert.equal(view.headline, "Insufficient evidence");
+  assert.equal(view.invalidRun, false);
   assert.equal(view.scenarios.length, bundled.scenarios.length);
+  assert.equal(view.scenarios.some((row) => "verdict" in row), false);
 });
 
 test("6% environment misses are recorded without becoming scenario verdicts", () => {
@@ -115,12 +122,63 @@ test("miss_counts must sum to environment_misses", () => {
 });
 
 test("version 1 files stay free of caption fields", () => {
-  const view = parseResults(bundled);
+  const view = parseResults(asVersion1());
   assert.equal(view.version, 1);
+  assert.equal(view.headline, "Pass");
   assert.equal(view.verdict, "no_regression");
   assert.equal("caption" in view.arms.baseline, false);
   assert.equal("caption" in view.arms.candidate, false);
+  assert.equal("modelId" in view.arms.baseline, false);
+  assert.equal("modelId" in view.arms.candidate, false);
   assert.equal(view.scenarios.every((row) => !("caption" in row)), true);
+});
+
+test("a version 1 file still shows a model id when one is recorded", () => {
+  const doc = asVersion1();
+  doc.arms.candidate.model_id = "gemini-3.5-flash-lite";
+  const view = parseResults(doc);
+  assert.equal(view.version, 1);
+  assert.equal("modelId" in view.arms.baseline, false);
+  assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
+  assert.equal(view.headline, "Pass");
+});
+
+test("the page's shipped data file parses via the 2.0.0 path", () => {
+  assert.equal(bundled.version, "2.0.0");
+  const viaV2 = parseResultsV2(bundled);
+  assert.deepEqual(parseResults(bundled), viaV2);
+  assert.equal(viaV2.version, "2.0.0");
+  assert.equal(viaV2.headline, "Pass");
+  assert.equal(viaV2.verdict, "no_regression");
+  assert.equal(viaV2.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
+  assert.equal(viaV2.arms.candidate.modelId, "gemini-3.5-flash-lite");
+  assert.match(viaV2.arms.baseline.caption, /0\.05/);
+  assert.match(viaV2.arms.candidate.caption, /\$1\.25/);
+  assert.equal(viaV2.scenarios.every((row) => typeof row.caption === "string" && row.caption.length > 0), true);
+  assert.throws(() => parseResultsV2(asVersion1()), /unsupported results version 1/);
+});
+
+test("verdict labels are Pass, Block, Insufficient evidence, and Invalid run", () => {
+  assert.equal(parseResults({ ...bundled, likely_regression: false, invalid_run: false }).headline, "Pass");
+  assert.equal(parseResults({ ...bundled, likely_regression: true, invalid_run: false }).headline, "Block");
+  assert.equal(parseResults({ ...bundled, likely_regression: null, invalid_run: false }).headline, "Insufficient evidence");
+  assert.equal(parseResults({ ...bundled, likely_regression: true, invalid_run: true }).headline, "Invalid run");
+});
+
+test("a model id that is not a string is rejected", () => {
+  const doc = structuredClone(bundled);
+  doc.arms.baseline.model_id = 3;
+  assert.throws(() => parseResultsV2(doc), /arms\.baseline\.model_id must be a string/);
+});
+
+test("model ids are omitted when the file does not record them", () => {
+  const doc = structuredClone(bundled);
+  delete doc.arms.baseline.model_id;
+  delete doc.arms.candidate.model_id;
+  const view = parseResultsV2(doc);
+  assert.equal("modelId" in view.arms.baseline, false);
+  assert.equal("modelId" in view.arms.candidate, false);
+  assert.equal(view.version, "2.0.0");
 });
 
 test("version 2.0.0 accepts arm and scenario captions, including decimals and amounts", () => {
@@ -171,10 +229,16 @@ test("version 2.0.0 accepts arm and scenario captions, including decimals and am
 });
 
 test("a later 2.x file without captions still parses", () => {
-  const view = parseResults({ ...bundled, version: "2.1.0" });
+  const doc = structuredClone(bundled);
+  doc.version = "2.1.0";
+  delete doc.arms.baseline.caption;
+  delete doc.arms.candidate.caption;
+  for (const scenario of doc.scenarios) delete scenario.caption;
+  const view = parseResults(doc);
   assert.equal(view.version, "2.1.0");
   assert.equal(view.scenarios[0].name, bundled.scenarios[0].name);
   assert.equal("caption" in view.scenarios[0], false);
+  assert.equal(view.arms.candidate.modelId, bundled.arms.candidate.model_id);
 });
 
 test("any other major version names itself instead of failing quietly", () => {
@@ -209,3 +273,14 @@ test("coming soon charts drop any stray series", () => {
   });
   assert.deepEqual(view.charts.aa.points, []);
 });
+
+function asVersion1(doc = bundled) {
+  const copy = structuredClone(doc);
+  copy.version = 1;
+  for (const name of ["baseline", "candidate"]) {
+    delete copy.arms[name].caption;
+    delete copy.arms[name].model_id;
+  }
+  for (const scenario of copy.scenarios) delete scenario.caption;
+  return copy;
+}

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "results.schema.json",
   "title": "CI Agent Regression Harness results",
-  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. Version 1 is the original file. Version 2.0.0 (any 2.x.y string) adds an optional one-sentence caption on each scenario and arm. Decimals such as 0.05 and amounts such as $1.25 are valid caption text. Extra fields are allowed so a real results.json can be dropped in.",
+  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. Version 1 is the original file. Version 2.0.0 (any 2.x.y string) adds an optional one-sentence caption on each scenario and arm, and an optional model_id on each arm. Decimals such as 0.05 and amounts such as $1.25 are valid caption text. A model_id is recorded text such as gemini-3.5-flash-lite and does not change the suite verdict. Extra fields are allowed so a real results.json can be dropped in at data/results.preliminary.json.",
   "type": "object",
   "additionalProperties": true,
   "required": ["version", "status", "level", "likely_regression", "arms"],
@@ -64,6 +64,10 @@
         "pass_rate": { "type": "string" },
         "caption": {
           "description": "Optional one-sentence caption. Digits, decimals such as 0.05, and amounts such as $1.25 are valid text.",
+          "type": "string"
+        },
+        "model_id": {
+          "description": "Optional model id recorded for this arm. Shown when present. It does not change the suite verdict.",
           "type": "string"
         }
       }

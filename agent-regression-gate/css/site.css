@@ -166,7 +166,8 @@ h1 .line { display: block; }
 }
 .verdict[data-verdict="no_regression"] { border-left-color: var(--ink); }
 .verdict[data-verdict="likely_regression"] { border-left-color: var(--accent); box-shadow: inset 0 0 24px -16px rgba(var(--accent-rgb), 0.7); }
-.verdict[data-verdict="invalid_run"] { border-left-color: var(--inv); border-left-style: dashed; }
+.verdict[data-verdict="invalid_run"],
+.verdict[data-verdict="insufficient_evidence"] { border-left-color: var(--inv); border-left-style: dashed; }
 .verdict h3 { font-size: clamp(1.45rem, 2.4vw, 1.9rem); margin: 0.1rem 0 0.45rem; display: flex; align-items: center; gap: 0.55rem; color: var(--ink); }
 .verdict h3::before {
   content: ""; width: 0.55rem; height: 0.32rem; margin-top: -0.2rem; border-left: 2px solid var(--ink); border-bottom: 2px solid var(--ink);
@@ -177,7 +178,8 @@ h1 .line { display: block; }
   width: 0.48rem; height: 0.48rem; margin-top: 0; border: 0; background: var(--accent); border-radius: 1px;
   transform: none; box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.7);
 }
-.verdict[data-verdict="invalid_run"] h3::before {
+.verdict[data-verdict="invalid_run"] h3::before,
+.verdict[data-verdict="insufficient_evidence"] h3::before {
   width: 0.55rem; height: 0.55rem; margin-top: 0; border: 1.5px dashed var(--inv); background: transparent; border-radius: 99px; transform: none;
 }
 .verdict[data-verdict="insufficient"] { border-left-color: var(--muted); }
