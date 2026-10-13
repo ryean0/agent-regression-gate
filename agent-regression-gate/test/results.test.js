@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { GATE_FALLBACK, parseResults, parseResultsV2 } from "../js/results.js";
+import { INTERVAL_FALLBACK, parseResults, parseResultsV2 } from "../js/results.js";
 
 const bundled = JSON.parse(
   readFileSync(new URL("../data/results.preliminary.json", import.meta.url), "utf8"),
@@ -23,8 +23,23 @@ test("the bundled preliminary file parses and banners", () => {
   assert.equal(view.modelIdSources.candidate, "overall");
   assert.equal(view.modelIds.baseline, "gemini-2.5-flash-lite-001");
   assert.equal(view.modelIds.candidate, "gemini-3.5-flash-lite");
-  assert.equal(view.gate.fromFile, true);
-  assert.equal(view.gate.text, "δ = 5 pp · α = 0.1 · min valid 60% · 90% CI · miss cap 5%");
+  assert.equal(view.runKind, "screening");
+  assert.equal(view.baselinePoolModelId, "gemini-2.5-flash-lite-001");
+  assert.equal(view.minValidFraction.text, "0.6");
+  assert.deepEqual(view.minValidFraction.ratio, { numerator: 3, denominator: 5 });
+  assert.deepEqual(view.rolloutsPerScenario, { baseline: 20, candidate: 20 });
+  assert.equal(view.interval.fromFile, true);
+  assert.equal(view.interval.delta, "0.05");
+  assert.equal(view.interval.ciLevel, "0.9");
+  assert.equal(view.interval.text, "δ = 5 pp · 90% CI");
+  assert.equal(view.diagnostics.length, 4);
+  assert.equal(view.diagnostics[0].scenarioId, "reset-locked-account");
+  assert.equal(view.diagnostics[0].familyId, "support");
+  assert.equal(view.diagnostics[0].baselineText, "9/10");
+  assert.equal(view.diagnostics[0].candidateText, "3/5");
+  assert.equal(view.diagnostics[0].differenceText, "-3/10");
+  assert.equal(view.diagnostics[0].missingCassetteKeys.baseline.length, 0);
+  assert.equal("verdict" in view.diagnostics[0], false);
   assert.equal(view.likelyRegression, false);
   assert.equal(view.arms.candidate.passRateText, "3/5");
   assert.equal(view.arms.candidate.environmentMisses, 1);
@@ -70,14 +85,16 @@ test("a final file does not use the preliminary banner", () => {
 });
 
 test("suite likely_regression true is the only regression call", () => {
-  const view = parseResults({ ...bundled, likely_regression: true });
+  const view = parseResults(withLikely(true));
   assert.equal(view.verdict, "likely_regression");
   assert.equal(view.headline, "Block");
   assert.equal(view.scenarios.some((row) => "verdict" in row), false);
 });
 
 test("null likely_regression without invalid_run is insufficient evidence", () => {
-  const view = parseResults({ ...bundled, likely_regression: null });
+  const doc = asVersion2();
+  doc.likely_regression = null;
+  const view = parseResults(doc);
   assert.equal(view.verdict, "insufficient_evidence");
   assert.equal(view.headline, "Insufficient evidence");
   assert.equal(view.invalidRun, false);
@@ -163,14 +180,16 @@ test("the page's shipped data file parses via the 2.1.0 path", () => {
   assert.equal(viaV2.arms.candidate.modelId, "gemini-3.5-flash-lite");
   assert.equal(viaV2.modelIdSources.baseline, "overall");
   assert.equal(viaV2.modelIdSources.candidate, "overall");
-  assert.equal(viaV2.gate.fromFile, true);
+  assert.equal(viaV2.interval.fromFile, true);
+  assert.equal(viaV2.interval.text, "δ = 5 pp · 90% CI");
+  assert.equal(viaV2.runKind, "screening");
   assert.match(viaV2.arms.baseline.caption, /0\.05/);
   assert.match(viaV2.arms.candidate.caption, /\$1\.25/);
   assert.equal(viaV2.scenarios.every((row) => typeof row.caption === "string" && row.caption.length > 0), true);
   assert.throws(() => parseResultsV2(asVersion1()), /unsupported results version 1/);
 });
 
-test("version 2.0.0 still parses from per-arm model ids and falls back the gate line", () => {
+test("version 2.0.0 still parses from per-arm model ids and falls back the interval line", () => {
   const doc = asVersion2();
   const view = parseResultsV2(doc);
   assert.equal(view.version, "2.0.0");
@@ -183,17 +202,20 @@ test("version 2.0.0 still parses from per-arm model ids and falls back the gate 
   assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
   assert.equal(view.modelIds.baseline, view.arms.baseline.modelId);
   assert.equal(view.modelIds.candidate, view.arms.candidate.modelId);
-  assert.equal(view.gate.fromFile, false);
-  assert.equal(view.gate.text, GATE_FALLBACK);
+  assert.equal(view.interval.fromFile, false);
+  assert.equal(view.interval.text, INTERVAL_FALLBACK);
   assert.match(view.arms.baseline.caption, /0\.05/);
   assert.match(view.arms.candidate.caption, /\$1\.25/);
 });
 
 test("verdict labels are Pass, Block, Insufficient evidence, and Invalid run", () => {
-  assert.equal(parseResults({ ...bundled, likely_regression: false, invalid_run: false }).headline, "Pass");
-  assert.equal(parseResults({ ...bundled, likely_regression: true, invalid_run: false }).headline, "Block");
-  assert.equal(parseResults({ ...bundled, likely_regression: null, invalid_run: false }).headline, "Insufficient evidence");
-  assert.equal(parseResults({ ...bundled, likely_regression: true, invalid_run: true }).headline, "Invalid run");
+  assert.equal(parseResults(withLikely(false, false)).headline, "Pass");
+  assert.equal(parseResults(withLikely(true, false)).headline, "Block");
+  const thin = asVersion2();
+  thin.likely_regression = null;
+  thin.invalid_run = false;
+  assert.equal(parseResults(thin).headline, "Insufficient evidence");
+  assert.equal(parseResults(withLikely(true, true)).headline, "Invalid run");
 });
 
 test("a model id that is not a string is rejected", () => {
@@ -206,6 +228,7 @@ test("model ids are omitted when the file does not record them", () => {
   const doc = structuredClone(bundled);
   delete doc.arms.baseline.model_id;
   delete doc.arms.candidate.model_id;
+  doc.version = "2.0.0";
   delete doc.verdicts;
   delete doc.schema_version;
   const view = parseResultsV2(doc);
@@ -213,8 +236,9 @@ test("model ids are omitted when the file does not record them", () => {
   assert.equal("modelId" in view.arms.candidate, false);
   assert.equal(view.modelIdSources.baseline, "none");
   assert.equal(view.modelIdSources.candidate, "none");
-  assert.equal(view.version, "2.1.0");
-  assert.equal(view.gate.fromFile, true);
+  assert.equal(view.version, "2.0.0");
+  assert.equal(view.interval.fromFile, false);
+  assert.equal(view.interval.text, INTERVAL_FALLBACK);
 });
 
 test("version 2.0.0 accepts arm and scenario captions, including decimals and amounts", () => {
@@ -328,69 +352,71 @@ test("schema 2.1.0 prefers verdicts.overall.model_ids over the per-arm model_id"
   assert.equal(view.modelIdSources.candidate, "overall");
 });
 
-test("a 2.1.0 file without overall model ids keeps the per-arm model_id", () => {
-  const doc = structuredClone(bundled);
-  delete doc.verdicts;
-  const view = parseResultsV2(doc);
-  assert.equal(view.version, "2.1.0");
-  assert.equal(view.modelIdSources.baseline, "arm");
-  assert.equal(view.modelIdSources.candidate, "arm");
-  assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
-  assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
-  assert.equal(view.headline, "Pass");
+test("schema 2.1.0 requires overall model ids and likely_regression", () => {
+  const missingIds = structuredClone(bundled);
+  delete missingIds.verdicts.overall.model_ids;
+  assert.throws(() => parseResultsV2(missingIds), /verdicts\.overall\.model_ids is required/);
+
+  const missingCall = structuredClone(bundled);
+  delete missingCall.verdicts.overall.likely_regression;
+  assert.throws(
+    () => parseResults(missingCall),
+    /verdicts\.overall\.likely_regression must be a boolean/,
+  );
 });
 
-test("one overall model id does not erase the other arm's model id", () => {
-  const doc = structuredClone(bundled);
-  delete doc.verdicts.overall.model_ids.candidate;
+test("a 2.0.0 file can take one overall model id and keep the other arm id", () => {
+  const doc = asVersion2();
+  doc.verdicts = { overall: { model_ids: { baseline: "gemini-2.5-flash-lite-001" } } };
   doc.arms.baseline.model_id = "arm-baseline-id";
-  const view = parseResults(doc);
+  const view = parseResultsV2(doc);
+  assert.equal(view.version, "2.0.0");
   assert.equal(view.modelIdSources.baseline, "overall");
   assert.equal(view.modelIdSources.candidate, "arm");
   assert.equal(view.arms.baseline.modelId, "gemini-2.5-flash-lite-001");
   assert.equal(view.arms.candidate.modelId, "gemini-3.5-flash-lite");
-});
-
-test("gate settings are optional and fall back to δ = 5 pp / 90%", () => {
-  const missing = structuredClone(bundled);
-  delete missing.gate;
-  const blank = parseResults(missing);
-  assert.equal(blank.gate.fromFile, false);
-  assert.equal(blank.gate.text, "δ = 5 pp / 90%");
-  assert.equal(blank.gate.text, GATE_FALLBACK);
-  assert.equal(blank.headline, "Pass");
-
-  const version1 = parseResults(asVersion1());
-  assert.equal(version1.version, 1);
-  assert.equal(version1.schemaVersion, null);
-  assert.equal(version1.gate.fromFile, false);
-  assert.equal(version1.gate.text, GATE_FALLBACK);
-
-  const partial = structuredClone(bundled);
-  partial.gate = { alpha: "0.1", min_valid: "3/5" };
-  const partialView = parseResults(partial);
-  assert.equal(partialView.gate.fromFile, true);
-  assert.equal(partialView.gate.text, "δ = 5 pp · α = 0.1 · min valid 60% · 90%");
-  assert.equal(partialView.headline, "Pass");
-});
-
-test("top-level gate keys are read when the gate object is absent", () => {
-  const doc = asVersion2();
-  doc.delta = "0.05";
-  doc.alpha = 0.1;
-  doc.min_valid = "0.6";
-  doc.ci_level = "0.9";
-  doc.miss_cap = "1/20";
-  const view = parseResultsV2(doc);
-  assert.equal(view.version, "2.0.0");
-  assert.equal(view.gate.fromFile, true);
-  assert.equal(view.gate.delta, "0.05");
-  assert.equal(view.gate.alpha, 0.1);
-  assert.equal(view.gate.minValid, "0.6");
-  assert.equal(view.gate.ciLevel, "0.9");
-  assert.equal(view.gate.missCap, "1/20");
-  assert.equal(view.gate.text, "δ = 5 pp · α = 0.1 · min valid 60% · 90% CI · miss cap 5%");
   assert.equal(view.headline, "Pass");
+});
+
+test("delta and the CI level come from verdicts.overall, and a gate block is ignored", () => {
+  const older = parseResults(asVersion1());
+  assert.equal(older.interval.fromFile, false);
+  assert.equal(older.interval.text, INTERVAL_FALLBACK);
+  assert.equal(older.interval.text, "δ = 5 pp / 90%");
+
+  const doc = structuredClone(bundled);
+  doc.gate = { alpha: "0.1", ci_level: "0.95", miss_cap: "0.05", delta: "0.2" };
+  doc.alpha = "0.1";
+  doc.ci_level = "0.95";
+  doc.miss_cap = "1/20";
+  const view = parseResults(doc);
+  assert.equal(view.interval.fromFile, true);
+  assert.equal(view.interval.delta, "0.05");
+  assert.equal(view.interval.ciLevel, "0.9");
+  assert.equal(view.interval.text, "δ = 5 pp · 90% CI");
+  assert.equal(view.headline, "Pass");
+  assert.equal("gate" in view, false);
+});
+
+test("2.1.0 fraction strings are exact and rollouts_per_scenario counts must match", () => {
+  const numeric = structuredClone(bundled);
+  numeric.min_valid_fraction_per_scenario = 0.6;
+  assert.throws(() => parseResults(numeric), /min_valid_fraction_per_scenario must be a string/);
+
+  const numericDelta = structuredClone(bundled);
+  numericDelta.verdicts.overall.delta = 0.05;
+  assert.throws(() => parseResults(numericDelta), /verdicts\.overall\.delta must be a string/);
+
+  const uneven = structuredClone(bundled);
+  uneven.rollouts_per_scenario = { baseline: 20, candidate: 5 };
+  assert.throws(
+    () => parseResults(uneven),
+    /rollouts_per_scenario baseline and candidate must be equal/,
+  );
+
+  const kind = structuredClone(bundled);
+  kind.run_kind = "explore";
+  assert.throws(() => parseResults(kind), /run_kind must be screening, baseline, aa, or gate/);
 });
 
 test("schema_version 2.1.0 can stand in for version and must agree when both are set", () => {
@@ -419,21 +445,25 @@ test("a non-string overall model id is rejected", () => {
   );
 });
 
-test("gate settings do not change Pass, Block, Insufficient evidence, or Invalid run", () => {
-  const withGate = (likely, invalid) => parseResults({
-    ...bundled,
-    likely_regression: likely,
-    invalid_run: invalid,
-  }).headline;
-  assert.equal(withGate(false, false), "Pass");
-  assert.equal(withGate(true, false), "Block");
-  assert.equal(withGate(null, false), "Insufficient evidence");
-  assert.equal(withGate(true, true), "Invalid run");
-
-  const broken = structuredClone(bundled);
-  broken.gate = { delta: { pp: 5 } };
-  assert.throws(() => parseResults(broken), /gate\.delta must be a non-negative number or a string/);
+test("recorded delta and CI level do not change Pass, Block, Insufficient evidence, or Invalid run", () => {
+  assert.equal(parseResults(withLikely(false, false)).headline, "Pass");
+  assert.equal(parseResults(withLikely(true, false)).headline, "Block");
+  const thin = asVersion2();
+  thin.likely_regression = null;
+  thin.invalid_run = false;
+  assert.equal(parseResults(thin).headline, "Insufficient evidence");
+  assert.equal(parseResults(withLikely(true, true)).headline, "Invalid run");
 });
+
+function withLikely(likely, invalid = false, doc = bundled) {
+  const copy = structuredClone(doc);
+  copy.likely_regression = likely;
+  copy.invalid_run = invalid;
+  if (copy.verdicts?.overall && typeof likely === "boolean") {
+    copy.verdicts.overall.likely_regression = likely;
+  }
+  return copy;
+}
 
 function asVersion2(doc = bundled) {
   const copy = structuredClone(doc);

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "results.schema.json",
   "title": "CI Agent Regression Harness results",
-  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. Version 1 is the original file. Version 2.0.0 (any 2.x.y string) adds an optional one-sentence caption on each scenario and arm, and an optional model_id on each arm. Version 2.1.0 adds optional schema_version, verdicts.overall.model_ids for the baseline and candidate, and optional gate settings copied from suite.yaml. Decimals such as 0.05 and amounts such as $1.25 are valid caption text. A model id is recorded text such as gemini-3.5-flash-lite and does not change the suite verdict. When verdicts.overall.model_ids is present it is preferred over the per-arm model_id. Gate settings do not change Pass, Block, Insufficient evidence, or Invalid run. Extra fields are allowed so a real results.json can be dropped in at data/results.preliminary.json.",
+  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. Version 1 is the original file. Version 2.0.0 adds an optional one-sentence caption on each scenario and arm, and an optional model_id on each arm. Schema 2.1.0 (schema_version \"2.1.0\") records run_kind, baseline_pool_model_id, min_valid_fraction_per_scenario, equal rollouts_per_scenario counts, diagnostics, and verdicts.overall. On 2.1.0, verdicts.overall.likely_regression and verdicts.overall.model_ids are required. delta and difference_ci.level are read from verdicts.overall. Alpha and the miss cap stay in suite.yaml. There is no gate block. Fraction values are strings such as \"0.6\" and \"0.05\". Decimals such as 0.05 and amounts such as $1.25 are valid caption text. A model id does not change the suite verdict. Extra fields are allowed so a real results.json can be dropped in at data/results.preliminary.json.",
   "type": "object",
   "additionalProperties": true,
   "required": ["version", "status", "level", "likely_regression", "arms"],
@@ -15,9 +15,25 @@
       ]
     },
     "schema_version": {
-      "description": "Optional copy of the 2.x.y schema tag. On a 2.1.0 file this is \"2.1.0\". When both version and schema_version are set they match. Not used on version 1.",
+      "description": "Harness schema tag. A 2.1.0 file sets this to \"2.1.0\". When version is also set, the two match. Not used on version 1.",
       "type": "string",
       "pattern": "^2\\.\\d+\\.\\d+$"
+    },
+    "run_kind": { "enum": ["screening", "baseline", "aa", "gate"] },
+    "baseline_pool_model_id": { "type": "string" },
+    "min_valid_fraction_per_scenario": {
+      "description": "Exact fraction string, for example \"0.6\".",
+      "type": "string"
+    },
+    "rollouts_per_scenario": {
+      "description": "baseline and candidate are equal non-negative integers.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline", "candidate"],
+      "properties": {
+        "baseline": { "type": "integer", "minimum": 0 },
+        "candidate": { "type": "integer", "minimum": 0 }
+      }
     },
     "status": { "enum": ["preliminary", "final"] },
     "level": { "const": 0.9 },
@@ -25,7 +41,7 @@
     "invalid_run": { "type": "boolean" },
     "suite": { "type": "string" },
     "verdicts": {
-      "description": "Optional suite detail. model_ids here are preferred over arms.*.model_id when present. They do not change the suite status.",
+      "description": "Suite detail. On schema 2.1.0, overall.likely_regression and overall.model_ids are required. model_ids are preferred over arms.*.model_id. delta and difference_ci are fraction strings plus a CI level. They do not change Pass, Block, Insufficient evidence, or Invalid run.",
       "type": "object",
       "additionalProperties": true,
       "properties": {
@@ -33,9 +49,13 @@
           "type": "object",
           "additionalProperties": true,
           "properties": {
+            "delta": { "type": "string" },
+            "difference_ci": { "$ref": "#/$defs/differenceCi" },
+            "likely_regression": { "type": "boolean" },
             "model_ids": {
               "type": "object",
               "additionalProperties": false,
+              "required": ["baseline", "candidate"],
               "properties": {
                 "baseline": {
                   "description": "Baseline model id, for example gemini-2.5-flash-lite-001.",
@@ -51,17 +71,9 @@
         }
       }
     },
-    "gate": {
-      "description": "Optional gate settings copied from suite.yaml. Harness PR #13 was not readable when this schema was written, so these key names are the optional contract: delta, alpha, min_valid, ci_level, miss_cap. The same keys are also accepted at the top level of the file when gate is omitted. Missing settings display as δ = 5 pp / 90%. They do not change the suite status.",
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "delta": { "type": ["string", "number"] },
-        "alpha": { "type": ["string", "number"] },
-        "min_valid": { "type": ["string", "number"] },
-        "ci_level": { "type": ["string", "number"] },
-        "miss_cap": { "type": ["string", "number"] }
-      }
+    "diagnostics": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/diagnostic" }
     },
     "notes": {
       "type": "object",
@@ -93,7 +105,94 @@
       }
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "anyOf": [
+          { "required": ["schema_version"], "properties": { "schema_version": { "const": "2.1.0" } } },
+          { "required": ["version"], "properties": { "version": { "const": "2.1.0" } } }
+        ]
+      },
+      "then": {
+        "required": ["verdicts"],
+        "properties": {
+          "verdicts": {
+            "required": ["overall"],
+            "properties": {
+              "overall": {
+                "required": ["likely_regression", "model_ids"]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
+    "differenceCi": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["lower", "upper", "level"],
+      "properties": {
+        "lower": { "type": "string" },
+        "upper": { "type": "string" },
+        "level": {
+          "description": "CI level. 0.9, or the exact string \"0.9\".",
+          "oneOf": [{ "const": 0.9 }, { "const": "0.9" }, { "const": "9/10" }]
+        }
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "scenario_id",
+        "family_id",
+        "scheduled_rollouts",
+        "miss_counts",
+        "missing_cassette_keys",
+        "baseline_pass_rate",
+        "candidate_pass_rate",
+        "difference",
+        "difference_ci"
+      ],
+      "properties": {
+        "scenario_id": { "type": "string" },
+        "family_id": { "type": "string" },
+        "scheduled_rollouts": { "$ref": "#/$defs/countPair" },
+        "miss_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["baseline", "candidate"],
+          "properties": {
+            "baseline": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+            "candidate": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } }
+          }
+        },
+        "missing_cassette_keys": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["baseline", "candidate"],
+          "properties": {
+            "baseline": { "type": "array", "items": { "type": "string" } },
+            "candidate": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "baseline_pass_rate": { "type": "string" },
+        "candidate_pass_rate": { "type": "string" },
+        "difference": { "type": "string" },
+        "difference_ci": { "$ref": "#/$defs/differenceCi" }
+      }
+    },
+    "countPair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline", "candidate"],
+      "properties": {
+        "baseline": { "type": "integer", "minimum": 0 },
+        "candidate": { "type": "integer", "minimum": 0 }
+      }
+    },
     "arm": {
       "type": "object",
       "additionalProperties": true,
