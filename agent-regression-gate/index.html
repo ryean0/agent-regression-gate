@@ -74,64 +74,76 @@
           <a class="more" href="how-it-works/">More details</a>
         </div>
         <aside class="hero-visual">
-          <figure class="scale" aria-label="Balance scale. Baseline is the left pan and the candidate is the right pan. Level is Pass. A wobble is Insufficient evidence. A tip toward the candidate, with an orange glow, is Block.">
-            <svg class="scale-svg" viewBox="0 0 520 280" aria-hidden="true" focusable="false">
-              <g class="scale-stand">
-                <path d="M260 124 V236"/>
-                <path d="M214 236 H306"/>
-              </g>
-              <g class="scale-beam">
-                <path d="M78 124 H442"/>
-                <circle cx="260" cy="124" r="3.2" fill="#f4f4f5" stroke="none"/>
-                <g class="scale-pan scale-pan-left">
-                  <path d="M78 124 L54 186 H126 L102 124"/>
-                  <path d="M54 186 H126"/>
-                  <text x="90" y="214" text-anchor="middle">Baseline</text>
-                </g>
-                <g class="scale-pan scale-pan-right">
-                  <path d="M442 124 L418 186 H490 L466 124"/>
-                  <path d="M418 186 H490"/>
-                  <path class="scale-hot" d="M442 124 L418 186 H490 L466 124"/>
-                  <path class="scale-hot" d="M418 186 H490"/>
-                  <text x="454" y="214" text-anchor="middle">Candidate</text>
-                </g>
-              </g>
-            </svg>
-            <p class="scale-state" aria-hidden="true">
-              <span class="st-pass">Pass</span>
-              <span class="st-gap">Insufficient evidence</span>
-              <span class="st-block">Block</span>
-            </p>
-          </figure>
-          <div class="shot" aria-label="Sample suite check. The candidate grid fills in, the interval's upper bound is below −5 pp, and the status resolves to Block.">
-          <div class="shot-card">
-            <header class="shot-bar">
-              <span>Suite check</span>
-              <span>sample</span>
-            </header>
-            <div class="shot-arm">
-              <p><span>Baseline</span><b>18/20</b></p>
-              <div class="shot-cells" aria-hidden="true">
-                <i style="--i:0" data-kind="pass"></i><i style="--i:1" data-kind="pass"></i><i style="--i:2" data-kind="pass"></i><i style="--i:3" data-kind="pass"></i><i style="--i:4" data-kind="fail"></i><i style="--i:5" data-kind="pass"></i><i style="--i:6" data-kind="pass"></i><i style="--i:7" data-kind="pass"></i><i style="--i:8" data-kind="pass"></i><i style="--i:9" data-kind="fail"></i><i style="--i:10" data-kind="pass"></i><i style="--i:11" data-kind="pass"></i>
+          <div class="hero-run" aria-label="Sample suite checks. Each one keeps the scale, the status label, and the console on the same verdict.">
+            <div class="hero-phase" data-state="pass" data-pose="level" data-tone="white" data-verdict="Pass">
+              <figure class="scale">
+                <svg class="scale-svg" viewBox="0 0 520 280" aria-hidden="true" focusable="false">
+                  <g class="scale-stand"><path d="M260 124 V236"/><path d="M214 236 H306"/></g>
+                  <g class="scale-beam">
+                    <path class="scale-beam-line" d="M78 124 H442"/>
+                    <circle class="scale-fulcrum" cx="260" cy="124" r="3.2"/>
+                    <g class="scale-pan scale-pan-left"><path d="M78 124 L54 186 H126 L102 124"/><path d="M54 186 H126"/><text x="90" y="214" text-anchor="middle">Baseline</text></g>
+                    <g class="scale-pan scale-pan-right"><path d="M442 124 L418 186 H490 L466 124"/><path d="M418 186 H490"/><text x="454" y="214" text-anchor="middle">Candidate</text></g>
+                  </g>
+                </svg>
+                <p class="scale-state">Pass</p>
+              </figure>
+              <div class="shot">
+                <div class="shot-card">
+                  <header class="shot-bar"><span>Suite check</span><span>sample</span></header>
+                  <div class="shot-arm"><p><span>Baseline</span><b>18/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:0" data-kind="pass"></i><i style="--i:1" data-kind="pass"></i><i style="--i:2" data-kind="pass"></i><i style="--i:3" data-kind="pass"></i><i style="--i:4" data-kind="pass"></i><i style="--i:5" data-kind="pass"></i><i style="--i:6" data-kind="pass"></i><i style="--i:7" data-kind="pass"></i></div></div>
+                  <div class="shot-arm"><p><span>Candidate</span><b>17/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:8" data-kind="pass"></i><i style="--i:9" data-kind="pass"></i><i style="--i:10" data-kind="pass"></i><i style="--i:11" data-kind="pass"></i><i style="--i:12" data-kind="pass"></i><i style="--i:13" data-kind="pass"></i><i style="--i:14" data-kind="pass"></i><i style="--i:15" data-kind="pass"></i></div></div>
+                  <div class="shot-gap"><span>Gap</span><b>−2.5 pp</b><span class="shot-ci" aria-hidden="true"><i></i></span><span>lower above −5 pp</span></div>
+                  <p class="shot-status"><span class="resolved">Pass</span></p>
+                </div>
               </div>
             </div>
-            <div class="shot-arm">
-              <p><span>Candidate</span><b>2/5</b></p>
-              <div class="shot-cells" aria-hidden="true">
-                <i style="--i:12" data-kind="pass"></i><i style="--i:13" data-kind="fail"></i><i style="--i:14" data-kind="fail"></i><i style="--i:15" data-kind="pass"></i><i style="--i:16" data-kind="fail"></i>
+            <div class="hero-phase" data-state="insufficient" data-pose="wobble" data-tone="grey" data-verdict="Insufficient evidence">
+              <figure class="scale">
+                <svg class="scale-svg" viewBox="0 0 520 280" aria-hidden="true" focusable="false">
+                  <g class="scale-stand"><path d="M260 124 V236"/><path d="M214 236 H306"/></g>
+                  <g class="scale-beam">
+                    <path class="scale-beam-line" d="M78 124 H442"/>
+                    <circle class="scale-fulcrum" cx="260" cy="124" r="3.2"/>
+                    <g class="scale-pan scale-pan-left"><path d="M78 124 L54 186 H126 L102 124"/><path d="M54 186 H126"/><text x="90" y="214" text-anchor="middle">Baseline</text></g>
+                    <g class="scale-pan scale-pan-right"><path d="M442 124 L418 186 H490 L466 124"/><path d="M418 186 H490"/><text x="454" y="214" text-anchor="middle">Candidate</text></g>
+                  </g>
+                </svg>
+                <p class="scale-state">Insufficient evidence</p>
+              </figure>
+              <div class="shot">
+                <div class="shot-card">
+                  <header class="shot-bar"><span>Suite check</span><span>sample</span></header>
+                  <div class="shot-arm"><p><span>Baseline</span><b>18/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:0" data-kind="pass"></i><i style="--i:1" data-kind="pass"></i><i style="--i:2" data-kind="pass"></i><i style="--i:3" data-kind="gap"></i><i style="--i:4" data-kind="pass"></i><i style="--i:5" data-kind="pass"></i><i style="--i:6" data-kind="pass"></i><i style="--i:7" data-kind="pass"></i></div></div>
+                  <div class="shot-arm"><p><span>Candidate</span><b>16/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:8" data-kind="pass"></i><i style="--i:9" data-kind="gap"></i><i style="--i:10" data-kind="pass"></i><i style="--i:11" data-kind="pass"></i><i style="--i:12" data-kind="gap"></i><i style="--i:13" data-kind="pass"></i><i style="--i:14" data-kind="pass"></i><i style="--i:15" data-kind="pass"></i></div></div>
+                  <div class="shot-gap"><span>Gap</span><b>−3.0 pp</b><span class="shot-ci" aria-hidden="true"><i></i></span><span>interval crosses −5 pp</span></div>
+                  <p class="shot-status"><span class="resolved">Insufficient evidence</span></p>
+                </div>
               </div>
             </div>
-            <div class="shot-gap">
-              <span>Gap</span>
-              <b>−37.5 pp</b>
-              <span class="shot-ci" aria-hidden="true"><i></i></span>
-              <span>upper below −5 pp</span>
+            <div class="hero-phase" data-state="block" data-pose="tip" data-tone="orange" data-verdict="Block">
+              <figure class="scale">
+                <svg class="scale-svg" viewBox="0 0 520 280" aria-hidden="true" focusable="false">
+                  <g class="scale-stand"><path d="M260 124 V236"/><path d="M214 236 H306"/></g>
+                  <g class="scale-beam">
+                    <path class="scale-beam-line scale-hot" d="M78 124 H442"/>
+                    <circle class="scale-fulcrum" cx="260" cy="124" r="3.2"/>
+                    <g class="scale-pan scale-pan-left"><path d="M78 124 L54 186 H126 L102 124"/><path d="M54 186 H126"/><text x="90" y="214" text-anchor="middle">Baseline</text></g>
+                    <g class="scale-pan scale-pan-right"><path class="scale-hot" d="M442 124 L418 186 H490 L466 124"/><path class="scale-hot" d="M418 186 H490"/><text x="454" y="214" text-anchor="middle">Candidate</text></g>
+                  </g>
+                </svg>
+                <p class="scale-state">Block</p>
+              </figure>
+              <div class="shot">
+                <div class="shot-card">
+                  <header class="shot-bar"><span>Suite check</span><span>sample</span></header>
+                  <div class="shot-arm"><p><span>Baseline</span><b>18/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:0" data-kind="pass"></i><i style="--i:1" data-kind="pass"></i><i style="--i:2" data-kind="pass"></i><i style="--i:3" data-kind="pass"></i><i style="--i:4" data-kind="fail"></i><i style="--i:5" data-kind="pass"></i><i style="--i:6" data-kind="pass"></i><i style="--i:7" data-kind="pass"></i><i style="--i:8" data-kind="pass"></i><i style="--i:9" data-kind="fail"></i><i style="--i:10" data-kind="pass"></i><i style="--i:11" data-kind="pass"></i></div></div>
+                  <div class="shot-arm"><p><span>Candidate</span><b>2/5</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:12" data-kind="pass"></i><i style="--i:13" data-kind="fail"></i><i style="--i:14" data-kind="fail"></i><i style="--i:15" data-kind="pass"></i><i style="--i:16" data-kind="fail"></i></div></div>
+                  <div class="shot-gap"><span>Gap</span><b>−37.5 pp</b><span class="shot-ci" aria-hidden="true"><i></i></span><span>upper below −5 pp</span></div>
+                  <p class="shot-status"><span class="resolved">Block</span></p>
+                </div>
+              </div>
             </div>
-            <p class="shot-status">
-              <span class="pending">Scoring</span>
-              <span class="resolved">Block</span>
-            </p>
-          </div>
           </div>
         </aside>
       </div>
