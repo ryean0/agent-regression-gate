@@ -11,7 +11,7 @@ export const COVERAGE_RATIO = { numerator: 3, denominator: 5 };
 export const CONFIDENCE = 0.9;
 
 export const METHOD_NOTES = {
-  miss: "More than 5% of scheduled rollouts excluded in either arm invalidates the run. Exactly 5% is still scored. 5% is the rational 1/20, compared in integers.",
+  miss: "More than 5% of scheduled rollouts excluded in either arm invalidates the run. Exactly 5% is still scored. The 5% line is compared in integers.",
   coverage: "Each scenario needs at least ceil(0.6 × scheduled) valid rollouts on both arms. 0.6 is 3/5, and the ceiling uses integer arithmetic.",
   pairing: "The gap is the unweighted average of (candidate pass rate − baseline pass rate) across scenarios. Each scenario counts once. Scenarios are combined in id order, so the recorded order cannot change the verdict.",
   interval: "Uncertainty on each pass rate is a Jeffreys binomial variance, so an all-pass or all-fail arm still carries a little noise. The 90% interval is a normal approximation around the average gap.",

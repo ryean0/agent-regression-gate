@@ -1,5 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="CI Agent Regression Harness">
-  <rect width="32" height="32" rx="6" fill="#070708"/>
-  <rect x="1.5" y="1.5" width="29" height="29" rx="5" fill="none" stroke="#f4f4f5" stroke-width="1.5"/>
-  <path d="M8 12.5h16M8 19.5h10" stroke="#f4f4f5" stroke-width="1.5" stroke-linecap="square"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Anubys">
+  <rect width="64" height="64" rx="12" fill="#070708"/>
+  <path d="M32 22V52M22 52H42" fill="none" stroke="#f4f4f5" stroke-width="1.75" stroke-linecap="square"/>
+  <path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="#f4f4f5" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/>
+  <circle cx="32" cy="22" r="2.2" fill="#f4f4f5"/>
 </svg>
