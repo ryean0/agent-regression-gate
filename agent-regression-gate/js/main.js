@@ -5,10 +5,13 @@ import {
   flowScrollState,
   methodConnectorPaths,
   placeFlowCard,
+  flowEscapeApplies,
   presentationForMotion,
   reduceFlow,
 } from "./method.js";
 import { RESULTS_PATH, parseResults, parseResultsV2 } from "./results.js";
+import { parseResults } from "./results.js";
+import { bindStory, renderStoryHtml } from "./story.js";
 import { METHOD_NOTES, armMissExceeds, formatPercent, formatPoints, formatSignedNumber, scoreRun } from "./verdict.js";
 
 const EMAIL = "ryanphua.dev@outlook.com";
@@ -143,7 +146,6 @@ function initFlow(flow, reduceMotion, bindPlace) {
       const open = state.openId === id;
       wrap.classList.toggle("is-open", open);
       wrap.classList.toggle("is-dismissed", state.dismissedId === id);
-      wrap.querySelector(".flow-step").setAttribute("aria-expanded", open ? "true" : "false");
     }
     layoutConnectors();
     placeOpenCards();
@@ -189,15 +191,12 @@ function initFlow(flow, reduceMotion, bindPlace) {
     });
   }
 
-  window.addEventListener("keydown", (event) => {
+  flow.addEventListener("keydown", (event) => {
     if (event.key !== "Escape" && event.key !== "Esc") return;
-    if (document.querySelector("dialog[open]")) return;
-    if (!state.openId) return;
+    if (!flowEscapeApplies(state, flow.contains(event.target))) return;
     state = reduceFlow(state, { type: "escape" });
     apply();
-    event.preventDefault();
-    event.stopPropagation();
-  }, true);
+  });
 
   document.addEventListener("pointerdown", (event) => {
     if (flow.contains(event.target)) return;
@@ -373,6 +372,7 @@ function initChrome() {
   }
   document.getElementById("pilot-cancel").addEventListener("click", () => dialog.close());
   if (flow) initFlow(flow, reduceMotion, (place) => { placeFlowCards = place; });
+  bindStory(document);
 
   document.getElementById("pilot-form").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -432,7 +432,7 @@ function renderResults(view) {
     ...armRows.map(([label, base, cand]) => el("div", { class: "sheet" }, [
       el("span", {}, label), el("strong", {}, String(base)), el("strong", {}, String(cand)),
     ])),
-    el("p", { class: "fine" }, "Environment misses may equal 5% of scheduled rollouts. Above that, on either arm, is over the cap. The suite check is the file’s likely_regression field. The label is Pass, Block, Insufficient evidence, or Invalid run."),
+    el("p", { class: "fine" }, "Environment misses may equal 5% of scheduled rollouts. Above that, on either arm, is over the cap. The check fails on Block. An invalid run isn't scored."),
     el("h3", { class: "block-title" }, "Scenario diagnostics"),
     el("table", { class: "diag" }, [
       el("caption", {}, "Diagnostics only. These rates do not pass or block a scenario."),
@@ -543,7 +543,7 @@ function renderDemo() {
       ]),
       el("div", { class: "runbar" }, [
         el("button", { type: "button", class: "btn btn-primary", id: "run-btn", onclick: run }, "Run"),
-        el("p", {}, "20 baseline · 5 candidate · paired by scenario"),
+        el("p", {}, "Repeated rollouts per arm · paired by scenario"),
       ]),
       el("ul", { class: "legend" }, [
         legendItem("pass", "Pass"),
@@ -808,6 +808,9 @@ function recordedCaption(id) {
 }
 
 let repaintConsole = () => {};
+
+const howRoot = document.getElementById("how-root");
+if (howRoot) howRoot.innerHTML = renderStoryHtml();
 
 initChrome();
 renderDemo();

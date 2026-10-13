@@ -1,6 +1,6 @@
 # Mullion
 
-Launch page for Mullion, a CI regression gate for agents. The page is black and white with a `#ff7a1a` accent. It reads a results file and shows one suite status: Pass, Block, Insufficient evidence, or Invalid run. The repository name and the Pages URL stay `agent-regression-gate`.
+Launch page for Mullion, a CI regression gate for agents. It reads a results file and shows one suite status: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a Likely regression warning. The repository name and the Pages URL stay `agent-regression-gate`.
 
 Live site: https://ryean0.github.io/agent-regression-gate/
 

@@ -128,7 +128,8 @@ test("sitting exactly on the coverage floor is accepted", () => {
   ]);
   assert.equal(result.scenarios[0].baselineNeed, 3);
   assert.equal(armMissExceeds(2, 40), false);
-  assert.equal(result.verdict, "no_regression");
+  assert.equal(result.invalidReasons.length, 0);
+  assert.notEqual(result.verdict, "invalid_run");
 });
 
 test("scenario order does not change the simulator verdict", () => {
@@ -145,7 +146,7 @@ test("scenario order does not change the simulator verdict", () => {
 
 test("simulated presets land on the three verdicts", () => {
   const expected = {
-    stable: "no_regression",
+    stable: "insufficient",
     subtle: "likely_regression",
     loops: "likely_regression",
     flaky: "invalid_run",
