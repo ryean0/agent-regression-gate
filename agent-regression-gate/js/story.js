@@ -566,3 +566,112 @@ export function bindStory(doc = document) {
   });
   return update;
 }
+
+/** Landing sequence: one graphic at a time. The full story stays on its own route. */
+export function renderFilmHtml(steps = STORY_STEPS) {
+  const frames = steps.map((step, index) => {
+    const hidden = index === 0 ? "" : " hidden";
+    return `<li class="film-frame"${hidden} data-film="${escapeHtml(step.id)}">
+      ${step.graphic}
+      <p class="film-rail">${escapeHtml(step.rail)}</p>
+    </li>`;
+  }).join("");
+  const dots = steps.map((step, index) => {
+    const current = index === 0 ? ' aria-current="true"' : "";
+    return `<button type="button" class="film-dot" data-film-index="${index}" aria-label="${escapeHtml(step.rail)}"${current}></button>`;
+  }).join("");
+  return `<div class="film">
+    <p class="film-line" aria-live="polite">${escapeHtml(steps[0]?.headline ?? "")}</p>
+    <div class="film-stage">
+      <ol class="film-frames">${frames}</ol>
+    </div>
+    <div class="film-controls">
+      <button type="button" class="film-nav" data-film-dir="-1">Previous</button>
+      <div class="film-dots" role="group" aria-label="How it works sequence">${dots}</div>
+      <button type="button" class="film-nav" data-film-dir="1">Next</button>
+      <button type="button" class="film-pause" aria-pressed="false">Pause</button>
+    </div>
+  </div>`;
+}
+
+export function bindFilm(root, win = typeof window === "undefined" ? null : window) {
+  if (!root || !win) return () => {};
+  const film = root.querySelector(".film") || root;
+  const frames = [...film.querySelectorAll(".film-frame")];
+  const dots = [...film.querySelectorAll(".film-dot")];
+  const line = film.querySelector(".film-line");
+  const pauseBtn = film.querySelector(".film-pause");
+  const steps = STORY_STEPS;
+  if (frames.length === 0) return () => {};
+  let index = 0;
+  let timer = 0;
+  let paused = false;
+  const reduce = win.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const show = (next) => {
+    const count = frames.length;
+    index = ((next % count) + count) % count;
+    if (!reduce) {
+      frames.forEach((frame, i) => {
+        frame.hidden = i !== index;
+      });
+    }
+    dots.forEach((dot, i) => {
+      if (i === index) dot.setAttribute("aria-current", "true");
+      else dot.removeAttribute("aria-current");
+    });
+    if (line && !reduce) line.textContent = steps[index]?.headline ?? "";
+  };
+
+  const stop = () => win.clearInterval(timer);
+  const start = () => {
+    stop();
+    if (paused || reduce) return;
+    timer = win.setInterval(() => show(index + 1), 2200);
+  };
+
+  if (reduce) {
+    film.classList.add("is-static");
+    frames.forEach((frame) => {
+      frame.hidden = false;
+    });
+    if (line) {
+      line.textContent = "";
+      line.setAttribute("aria-hidden", "true");
+    }
+    if (pauseBtn) pauseBtn.hidden = true;
+  } else {
+    show(0);
+    start();
+    film.addEventListener("mouseenter", stop);
+    film.addEventListener("mouseleave", start);
+    film.addEventListener("focusin", stop);
+    film.addEventListener("focusout", (event) => {
+      if (!film.contains(event.relatedTarget)) start();
+    });
+  }
+
+  film.querySelectorAll("[data-film-dir]").forEach((button) => {
+    button.addEventListener("click", () => show(index + Number(button.dataset.filmDir)));
+  });
+  dots.forEach((dot) => {
+    dot.addEventListener("click", () => show(Number(dot.dataset.filmIndex)));
+  });
+  film.querySelector(".film-dots")?.addEventListener("keydown", (event) => {
+    const current = dots.indexOf(win.document.activeElement);
+    if (current < 0) return;
+    const next = railIndexFromKey(event.key, current, dots.length);
+    if (next == null) return;
+    event.preventDefault();
+    show(next);
+    dots[next].focus();
+  });
+  pauseBtn?.addEventListener("click", () => {
+    paused = !paused;
+    pauseBtn.setAttribute("aria-pressed", String(paused));
+    pauseBtn.textContent = paused ? "Play" : "Pause";
+    if (paused) stop();
+    else start();
+  });
+  return stop;
+}

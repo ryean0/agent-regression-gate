@@ -1,3 +1,4 @@
+import { BRAND } from "./brand.js";
 import { CANDIDATES, SCENARIO_SETS, buildRun } from "./demo-data.js";
 import {
   WIDE_LAYOUT_MIN,
@@ -10,7 +11,7 @@ import {
   reduceFlow,
 } from "./method.js";
 import { RESULTS_PATH, parseResults, parseResultsV2 } from "./results.js";
-import { bindStory, renderStoryHtml } from "./story.js";
+import { bindFilm, bindStory, renderFilmHtml, renderStoryHtml } from "./story.js";
 import { METHOD_NOTES, armMissExceeds, formatPercent, formatPoints, formatSignedNumber, scoreRun } from "./verdict.js";
 
 const EMAIL = "ryanphua.dev@outlook.com";
@@ -381,15 +382,28 @@ function initChrome() {
       `Work email: ${String(data.get("email") || "").trim()}`,
       `Company: ${String(data.get("company") || "").trim()}`,
       "",
-      String(data.get("note") || "").trim() || "We would like to pilot Mullion.",
+      String(data.get("note") || "").trim() || `We would like to pilot ${BRAND}.`,
     ].join("\n");
-    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent("Pilot: Mullion")}&body=${encodeURIComponent(body)}`;
+    window.location.href = `mailto:${EMAIL}?subject=${encodeURIComponent(`Pilot: ${BRAND}`)}&body=${encodeURIComponent(body)}`;
     document.getElementById("pilot-note").textContent = `If your email app did not open, write to ${EMAIL}.`;
   });
 }
 
+function renderTeaser(view) {
+  const teaser = document.getElementById("results-teaser");
+  if (!teaser) return;
+  const status = teaser.querySelector(".teaser-status");
+  if (status) {
+    status.textContent = view.headline;
+    status.dataset.verdict = view.verdict;
+  }
+  const meta = teaser.querySelector(".teaser-meta");
+  if (meta) meta.textContent = view.status === "preliminary" ? "Preliminary" : "Final";
+}
+
 function renderBanner(banner) {
   const host = document.getElementById("status-banner");
+  if (!host) return;
   host.replaceChildren(el("div", { class: "banner", "data-tone": banner.tone, role: "status" }, [
     el("div", { class: "wrap banner-inner" }, [
       el("strong", {}, banner.title),
@@ -502,6 +516,7 @@ function mdeSvg(chart) {
 }
 
 function renderResultsError(error) {
+  if (!document.getElementById("results-root")) return;
   const message = error.message || "Could not read results.json";
   const unsupported = message.startsWith("unsupported results version ");
   renderBanner({
@@ -812,18 +827,31 @@ let repaintConsole = () => {};
 const howRoot = document.getElementById("how-root");
 if (howRoot) howRoot.innerHTML = renderStoryHtml();
 
-initChrome();
-renderDemo();
+const filmRoot = document.getElementById("film-root");
+if (filmRoot) {
+  filmRoot.innerHTML = renderFilmHtml();
+  bindFilm(filmRoot);
+}
 
-fetch(asset(RESULTS_PATH))
-  .then((response) => {
-    if (!response.ok) throw new Error(`Could not load results file (${response.status}).`);
-    return response.json();
-  })
-  .then((doc) => {
-    const view = doc && doc.version === 1 ? parseResults(doc) : parseResultsV2(doc);
-    recorded = view;
-    renderResults(view);
-    repaintConsole();
-  })
-  .catch((error) => renderResultsError(error instanceof Error ? error : new Error("Could not read results.json")));
+initChrome();
+if (document.getElementById("demo-root")) renderDemo();
+
+if (document.getElementById("results-root") || document.getElementById("results-teaser")) {
+  fetch(asset(RESULTS_PATH))
+    .then((response) => {
+      if (!response.ok) throw new Error(`Could not load results file (${response.status}).`);
+      return response.json();
+    })
+    .then((doc) => {
+      const view = doc && doc.version === 1 ? parseResults(doc) : parseResultsV2(doc);
+      recorded = view;
+      if (document.getElementById("results-root")) renderResults(view);
+      renderTeaser(view);
+      repaintConsole();
+    })
+    .catch((error) => {
+      const meta = document.querySelector("#results-teaser .teaser-meta");
+      if (meta) meta.textContent = "Results file could not be read";
+      renderResultsError(error instanceof Error ? error : new Error("Could not read results.json"));
+    });
+}

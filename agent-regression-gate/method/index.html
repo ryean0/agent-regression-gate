@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Method · Anubys</title>
+  <meta name="description" content="Same scenarios. Both versions. One suite check.">
+  <link rel="canonical" href="./">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="./">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="../og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="../og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+  
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>
+        Anubys
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../">Product</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/" aria-current="page">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <section class="section reveal" id="method">
+      <div class="wrap">
+        <p class="kicker">Method</p>
+        <h1>Same scenarios. Both versions. One check.</h1>
+        <p class="section-intro">The job runs in CI, after the change is built and before it merges. Hover a step, focus it, or tap it for a plain-language read.</p>
+        <figure class="flow" data-step="0">
+          <figcaption class="sr-only">Pipeline from hashed scenarios, through a CI runner, into baseline and candidate rollouts, a scorer, and one suite check. Each step opens an explanation. Escape closes it.</figcaption>
+          <div class="flow-board">
+            <svg class="flow-svg" aria-hidden="true" focusable="false">
+              <path class="draw" pathLength="1"></path>
+              <path class="draw" pathLength="1"></path>
+              <path class="draw" pathLength="1"></path>
+              <path class="draw" pathLength="1"></path>
+              <path class="draw" pathLength="1"></path>
+              <path class="draw" pathLength="1"></path>
+            </svg>
+            <div class="flow-step-wrap" data-step-id="scenarios" data-node="n1" style="--i:0">
+              <button type="button" class="flow-step" aria-describedby="flow-card-scenarios">
+                <span class="flow-index" aria-hidden="true">01</span>
+                <span class="flow-title">Scenarios</span>
+                <span class="flow-sub">Content hash</span>
+              </button>
+              <div class="flow-card" id="flow-card-scenarios" role="tooltip">
+                <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
+                  <rect x="1" y="7" width="34" height="32" rx="4" fill="none" stroke="#f4f4f5" stroke-width="1.25"/>
+                  <path d="M8 16h20M8 22h16M8 28h12" stroke="#d4d4dc" stroke-width="1.25"/>
+                  <rect x="70" y="7" width="34" height="32" rx="4" fill="none" stroke="#f4f4f5" stroke-width="1.25"/>
+                  <path d="M77 16h20M77 22h16M77 28h12" stroke="#d4d4dc" stroke-width="1.25"/>
+                  <path d="M40 23h26" stroke="#ff7a1a" stroke-width="1.5"/>
+                  <text x="116" y="20" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="12">SHA-256</text>
+                  <text x="116" y="36" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="12">same hash</text>
+                </svg>
+                <p class="flow-plain">Both versions face the same tasks. The tasks are locked in before the run starts, so neither side gets an easier set.</p>
+                <p class="flow-tech">Each scenario is sealed with a SHA-256 content hash.</p>
+              </div>
+            </div>
+            <div class="flow-step-wrap" data-step-id="runner" data-node="n2" style="--i:1">
+              <button type="button" class="flow-step" aria-describedby="flow-card-runner">
+                <span class="flow-index" aria-hidden="true">02</span>
+                <span class="flow-title">CI runner</span>
+                <span class="flow-sub">One job</span>
+              </button>
+              <div class="flow-card" id="flow-card-runner" role="tooltip">
+                <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
+                  <rect x="1" y="10" width="78" height="26" rx="6" fill="none" stroke="#f4f4f5" stroke-width="1.25"/>
+                  <text x="40" y="27" text-anchor="middle" fill="#f4f4f5" font-family="ui-monospace,monospace" font-size="12">one job</text>
+                  <path d="M84 23h22" stroke="#ff7a1a" stroke-width="1.5"/>
+                  <path d="M106 23C120 23 120 12 136 12" fill="none" stroke="#ff7a1a" stroke-width="1.5"/>
+                  <path d="M106 23C120 23 120 34 136 34" fill="none" stroke="#ff7a1a" stroke-width="1.5"/>
+                  <text x="144" y="16" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="12">baseline</text>
+                  <text x="144" y="38" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="12">candidate</text>
+                </svg>
+                <p class="flow-plain">After the build, one job in your existing CI runs the suite on both versions before the change merges.</p>
+                <p class="flow-tech">One job runs both arms and can fail the check.</p>
+              </div>
+            </div>
+            <div class="flow-step-wrap" data-step-id="baseline" data-node="n3" data-pop="down" style="--i:2">
+              <button type="button" class="flow-step" aria-describedby="flow-card-baseline">
+                <span class="flow-index" aria-hidden="true">03</span>
+                <span class="flow-title">Baseline</span>
+                <span class="flow-sub">Repeated rollouts</span>
+              </button>
+              <div class="flow-card" id="flow-card-baseline" role="tooltip">
+                <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
+                  <g fill="#f4f4f5">
+                    <rect x="0" y="16" width="11" height="11" rx="1"/>
+                    <rect x="16" y="16" width="11" height="11" rx="1"/>
+                    <rect x="32" y="16" width="11" height="11" rx="1"/>
+                    <rect x="48" y="16" width="11" height="11" rx="1"/>
+                    <rect x="64" y="16" width="11" height="11" rx="1"/>
+                    <rect x="80" y="16" width="11" height="11" rx="1"/>
+                    <rect x="96" y="16" width="11" height="11" rx="1"/>
+                  </g>
+                  <rect x="112" y="16" width="11" height="11" rx="1" fill="none" stroke="#ff7a1a" stroke-width="1.25"/>
+                  <text x="136" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">per arm</text>
+                </svg>
+                <p class="flow-plain">The agent customers already have is tried many times, so today's behavior is a stable picture instead of one lucky answer.</p>
+                <p class="flow-tech">Repeated rollouts per arm. Agent timeouts score 0. Infrastructure is excluded.</p>
+              </div>
+            </div>
+            <div class="flow-step-wrap" data-step-id="candidate" data-node="n3" style="--i:3">
+              <button type="button" class="flow-step" aria-describedby="flow-card-candidate">
+                <span class="flow-index" aria-hidden="true">04</span>
+                <span class="flow-title">Candidate</span>
+                <span class="flow-sub">Repeated rollouts</span>
+              </button>
+              <div class="flow-card" id="flow-card-candidate" role="tooltip">
+                <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
+                  <rect x="0" y="16" width="11" height="11" rx="1" fill="#f4f4f5"/>
+                  <rect x="16" y="16" width="11" height="11" rx="1" fill="#ff7a1a"/>
+                  <rect x="32" y="16" width="11" height="11" rx="1" fill="#f4f4f5"/>
+                  <rect x="48" y="16" width="11" height="11" rx="1" fill="none" stroke="#ff7a1a" stroke-width="1.25"/>
+                  <rect x="64" y="16" width="11" height="11" rx="1" fill="#f4f4f5"/>
+                  <text x="88" y="27" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">per arm</text>
+                </svg>
+                <p class="flow-plain">The new version is tried on those same tasks, so you can see whether it still completes them.</p>
+                <p class="flow-tech">Repeated rollouts per arm. Each scenario still counts once.</p>
+              </div>
+            </div>
+            <div class="flow-step-wrap" data-step-id="scorer" data-node="n4" style="--i:4">
+              <button type="button" class="flow-step" aria-describedby="flow-card-scorer">
+                <span class="flow-index" aria-hidden="true">05</span>
+                <span class="flow-title">Scorer</span>
+                <span class="flow-sub">90% interval</span>
+              </button>
+              <div class="flow-card" id="flow-card-scorer" role="tooltip">
+                <svg class="flow-ig" viewBox="0 0 280 46" aria-hidden="true" focusable="false">
+                  <line x1="4" y1="30" x2="168" y2="30" stroke="#d4d4dc" stroke-width="1"/>
+                  <line x1="104" y1="22" x2="104" y2="38" stroke="#f4f4f5" stroke-width="1.25"/>
+                  <text x="104" y="16" text-anchor="middle" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">0</text>
+                  <rect x="22" y="26" width="76" height="8" rx="4" fill="#ff7a1a"/>
+                  <text x="180" y="33" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="13">90%</text>
+                </svg>
+                <p class="flow-plain">For each task, the harness compares how often the two versions pass, then checks whether the gap is real.</p>
+                <p class="flow-tech">Pass rates are paired by scenario. The gap gets a 90% interval.</p>
+              </div>
+            </div>
+            <div class="flow-step-wrap" data-step-id="suite" data-node="n5" style="--i:5">
+              <button type="button" class="flow-step" aria-describedby="flow-card-suite">
+                <span class="flow-index" aria-hidden="true">06</span>
+                <span class="flow-title">Suite check</span>
+                <span class="flow-sub">One status</span>
+              </button>
+              <div class="flow-card" id="flow-card-suite" role="tooltip">
+                <svg class="flow-ig" viewBox="0 0 280 72" aria-hidden="true" focusable="false">
+                  <circle cx="6" cy="8" r="2.5" fill="#f4f4f5"/>
+                  <text x="16" y="11" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Pass</text>
+                  <circle cx="6" cy="22" r="2.5" fill="#ff7a1a"/>
+                  <text x="16" y="25" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="11">Block</text>
+                  <circle cx="6" cy="36" r="2.5" fill="#f4f4f5"/>
+                  <text x="16" y="39" fill="#f4f4f5" font-family="ui-monospace,monospace" font-size="11">Insufficient evidence</text>
+                  <text x="16" y="52" fill="#ff7a1a" font-family="ui-monospace,monospace" font-size="14">warning · Likely regression</text>
+                  <circle cx="6" cy="64" r="2.5" fill="none" stroke="#d4d4dc" stroke-width="1.25" stroke-dasharray="1.6 1.4"/>
+                  <text x="16" y="67" fill="#d4d4dc" font-family="ui-monospace,monospace" font-size="11">Invalid run</text>
+                </svg>
+                <p class="flow-plain">You get one suite answer: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a Likely regression warning.</p>
+                <p class="flow-tech">Pass if the 90% interval's lower bound is above −5 pp, block if its upper bound is below −5 pp, otherwise insufficient evidence; an invalid run isn't scored.</p>
+              </div>
+            </div>
+          </div>
+        </figure>
+        <div class="use-cases">
+          <p class="kicker">Use cases</p>
+          <div class="use-grid">
+            <article class="use-card" style="--i:0">
+              <h3>For founders and teams new to AI</h3>
+              <p>An AI agent can change its behavior between versions even when the screens around it look the same. Moving from Gemini Flash-Lite to a newer Flash, a prompt edit, or a new tool can make yesterday's request fail today.</p>
+              <p>This check runs the version you are about to ship against the one customers already have, on the same tasks, and flags a drop larger than 5 points when the evidence is clear, and says when it can't tell yet. The check is provider-agnostic: Gemini comes first, and OpenAI and Anthropic are on the roadmap.</p>
+            </article>
+            <article class="use-card" style="--i:1">
+              <h3>For ML and platform engineers</h3>
+              <ul>
+                <li>CI gate on the candidate versus the agent already in production.</li>
+                <li>Repeated rollouts, so one noisy try becomes a pass rate.</li>
+                <li>Non-inferiority, δ = 5 pp. Pass if the 90% interval's lower bound is above −5 pp, block if its upper bound is below −5 pp, otherwise insufficient evidence; an invalid run isn't scored.</li>
+                <li>Invalid-run detection when too many rollouts are missing or broken by infrastructure.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg> Anubys</p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../">Overview</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <a href="mailto:ryanphua.dev@outlook.com">Email</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../js/main.js"></script>
+</body>
+</html>

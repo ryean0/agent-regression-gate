@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Docs · Anubys</title>
+  <meta name="description" content="Anubys docs. The full reference arrives in a later update.">
+  <link rel="canonical" href="./">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="./">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="../og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="../og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+  
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>
+        Anubys
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../">Product</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/" aria-current="page">Docs</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <section class="page-head">
+      <div class="wrap">
+        <p class="kicker">Docs</p>
+        <h1>Docs</h1>
+        <p class="v-line">The full docs arrive in a later update.</p>
+        <p class="section-intro">Bring a suite you already run. We connect the baseline, the candidate, and a status your CI can fail.</p>
+        <div class="docs-links">
+          <a href="../how-it-works/">How it works</a>
+          <a href="../method/">Method</a>
+          <a href="../gate/">Gate</a>
+          <a href="../results/">Results</a>
+          <a href="../integrations/">Integrations</a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg> Anubys</p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../">Overview</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <a href="mailto:ryanphua.dev@outlook.com">Email</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../js/main.js"></script>
+</body>
+</html>

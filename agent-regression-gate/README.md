@@ -1,8 +1,8 @@
-# Mullion
+# Anubys
 
-Self-contained static site. Copy this folder into the public repo `ryean0/agent-regression-gate` unchanged. Every asset path is relative (`./css`, `./js`, `./data`), so the same files work at the project-page URL `https://ryean0.github.io/agent-regression-gate/` and at a domain root.
+Self-contained static site for Anubys, a CI-native agent regression model harness. The landing page is visual; method, gate, results, integrations, how it works, and docs each have their own `index.html`. Every asset path is relative (`./css`, `./js`, `./data`, or `../` from a nested route), so the same files work at `https://ryean0.github.io/agent-regression-gate/` and, after the repository rename, at `https://ryean0.github.io/anubys/`.
 
-Optional prefix: set `data-base` on `<html>` (default `./`). Canonical and Open Graph URLs in `index.html` already point at the planned project-page address. Change those three tags if the host changes.
+Optional prefix: set `data-base` on `<html>` (`./` on the landing page, `../` on a nested route). Canonical and Open Graph URLs are relative.
 
 ## Go live
 
