@@ -189,14 +189,16 @@ test("story text colors meet WCAG AA", () => {
   }
 });
 
-test("the section sits before Method and motion stays optional", () => {
-  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-  const howAt = html.indexOf('id="how"');
-  const methodAt = html.indexOf('id="method"');
-  assert.ok(howAt > 0 && howAt < methodAt);
-  assert.ok(html.includes('href="#how">How it works</a>'));
-  assert.ok(html.includes(STORY_INTRO.title));
-  assert.ok(html.includes(STORY_INTRO.lede));
+test("the story route keeps the eleven steps and motion stays optional", () => {
+  const home = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const how = fs.readFileSync(path.join(root, "how-it-works/index.html"), "utf8");
+  assert.ok(home.includes('id="how"'));
+  assert.ok(home.includes('id="film-root"'));
+  assert.ok(home.includes('href="how-it-works/"'));
+  assert.equal(home.includes(STORY_INTRO.lede), false);
+  assert.ok(how.includes(STORY_INTRO.title));
+  assert.ok(how.includes(STORY_INTRO.lede));
+  assert.ok(how.includes('id="how-root"'));
   const css = fs.readFileSync(path.join(root, "css/site.css"), "utf8");
   const howCss = css.slice(css.indexOf("/* how-story */"));
   assert.ok(howCss.length > 40);

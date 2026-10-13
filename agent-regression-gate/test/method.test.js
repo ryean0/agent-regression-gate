@@ -238,34 +238,50 @@ test("method text colors meet WCAG AA contrast", () => {
   }
 });
 
-test("index.html does not use the retired gate phrases", () => {
-  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-  const lower = html.toLowerCase();
-  for (const phrase of [
-    "below zero",
-    "above zero",
-    "entire interval",
-    "full interval",
-    "twenty",
-    "five rollouts",
-    "five scheduled",
-    "20 baseline",
-    "5 candidate",
-  ]) {
-    assert.equal(lower.includes(phrase), false, phrase);
+function htmlRoutes(dir) {
+  const found = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) found.push(...htmlRoutes(full));
+    else if (entry.name.endsWith(".html")) found.push(full);
   }
-  const visible = html.replace(/<span class="term-tip"[\s\S]*?<\/span>/g, " ");
-  const text = visible.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
-  const withoutWarning = text
-    .replace(/likely regression warning/gi, "")
-    .replace(/warning · likely regression/gi, "");
-  assert.equal(/likely regression/i.test(withoutWarning), false);
+  return found;
+}
+
+test("every route avoids the retired gate phrases", () => {
+  const files = htmlRoutes(root).filter((file) => !file.includes(`${path.sep}test${path.sep}`));
+  assert.ok(files.length >= 7);
+  for (const file of files) {
+    const html = fs.readFileSync(file, "utf8");
+    const lower = html.toLowerCase();
+    for (const phrase of [
+      "below zero",
+      "above zero",
+      "entire interval",
+      "full interval",
+      "twenty",
+      "five rollouts",
+      "five scheduled",
+      "20 baseline",
+      "5 candidate",
+      "before customers notice",
+    ]) {
+      assert.equal(lower.includes(phrase), false, `${path.relative(root, file)} ${phrase}`);
+    }
+    const visible = html.replace(/<span class="term-tip"[\s\S]*?<\/span>/g, " ");
+    const text = visible.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    const withoutWarning = text
+      .replace(/likely regression warning/gi, "")
+      .replace(/warning · likely regression/gi, "");
+    assert.equal(/likely regression/i.test(withoutWarning), false, path.relative(root, file));
+    assert.equal(/gpt-4\.1-nano/i.test(html), false, path.relative(root, file));
+  }
 });
 
 test("the method section markup carries the cards and both audiences", () => {
-  const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+  const html = fs.readFileSync(path.join(root, "method/index.html"), "utf8");
   const start = html.indexOf('id="method"');
-  const end = html.indexOf('id="trust"');
+  const end = html.indexOf("</main>");
   assert.ok(start > 0 && end > start);
   const method = html.slice(start, end);
   assert.match(method, /aria-describedby="flow-card-/);
