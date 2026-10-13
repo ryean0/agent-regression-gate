@@ -1052,6 +1052,7 @@ html.motion .status-card {
 }
 .docs-menu summary::-webkit-details-marker { display: none; }
 .docs-nav { display: grid; gap: 0.1rem; margin-top: 0.75rem; }
+.docs-menu:not([open]) > .docs-nav { display: none; }
 .docs-nav a { text-decoration: none; color: var(--muted); padding: 0.32rem 0.4rem; border-radius: 0.35rem; }
 .docs-nav a:hover { color: var(--ink); }
 .docs-nav a[aria-current="page"] { color: var(--ink); background: var(--surface); }
