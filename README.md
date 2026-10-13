@@ -17,7 +17,7 @@ npm run preview
 
 Open http://127.0.0.1:4173/agent-regression-gate/
 
-`npm test` runs the 70 site tests, then checks that every route, the favicon, stylesheet, scripts, results file, and Open Graph image resolve with relative paths. The stylesheet check rejects a fixed `width` or `min-width` above 320px unless it is inside `min()`, `max()`, `clamp()`, or a `calc()` that also uses a relative unit.
+`npm test` runs the 68 site tests, then checks that every route, the favicon, stylesheet, scripts, results file, and Open Graph image resolve with relative paths. The stylesheet check rejects a fixed `width` or `min-width` above 320px unless it is inside `min()`, `max()`, `clamp()`, or a `calc()` that also uses a relative unit.
 
 ## Swap in a real results file
 
