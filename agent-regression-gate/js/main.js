@@ -10,6 +10,7 @@ import {
   reduceFlow,
 } from "./method.js";
 import { parseResults } from "./results.js";
+import { bindStory, renderStoryHtml } from "./story.js";
 import { METHOD_NOTES, armMissExceeds, formatPercent, formatPoints, formatSignedNumber, scoreRun } from "./verdict.js";
 
 const EMAIL = "ryanphua.dev@outlook.com";
@@ -370,6 +371,7 @@ function initChrome() {
   }
   document.getElementById("pilot-cancel").addEventListener("click", () => dialog.close());
   if (flow) initFlow(flow, reduceMotion, (place) => { placeFlowCards = place; });
+  bindStory(document);
 
   document.getElementById("pilot-form").addEventListener("submit", (event) => {
     event.preventDefault();
@@ -793,6 +795,9 @@ function recordedCaption(id) {
 }
 
 let repaintConsole = () => {};
+
+const howRoot = document.getElementById("how-root");
+if (howRoot) howRoot.innerHTML = renderStoryHtml();
 
 initChrome();
 renderDemo();
