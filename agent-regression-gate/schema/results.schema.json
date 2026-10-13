@@ -2,23 +2,67 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "results.schema.json",
   "title": "CI Agent Regression Harness results",
-  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. Version 1 is the original file. Version 2.0.0 (any 2.x.y string) adds an optional one-sentence caption on each scenario and arm, and an optional model_id on each arm. Decimals such as 0.05 and amounts such as $1.25 are valid caption text. A model_id is recorded text such as gemini-3.5-flash-lite and does not change the suite verdict. Extra fields are allowed so a real results.json can be dropped in at data/results.preliminary.json.",
+  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. Version 1 is the original file. Version 2.0.0 (any 2.x.y string) adds an optional one-sentence caption on each scenario and arm, and an optional model_id on each arm. Version 2.1.0 adds optional schema_version, verdicts.overall.model_ids for the baseline and candidate, and optional gate settings copied from suite.yaml. Decimals such as 0.05 and amounts such as $1.25 are valid caption text. A model id is recorded text such as gemini-3.5-flash-lite and does not change the suite verdict. When verdicts.overall.model_ids is present it is preferred over the per-arm model_id. Gate settings do not change Pass, Block, Insufficient evidence, or Invalid run. Extra fields are allowed so a real results.json can be dropped in at data/results.preliminary.json.",
   "type": "object",
   "additionalProperties": true,
   "required": ["version", "status", "level", "likely_regression", "arms"],
   "properties": {
     "version": {
-      "description": "1, or a 2.x.y schema version such as 2.0.0. Other major versions are not supported.",
+      "description": "1, or a 2.x.y schema version such as 2.0.0 or 2.1.0. Other major versions are not supported. Omitted only when schema_version is a 2.x.y string.",
       "oneOf": [
         { "const": 1 },
         { "type": "string", "pattern": "^2\\.\\d+\\.\\d+$" }
       ]
+    },
+    "schema_version": {
+      "description": "Optional copy of the 2.x.y schema tag. On a 2.1.0 file this is \"2.1.0\". When both version and schema_version are set they match. Not used on version 1.",
+      "type": "string",
+      "pattern": "^2\\.\\d+\\.\\d+$"
     },
     "status": { "enum": ["preliminary", "final"] },
     "level": { "const": 0.9 },
     "likely_regression": { "type": ["boolean", "null"] },
     "invalid_run": { "type": "boolean" },
     "suite": { "type": "string" },
+    "verdicts": {
+      "description": "Optional suite detail. model_ids here are preferred over arms.*.model_id when present. They do not change the suite status.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "overall": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "model_ids": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "baseline": {
+                  "description": "Baseline model id, for example gemini-2.5-flash-lite-001.",
+                  "type": "string"
+                },
+                "candidate": {
+                  "description": "Candidate model id, for example gemini-3.5-flash-lite.",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "gate": {
+      "description": "Optional gate settings copied from suite.yaml. Harness PR #13 was not readable when this schema was written, so these key names are the optional contract: delta, alpha, min_valid, ci_level, miss_cap. The same keys are also accepted at the top level of the file when gate is omitted. Missing settings display as δ = 5 pp / 90%. They do not change the suite status.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "delta": { "type": ["string", "number"] },
+        "alpha": { "type": ["string", "number"] },
+        "min_valid": { "type": ["string", "number"] },
+        "ci_level": { "type": ["string", "number"] },
+        "miss_cap": { "type": ["string", "number"] }
+      }
+    },
     "notes": {
       "type": "object",
       "additionalProperties": { "type": "string" },

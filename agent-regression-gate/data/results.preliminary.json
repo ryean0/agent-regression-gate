@@ -1,12 +1,28 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
+  "schema_version": "2.1.0",
   "status": "preliminary",
   "level": 0.9,
   "likely_regression": false,
   "invalid_run": false,
   "suite": "preliminary-example",
+  "verdicts": {
+    "overall": {
+      "model_ids": {
+        "baseline": "gemini-2.5-flash-lite-001",
+        "candidate": "gemini-3.5-flash-lite"
+      }
+    }
+  },
+  "gate": {
+    "delta": "0.05",
+    "alpha": "0.1",
+    "min_valid": "0.6",
+    "ci_level": "0.9",
+    "miss_cap": "0.05"
+  },
   "notes": {
-    "summary": "Preliminary example in harness results schema 2.0.0, bundled so the results panel has a file to read. These figures are not a customer result and not a final gate. Replace data/results.preliminary.json with the real harness output around 30 October 2026.",
+    "summary": "Preliminary example in harness results schema 2.1.0, bundled so the results panel has a file to read. These figures are not a customer result and not a final gate. Replace data/results.preliminary.json with the real harness output around 30 October 2026.",
     "mde": "Smallest drop we can reliably catch, set against how many rollouts you budget. This chart is preliminary.",
     "aa": "The gate doesn't cry wolf. An A/A check runs the same agent on both arms. It is not in this file yet."
   },
