@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>results.json · Anubys</title>
-  <meta name="description" content="Results schema 1 and 2.0.0, and schema 2.1.0 in progress.">
+  <meta name="description" content="Results schema 1, 2.0.0, and 2.1.0. Wk4 fields on the file are in progress.">
   <link rel="canonical" href="./">
   <meta property="og:type" content="website">
   <meta property="og:url" content="./">
@@ -65,7 +65,7 @@
         <header class="docs-head">
           <p class="kicker">Reference</p>
           <h1>results.json</h1>
-          <p class="docs-lede">The page reads schema 1 and schema 2.0.0. Schema 2.1.0 is in progress.</p>
+          <p class="docs-lede">The page reads schema 1, schema 2.0.0, and schema 2.1.0. The Wk4 fields are in progress.</p>
         </header>
         <nav class="docs-toc" aria-labelledby="on-this-page">
           <p class="docs-toc-label" id="on-this-page">On this page</p>
@@ -73,7 +73,7 @@
         </nav>
         <div class="docs-body">
           <section class="docs-sec" id="v1" aria-labelledby="v1-title"><h2 id="v1-title">Schema 1</h2><p>Schema 1 is the original results file. This page reads it. The file carries <code>version</code>, <code>status</code>, <code>level</code>, <code>likely_regression</code>, and <code>arms</code>. <code>status</code> is <code>preliminary</code> or <code>final</code>. <code>level</code> is 0.9.</p><p><code>likely_regression</code> false is Pass. True is Block. Null, when the run is not invalid, is Insufficient evidence. <code>invalid_run</code> true is Invalid run.</p></section>
-<section class="docs-sec" id="v2" aria-labelledby="v2-title"><h2 id="v2-title">Schema 2.0.0</h2><p>Schema 2.0.0 adds an optional one-sentence caption on each scenario and arm, and an optional <code>model_id</code> on each arm. This page reads 2.0.0. The shipped sample is 2.0.0. A model id is shown when it is present and does not change the suite status.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">results.json · 2.0.0</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
+<section class="docs-sec" id="v2" aria-labelledby="v2-title"><h2 id="v2-title">Schema 2.0.0</h2><p>Schema 2.0.0 adds an optional one-sentence caption on each scenario and arm, and an optional <code>model_id</code> on each arm. This page still reads 2.0.0. A model id is shown when it is present and does not change the suite status. The shipped sample is 2.1.0.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">results.json · 2.0.0</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
   &quot;version&quot;: &quot;2.0.0&quot;,
   &quot;status&quot;: &quot;preliminary&quot;,
   &quot;level&quot;: 0.9,
@@ -94,8 +94,19 @@
     }
   }
 }</code></pre></div></section>
-<section class="docs-sec" id="v21" aria-labelledby="v21-title"><h2 id="v21-title">Schema 2.1.0 <span class="docs-badge" data-state="progress">In progress</span></h2><p>Schema 2.1.0 is in progress. It is the shape for the Wk4 fields: a per-family estimate and interval, cost per verdict, and the MDE. A family row has no verdict. The gate stays on the pooled result.</p><p>This page does not render those fields yet. A 2.x.y file still has to carry the 2.0.0 fields.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">results.json · 2.1.0 · in progress</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
+<section class="docs-sec" id="v21" aria-labelledby="v21-title"><h2 id="v21-title">Schema 2.1.0</h2><p>Schema 2.1.0 is the file this page reads, along with schema 1 and 2.0.0. It adds <code>schema_version</code>, <code>verdicts.overall.model_ids</code> for the baseline and the candidate, and optional gate settings: <code>delta</code>, <code>alpha</code>, <code>min_valid</code>, <code>ci_level</code>, and <code>miss_cap</code>. Overall model ids are preferred over the per-arm <code>model_id</code> when they are present. Gate settings are display-only. When they are missing the page shows δ = 5 pp / 90%. They do not change the suite status.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">results.json · 2.1.0</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
   &quot;version&quot;: &quot;2.1.0&quot;,
+  &quot;schema_version&quot;: &quot;2.1.0&quot;,
+  &quot;verdicts&quot;: {
+    &quot;overall&quot;: {
+      &quot;model_ids&quot;: {
+        &quot;baseline&quot;: &quot;gemini-2.5-flash-lite-001&quot;,
+        &quot;candidate&quot;: &quot;gemini-3.5-flash-lite&quot;
+      }
+    }
+  },
+  &quot;gate&quot;: { &quot;delta&quot;: &quot;0.05&quot;, &quot;ci_level&quot;: &quot;0.9&quot;, &quot;miss_cap&quot;: &quot;0.05&quot; }
+}</code></pre></div><p>Still in progress, and not part of this 2.1.0 reader: a per-family estimate and interval, cost per verdict, and the MDE on the check. A family row has no verdict. The gate stays on the pooled result. Those fields are Next, in Wk4.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">Wk4 fields · in progress</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
   &quot;families&quot;: [
     { &quot;id&quot;: &quot;refund&quot;, &quot;estimate_pp&quot;: -1.5, &quot;interval_pp&quot;: [-4.0, 1.0] }
   ],

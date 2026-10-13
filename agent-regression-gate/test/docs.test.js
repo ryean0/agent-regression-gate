@@ -104,6 +104,12 @@ test("concepts keep the gate rule, the four statuses, and the miss cap", () => {
   assert.match(html, /1\/20/);
   assert.match(html, /invalid_run/);
   assert.match(html, /minimum detectable effect/i);
+  const results = read("docs/reference/results/index.html");
+  assert.match(results, /schema_version/);
+  assert.match(results, /verdicts\.overall\.model_ids/);
+  assert.match(results, /δ = 5 pp \/ 90%/);
+  assert.match(results, /Still in progress/);
+  assert.match(results, /No per-family verdict|no verdict/);
 });
 
 test("enterprise strip labels data residency Planned and the other three Built", () => {
