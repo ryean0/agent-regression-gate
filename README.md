@@ -1,6 +1,6 @@
-# Mullion
+# Anubys
 
-Launch page for Mullion, a CI regression gate for agents. It reads a results file and shows one suite status: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a Likely regression warning. The repository name and the Pages URL stay `agent-regression-gate`.
+Launch page for Anubys, a CI-native agent regression model harness. It reads a results file and shows one suite status: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a Likely regression warning. Site paths are relative, so the same files work when this repository is renamed to `anubys`. The Pages artifact is still the `agent-regression-gate` folder.
 
 Live site: https://ryean0.github.io/agent-regression-gate/
 
@@ -17,7 +17,7 @@ npm run preview
 
 Open http://127.0.0.1:4173/agent-regression-gate/
 
-`npm test` runs the 46 site tests, then checks that the favicon, stylesheet, scripts, results file, and Open Graph image resolve under `/agent-regression-gate/`.
+`npm test` runs the 60 site tests, then checks that every route, the favicon, stylesheet, scripts, results file, and Open Graph image resolve with relative paths.
 
 ## Swap in a real results file
 

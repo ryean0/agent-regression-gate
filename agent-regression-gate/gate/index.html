@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gate · Anubys</title>
+  <meta name="description" content="Non-inferiority, δ = 5 pp, at 90% confidence. An invalid run isn't scored.">
+  <link rel="canonical" href="./">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="./">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="../og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="../og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+  
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>
+        Anubys
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../">Product</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/" aria-current="page">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <section class="section reveal" aria-labelledby="spec-title">
+      <div class="wrap">
+        <p class="kicker">Specification</p>
+        <h1 id="spec-title">The decision rules.</h1>
+        <p class="section-intro">A <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-rollout" aria-describedby="tip-rollout">rollout</button><span class="term-tip" id="tip-rollout" role="tooltip">One execution of one scenario. A pass scores 1. A fail scores 0.</span></span> is one execution. Pass is 1. Fail is 0. The status applies to the suite. Repeated rollouts per arm. Scenarios are SHA-256 hashes.</p>
+        <!-- brand: body gate decision intro -->
+        <p class="section-intro">Compare a candidate agent with the one already in production, on the same scenarios. Anubys returns one suite status at 90% confidence: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-regression" aria-describedby="tip-regression">Likely regression</button><span class="term-tip" id="tip-regression" role="tooltip">A warning on insufficient evidence, not a separate status. Pass if the 90% interval's lower bound is above −5 pp. Block if its upper bound is below −5 pp. An invalid run isn't scored. Scenarios are diagnostics, not individual gates.</span></span> warning.</p>
+        <div class="spec-grid">
+          <article class="spec"><b>90<span>%</span></b><p>Confidence. Non-inferiority, δ = 5 pp. Pass when the lower bound is above −5 pp. Block when the upper bound is below −5 pp.</p></article>
+          <article class="spec"><b>5<span>%</span></b><p>Miss cap. Above this on either arm, the run is invalid. Exactly 5% still scores.</p></article>
+          <article class="spec"><b>0.6</b><p>Coverage floor. Each scenario needs at least ceil(0.6 × scheduled) usable rollouts on both arms.</p></article>
+          <article class="spec"><b class="spec-word">Paired</b><p>By scenario. Each one counts once. Order does not change the result.</p></article>
+        </div>
+        
+      </div>
+    </section>
+    <section class="section trust-section" id="trust">
+      <div class="trust-stage" data-step="0">
+        <div class="trust-pin">
+          <div class="wrap trust-layout">
+            <div class="trust-copy">
+              <p class="kicker">Gate behavior</p>
+              <h2>No verdict when the run cannot support one.</h2>
+              <ol class="trust-list">
+                <li>
+                  <h3>Paired comparison</h3>
+                  <p>Each scenario contributes one difference: candidate pass rate minus baseline pass rate. Those differences are averaged without weights. List order does not change the result.</p>
+                  <p class="annotation">unweighted mean of per-scenario gaps</p>
+                  <div class="tvis" aria-hidden="true">
+                    <p class="tvis-kicker">Gap</p>
+                    <p class="tvis-eq"><span>candidate</span> − <span>baseline</span></p>
+                    <ul>
+                      <li><span>reset-locked</span><b>−0.30</b></li>
+                      <li><span>refund</span><b>−0.05</b></li>
+                      <li><span>shipping</span><b>−0.15</b></li>
+                    </ul>
+                    <p class="tvis-foot">mean, one vote each</p>
+                  </div>
+                </li>
+                <li>
+                  <h3>Timeout policy</h3>
+                  <p>A loop or an exhausted step budget scores 0 and stays in the sample. Provider 5xx, rate limits, and a killed CI runner are excluded from the score and counted toward the miss cap.</p>
+                  <p class="annotation">agent timeout → 0 · infrastructure timeout → excluded</p>
+                  <div class="tvis" aria-hidden="true">
+                    <p class="tvis-kicker">Outcome</p>
+                    <p class="tvis-row"><span>Step budget</span><b>Score 0</b></p>
+                    <p class="tvis-row"><span>Provider 5xx</span><b>Excluded</b></p>
+                    <p class="tvis-row"><span>Rate limit</span><b>Excluded</b></p>
+                    <p class="tvis-row"><span>Runner killed</span><b>Excluded</b></p>
+                  </div>
+                </li>
+                <li>
+                  <h3>Validity</h3>
+                  <p>More than 5% of scheduled rollouts missing or infrastructure-broken, on either arm, invalidates the run. Exactly 5% remains valid. Each scenario also has a coverage floor on both arms.</p>
+                  <p class="annotation">5 → 3 usable · 7 → 5 · 20 → 12 · 6% on one arm → invalid</p>
+                  <div class="tvis" aria-hidden="true">
+                    <p class="tvis-kicker">Miss rate</p>
+                    <p class="tvis-row"><span>Exactly 5%</span><b>Valid</b></p>
+                    <div class="tvis-meter"><i style="width:25%"></i><em></em></div>
+                    <p class="tvis-row"><span>6% on one arm</span><b>Invalid</b></p>
+                    <div class="tvis-meter is-over"><i style="width:30%"></i><em></em></div>
+                  </div>
+                </li>
+                <li>
+                  <h3>Content hashes</h3>
+                  <p>Each scenario is hashed. If the recorded text does not match the suite, the run is invalid before a score is published.</p>
+                  <p class="annotation">SHA-256 of the scenario text</p>
+                  <div class="tvis" aria-hidden="true">
+                    <p class="tvis-kicker">SHA-256</p>
+                    <p class="tvis-hash">cbb85ce6…0ebed1</p>
+                    <p class="tvis-row"><span>Recorded text</span><b>Match</b></p>
+                    <p class="tvis-foot">A mismatch invalidates the run</p>
+                  </div>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section" id="gate-faq" aria-labelledby="gate-faq-title">
+      <div class="wrap">
+        <p class="kicker">FAQ</p>
+        <h2 id="gate-faq-title">Operational questions.</h2>
+        <div class="faq-list">
+          <!-- brand: body gate FAQ summary -->
+          <details><summary>What does Anubys decide?</summary><p>Whether a candidate agent regressed relative to the one already running, before the change ships. The output is one suite status: Pass, Block, Insufficient evidence, or Invalid run. Scenarios are diagnostics, not individual gates.</p></details>
+          <details><summary>What is a rollout?</summary><p>One execution of one scenario. Pass scores 1. Fail scores 0. Scenarios are repeated because a single execution is not a stable estimate.</p></details>
+          <details><summary>Why repeated rollouts?</summary><p>Repeated rollouts per arm. Each scenario becomes a pass rate, then each scenario counts once. Additional rollouts do not add weight.</p></details>
+          <details><summary>What does 90% confidence mean here?</summary><p>Non-inferiority, δ = 5 pp. Pass if the 90% interval's lower bound is above −5 pp. Block if its upper bound is below −5 pp. Otherwise the result is insufficient evidence, which can carry a Likely regression warning. An invalid run isn't scored.</p></details>
+          <details><summary>When is a run invalid?</summary><p>When more than 5% of scheduled rollouts on either arm are missing or broken by infrastructure. Exactly 5% is still scored. Each scenario also needs at least 60% of its scheduled rollouts usable, rounded up. Repeated rollouts per arm.</p></details>
+          <details><summary>Does a timeout count as a failure?</summary><p>A loop or an exhausted step budget scores 0. A provider error, a rate limit, or a killed CI runner is excluded and counts toward the 5% miss cap.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg> Anubys</p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../">Overview</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <a href="mailto:ryanphua.dev@outlook.com">Email</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../js/main.js"></script>
+</body>
+</html>

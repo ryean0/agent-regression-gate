@@ -3,13 +3,29 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { TAGLINE } from "../agent-regression-gate/js/brand.js";
 import { RESULTS_PATH, parseResultsV2 } from "../agent-regression-gate/js/results.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const site = path.join(root, "agent-regression-gate");
-const origin = "https://ryean0.github.io/agent-regression-gate/";
-const page = new URL(origin);
-const html = fs.readFileSync(path.join(site, "index.html"), "utf8");
+const routes = [
+  "index.html",
+  "how-it-works/index.html",
+  "method/index.html",
+  "gate/index.html",
+  "results/index.html",
+  "integrations/index.html",
+  "docs/index.html",
+];
+
+function htmlFiles(dir, out = []) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) htmlFiles(full, out);
+    else if (entry.name.endsWith(".html")) out.push(full);
+  }
+  return out;
+}
 
 function attr(source, pattern) {
   const match = source.match(pattern);
@@ -17,50 +33,61 @@ function attr(source, pattern) {
   return match[1];
 }
 
-function fileFor(url, label) {
-  const resolved = new URL(url);
-  assert.equal(resolved.origin, page.origin, `${label} origin`);
-  assert.ok(
-    resolved.pathname === "/agent-regression-gate" || resolved.pathname.startsWith("/agent-regression-gate/"),
-    `${label} is outside /agent-regression-gate/: ${resolved.href}`,
-  );
-  const rel = decodeURIComponent(resolved.pathname.slice("/agent-regression-gate/".length));
-  const file = path.resolve(site, rel);
-  assert.ok(file === site || file.startsWith(site + path.sep), `${label} escapes the site folder`);
-  assert.equal(fs.existsSync(file), true, `${label} does not exist at ${rel}`);
-  return file;
+function refsIn(html) {
+  const refs = [];
+  for (const match of html.matchAll(/<link\b[^>]*\bhref="([^"]+)"/g)) refs.push(match[1]);
+  for (const match of html.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)) refs.push(match[1]);
+  for (const match of html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)) refs.push(match[1]);
+  for (const match of html.matchAll(/<meta\b[^>]*\b(?:property|name)="(?:og:image|twitter:image|og:url)"[^>]*\bcontent="([^"]+)"/g)) {
+    refs.push(match[1]);
+  }
+  return refs;
 }
 
-const dataBase = attr(html, /<html[^>]*\sdata-base="([^"]*)"/);
-const assetBase = new URL(dataBase, page);
-assert.equal(assetBase.href, origin, "data-base resolves at the project page");
+function resolveRef(fromFile, ref) {
+  assert.equal(ref.startsWith("/"), false, `${ref} is root-absolute`);
+  assert.equal(/^https?:/i.test(ref), false, `${ref} is absolute`);
+  const clean = ref.split("#")[0].split("?")[0];
+  if (!clean || clean.startsWith("mailto:")) return null;
+  const abs = path.resolve(path.dirname(fromFile), clean);
+  assert.ok(abs === site || abs.startsWith(site + path.sep), `${ref} escapes the site`);
+  if (fs.existsSync(abs) && fs.statSync(abs).isDirectory()) {
+    const index = path.join(abs, "index.html");
+    assert.equal(fs.existsSync(index), true, `${ref} has no index.html`);
+    return index;
+  }
+  assert.equal(fs.existsSync(abs), true, `${ref} is missing`);
+  return abs;
+}
 
-assert.equal(attr(html, /<link rel="canonical" href="([^"]+)"/), origin);
-assert.equal(attr(html, /<meta property="og:url" content="([^"]+)"/), origin);
-assert.equal(attr(html, /<meta property="og:image" content="([^"]+)"/), `${origin}og.png`);
-assert.equal(attr(html, /<meta name="twitter:image" content="([^"]+)"/), `${origin}og.png`);
-assert.equal(attr(html, /<meta property="og:image:width" content="([^"]+)"/), "1200");
-assert.equal(attr(html, /<meta property="og:image:height" content="([^"]+)"/), "630");
-assert.match(html, /"url": "https:\/\/ryean0\.github\.io\/agent-regression-gate\/"/);
+function pageUrl(fromFile, base) {
+  let rel = path.relative(site, fromFile).split(path.sep).join("/");
+  if (rel === "index.html") rel = "";
+  else rel = rel.replace(/index\.html$/, "");
+  return new URL(rel, base);
+}
 
-const favicon = fileFor(new URL(attr(html, /<link rel="icon" href="([^"]+)"/), page).href, "favicon");
-assert.match(fs.readFileSync(favicon, "utf8"), /#ff7a1a|#070708/i);
-fileFor(new URL(attr(html, /<link rel="stylesheet" href="([^"]+)"/), page).href, "stylesheet");
+const found = htmlFiles(site).map((file) => path.relative(site, file).split(path.sep).join("/")).sort();
+assert.deepEqual(found, [...routes].sort());
 
 const seen = new Set();
-function walkScript(url) {
-  if (seen.has(url)) return;
-  seen.add(url);
-  const file = fileFor(url, url);
-  const source = fs.readFileSync(file, "utf8");
+function walkScript(file) {
+  const abs = path.resolve(file);
+  if (seen.has(abs)) return;
+  seen.add(abs);
+  assert.ok(abs.startsWith(site + path.sep), abs);
+  const source = fs.readFileSync(abs, "utf8");
+  assert.equal(/mullion/i.test(source), false, `${path.relative(site, abs)} names the retired brand`);
   for (const match of source.matchAll(/from\s+"(\.[^"]+)"/g)) {
-    walkScript(new URL(match[1], url).href);
+    let next = path.resolve(path.dirname(abs), match[1]);
+    if (!next.endsWith(".js")) next += ".js";
+    walkScript(next);
   }
   for (const match of source.matchAll(/asset\(\s*"([^"]+)"\s*\)/g)) {
-    const fetched = new URL(match[1], assetBase);
-    const results = fileFor(fetched.href, match[1]);
+    const fetched = path.resolve(site, match[1]);
+    assert.equal(fs.existsSync(fetched), true, match[1]);
     if (match[1].endsWith(".json")) {
-      const doc = JSON.parse(fs.readFileSync(results, "utf8"));
+      const doc = JSON.parse(fs.readFileSync(fetched, "utf8"));
       const versionOk = doc.version === 1 || (typeof doc.version === "string" && /^2\.\d+\.\d+$/.test(doc.version));
       assert.equal(versionOk, true, `${match[1]} version`);
       assert.ok(doc.status === "preliminary" || doc.status === "final");
@@ -68,9 +95,50 @@ function walkScript(url) {
   }
 }
 
-walkScript(new URL(attr(html, /<script type="module" src="([^"]+)"/), page).href);
-assert.ok(seen.has(`${origin}js/main.js`));
-assert.ok([...seen].some((url) => url.endsWith("/js/results.js")));
+const bases = ["https://example.test/agent-regression-gate/", "https://example.test/anubys/"];
+for (const rel of routes) {
+  const file = path.join(site, rel);
+  const html = fs.readFileSync(file, "utf8");
+  assert.equal(/mullion/i.test(html), false, `${rel} names the retired brand`);
+  assert.equal(html.includes("agent-regression-gate"), false, `${rel} hardcodes the repo path`);
+  assert.match(html, /property="og:title" content="Anubys"/);
+  assert.match(html, /name="twitter:title" content="Anubys"/);
+  assert.match(html, new RegExp(`property="og:description" content="${TAGLINE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`));
+  assert.match(html, /class="brand-mark"/);
+  for (const label of ["Product", "How it works", "Method", "Gate", "Results", "Integrations", "Docs"]) {
+    assert.ok(html.includes(`>${label}</a>`), `${rel} nav ${label}`);
+  }
+  const dataBase = attr(html, /data-base="([^"]*)"/);
+  assert.equal(path.resolve(path.dirname(file), dataBase), site, `${rel} data-base`);
+  for (const ref of refsIn(html)) {
+    if (/^(https?:|mailto:|#)/i.test(ref)) continue;
+    resolveRef(file, ref);
+    for (const base of bases) {
+      const resolved = new URL(ref, pageUrl(file, base));
+      assert.ok(resolved.href.startsWith(base), `${ref} on ${rel} left ${base}`);
+    }
+  }
+  const script = attr(html, /<script type="module" src="([^"]+)"/);
+  walkScript(resolveRef(file, script));
+}
+
+assert.ok([...seen].some((file) => file.endsWith(`${path.sep}js${path.sep}results.js`)));
+assert.ok([...seen].some((file) => file.endsWith(`${path.sep}js${path.sep}brand.js`)));
+
+const home = fs.readFileSync(path.join(site, "index.html"), "utf8");
+assert.match(home, /<title>Anubys<\/title>/);
+assert.match(home, /Catch agent regressions/);
+assert.match(home, new RegExp(TAGLINE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+assert.match(home, /"name": "Anubys"/);
+assert.doesNotMatch(home, /CI Agent Regression Harness/);
+assert.ok((home.match(/More details/g) || []).length >= 7);
+assert.match(home, /class="scale"/);
+assert.match(home, /Baseline/);
+assert.match(home, /Candidate/);
+
+const favicon = resolveRef(path.join(site, "index.html"), attr(home, /<link rel="icon" href="([^"]+)"/));
+assert.match(fs.readFileSync(favicon, "utf8"), /#ff7a1a|#070708/i);
+resolveRef(path.join(site, "index.html"), attr(home, /<link rel="stylesheet" href="([^"]+)"/));
 
 assert.equal(RESULTS_PATH, "data/results.preliminary.json");
 const shipped = JSON.parse(fs.readFileSync(path.join(site, RESULTS_PATH), "utf8"));
@@ -87,9 +155,10 @@ assert.equal(shippedView.arms.candidate.modelId.length > 0, true);
 const mainSource = fs.readFileSync(path.join(site, "js/main.js"), "utf8");
 assert.match(mainSource, /parseResultsV2/);
 assert.match(mainSource, /RESULTS_PATH/);
+assert.match(mainSource, /BRAND/);
 assert.doesNotMatch(mainSource, /asset\(\s*"data\/results\.preliminary\.json"\s*\)/);
 
-const og = fileFor(`${origin}og.png`, "og.png");
+const og = resolveRef(path.join(site, "index.html"), "./og.png");
 const png = fs.readFileSync(og);
 assert.equal(png.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
 assert.equal(png.readUInt32BE(16), 1200);
@@ -97,24 +166,21 @@ assert.equal(png.readUInt32BE(20), 630);
 
 assert.equal(fs.existsSync(path.join(site, ".nojekyll")), true);
 assert.match(fs.readFileSync(path.join(site, "css/site.css"), "utf8"), /#ff7a1a/);
-assert.match(html, /Catch agent regressions/);
-assert.match(html, /<title>Mullion<\/title>/);
-assert.match(html, /property="og:title" content="Mullion"/);
-assert.match(html, /name="twitter:title" content="Mullion"/);
-assert.match(html, /"name": "Mullion"/);
-assert.doesNotMatch(html, /CI Agent Regression Harness/);
-assert.match(html, /id="integrations"/);
-assert.match(html, /adapter example/);
-assert.match(html, /Gemini 3\.5 Flash-Lite/);
-assert.match(html, /gemini-3\.5-flash-lite/);
-assert.match(html, /in progress/);
-assert.match(html, /OpenAI Agents SDK · adapter example/);
-assert.match(html, /Claude Agent SDK · adapter example/);
-assert.match(html, /GitHub Action · planned/);
-assert.match(html, /Record\/replay cassettes · planned/);
-assert.match(html, /No official partnerships/);
-assert.doesNotMatch(html, /gpt-4\.1-nano/i);
-assert.doesNotMatch(html, /GPT-4\.1-nano/);
+assert.match(fs.readFileSync(path.join(site, "css/site.css"), "utf8"), /\.scale-beam[\s\S]*prefers-reduced-motion:\s*reduce[\s\S]*\.scale-beam[\s\S]*animation:\s*none/);
+
+const integrations = fs.readFileSync(path.join(site, "integrations/index.html"), "utf8");
+assert.match(integrations, /id="integrations"/);
+assert.match(integrations, /adapter example/);
+assert.match(integrations, /Gemini 3\.5 Flash-Lite/);
+assert.match(integrations, /gemini-3\.5-flash-lite/);
+assert.match(integrations, /in progress/);
+assert.match(integrations, /OpenAI Agents SDK · adapter example/);
+assert.match(integrations, /Claude Agent SDK · adapter example/);
+assert.match(integrations, /GitHub Action · planned/);
+assert.match(integrations, /Record\/replay cassettes · planned/);
+assert.match(integrations, /No official partnerships/);
+assert.doesNotMatch(integrations, /gpt-4\.1-nano/i);
+assert.doesNotMatch(integrations, /GPT-4\.1-nano/);
 
 function rejectNano(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -129,7 +195,6 @@ function rejectNano(dir) {
   }
 }
 rejectNano(site);
-assert.equal((html.match(/href="https:\/\/ryean0\.github\.io\/agent-regression-gate\/"/g) || []).length > 0, true);
 
 const workflow = fs.readFileSync(path.join(root, ".github/workflows/pages.yml"), "utf8");
 assert.match(workflow, /pull_request:/);
@@ -139,4 +204,4 @@ assert.match(workflow, /needs:\s*test/);
 assert.match(workflow, /enablement:\s*true/);
 assert.match(workflow, /continue-on-error:\s*true/);
 
-console.log(`pages check ok (${seen.size} scripts, results file, favicon, og.png)`);
+console.log(`pages check ok (${routes.length} routes, ${seen.size} scripts, results file, favicon, og.png)`);

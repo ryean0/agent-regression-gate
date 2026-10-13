@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Results · Anubys</title>
+  <meta name="description" content="Recorded suite status from data/results.preliminary.json. The console replays a sample configuration.">
+  <link rel="canonical" href="./">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="./">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="../og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="../og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+  
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>
+        Anubys
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../">Product</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/" aria-current="page">Results</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <section class="section reveal" id="results">
+      <div class="wrap">
+        <p class="kicker">results.json</p>
+        <h1>Recorded suite status.</h1>
+        <p class="section-intro">This panel reads <code>data/results.preliminary.json</code>. Rates are fraction strings such as <code>3/5</code> or <code>0.6</code>. The check fails on Block. An invalid run isn't scored. Scenario rows are diagnostics.</p>
+        <p>The output file is <code>results.json</code> version <code>1</code>, or a <code>2.x.y</code> string such as <code>2.0.0</code>. Version 2.0.0 adds an optional one-sentence caption on a scenario or an arm, and an optional model id on an arm. Decimals and amounts inside a caption are text. A model id is shown when the file records one, and it does not change the suite verdict. This page’s reader accepts those versions and rejects any other major version. The page loads one path, <code>data/results.preliminary.json</code>. promptfoo can also write a file named <code>results.json</code>. That file is a different contract.</p>
+        <p class="fine">Results are read from a results file. The console replays a sample configuration in the browser.</p>
+        <div id="results-root" class="results-panel" aria-live="polite">
+          <p>Loading results…</p>
+        </div>
+      </div>
+    </section>
+    <section class="section reveal" id="demo">
+      <div class="wrap">
+        <p class="kicker">Product console</p>
+        <h2>Sample run viewer.</h2>
+        <p class="section-intro">Replay a configuration locally. This view does not read the results file and it is not a customer benchmark.</p>
+        <div id="demo-root"></div>
+      </div>
+    </section>
+    <section class="section" aria-labelledby="results-faq-title">
+      <div class="wrap">
+        <h2 id="results-faq-title">Figures on this page</h2>
+        <div class="faq-list">
+          <details><summary>Are the figures on this page customer results?</summary><p>No. The results panel shows the bundled preliminary file. The console replays labeled sample configurations. Neither is a customer benchmark.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg> Anubys</p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../">Overview</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <a href="mailto:ryanphua.dev@outlook.com">Email</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../js/main.js"></script>
+</body>
+</html>

@@ -3,6 +3,7 @@
  * It does not read results.json and it does not override the suite verdict.
  */
 
+import { BRAND } from "./brand.js";
 import { coverageFloor, exceedsRate } from "./rational.js";
 
 export const MISS_LIMIT = { numerator: 1, denominator: 20 };
@@ -296,5 +297,5 @@ export function scoreRun(scenarios, options = {}) {
 }
 
 function missSentence(arm, summary) {
-  return `On the ${arm} side, ${summary.excluded} of ${summary.scheduled} scheduled runs (${formatPercent(summary.excluded, summary.scheduled)}) were missing or broken by infrastructure. Mullion allows up to 5%, and exactly 5% is still scored. This arm is over that line.`;
+  return `On the ${arm} side, ${summary.excluded} of ${summary.scheduled} scheduled runs (${formatPercent(summary.excluded, summary.scheduled)}) were missing or broken by infrastructure. ${BRAND} allows up to 5%, and exactly 5% is still scored. This arm is over that line.`;
 }
