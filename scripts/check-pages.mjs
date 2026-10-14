@@ -16,6 +16,17 @@ const routes = [
   "results/index.html",
   "integrations/index.html",
   "docs/index.html",
+  "docs/quickstart/index.html",
+  "docs/concepts/index.html",
+  "docs/guides/scenarios/index.html",
+  "docs/guides/adapters/index.html",
+  "docs/guides/spend/index.html",
+  "docs/reference/results/index.html",
+  "docs/reference/adapter/index.html",
+  "docs/reference/ci/index.html",
+  "docs/reference/data/index.html",
+  "docs/changelog/index.html",
+  "docs/roadmap/index.html",
 ];
 
 function htmlFiles(dir, out = []) {

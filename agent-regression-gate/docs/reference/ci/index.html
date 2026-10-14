@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../../../" data-docs-root="../../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CI and OIDC · Anubys</title>
+  <meta name="description" content="Keyless CI: OIDC, no stored keys, and read-only pull-request roles.">
+  <link rel="canonical" href="./">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="./">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="../../../og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="../../../og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../../../">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>
+        Anubys
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../../../">Product</a>
+        <a href="../../../how-it-works/">How it works</a>
+        <a href="../../../method/">Method</a>
+        <a href="../../../gate/">Gate</a>
+        <a href="../../../results/">Results</a>
+        <a href="../../../integrations/">Integrations</a>
+        <a href="../../" aria-current="page">Docs</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <div class="docs-shell">
+      <div class="docs-tools">
+        <form class="docs-search" role="search" action="./">
+          <label for="docs-q">Search headings</label>
+          <input id="docs-q" type="search" name="q" placeholder="Filter headings" autocomplete="off" aria-controls="docs-hits" aria-expanded="false">
+        </form>
+        <p class="docs-hit-status" id="docs-hit-status" role="status" aria-live="polite"></p>
+        <ul class="docs-hits" id="docs-hits" hidden></ul>
+        <details class="docs-menu">
+          <summary>Documentation</summary>
+          <nav class="docs-nav" aria-label="Documentation">
+            <p class="docs-group">Start</p><a href="../../">Introduction</a><a href="../../quickstart/">Quickstart</a><a href="../../concepts/">Concepts</a><p class="docs-group">Guides</p><a href="../../guides/scenarios/">Writing scenarios</a><a href="../../guides/adapters/">Adding a provider adapter</a><a href="../../guides/spend/">Spend governance</a><p class="docs-group">Reference</p><a href="../results/">results.json</a><a href="../adapter/">Adapter contract</a><a href="./" aria-current="page">CI and OIDC</a><a href="../data/">Where results go</a><p class="docs-group">Project</p><a href="../../changelog/">Changelog</a><a href="../../roadmap/">Roadmap</a>
+          </nav>
+        </details>
+      </div>
+      <article class="docs-article">
+        <header class="docs-head">
+          <p class="kicker">Reference</p>
+          <h1>CI and OIDC</h1>
+          <p class="docs-lede">The job uses GitHub OIDC. It does not store a cloud key. The pull-request role is read-only.</p>
+        </header>
+        <nav class="docs-toc" aria-labelledby="on-this-page">
+          <p class="docs-toc-label" id="on-this-page">On this page</p>
+          <ol><li><a href="#keyless">Keyless CI</a></li><li><a href="#workflow">The workflow</a></li><li><a href="#roles">Read-only pull-request roles</a></li><li><a href="#action">Packaged Action</a></li></ol>
+        </nav>
+        <div class="docs-body">
+          <section class="docs-sec" id="keyless" aria-labelledby="keyless-title"><h2 id="keyless-title">Keyless CI <span class="docs-badge" data-state="built">Built</span></h2><p>Keyless CI is Built. The job uses GitHub OIDC. It does not store a cloud key. There is no long-lived key in the workflow.</p><p>Results currently go to an S3 bucket the team controls. That store is not your bucket. <a href="../data/">Data stays in your cloud</a> is Planned, and bring-your-own bucket is post-MVP.</p></section>
+<section class="docs-sec" id="workflow" aria-labelledby="workflow-title"><h2 id="workflow-title">The workflow</h2><p>The workflow runs on <code>pull_request</code> so the check can be required. A dispatch on the pull-request branch does not satisfy that requirement. The packaged Action is Planned, so the file below is the shape.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">workflow.yml · Planned action</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>name: anubys
+on:
+  pull_request:
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: read
+jobs:
+  gate:
+    name: Anubys
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Planned: a packaged Action, one file.
+      # The job requests an OIDC token.
+      # It does not store a cloud key.</code></pre></div></section>
+<section class="docs-sec" id="roles" aria-labelledby="roles-title"><h2 id="roles-title">Read-only pull-request roles</h2><p>The pull-request role is read-only. <code>contents: read</code>. <code>pull-requests: read</code>. <code>id-token: write</code> is the OIDC token, not a permission to change the pull request.</p><p>The job does not get a write role on the repository.</p></section>
+<section class="docs-sec" id="action" aria-labelledby="action-title"><h2 id="action-title">Packaged Action <span class="docs-badge" data-state="planned">Planned</span></h2><p>A packaged GitHub Action for a one-file setup is Planned. Until it ships, the workflow above is the shape, not a published action.</p></section>
+        </div>
+        <nav class="docs-pager" aria-label="Previous and next"><a class="docs-prev" href="../adapter/"><span>Previous</span><b>Adapter contract</b></a><a class="docs-next" href="../data/"><span>Next</span><b>Where results go</b></a></nav>
+      </article>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg> Anubys</p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../../../">Overview</a>
+        <a href="../../../how-it-works/">How it works</a>
+        <a href="../../../method/">Method</a>
+        <a href="../../../gate/">Gate</a>
+        <a href="../../../results/">Results</a>
+        <a href="../../../integrations/">Integrations</a>
+        <a href="../../">Docs</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <a href="mailto:ryanphua.dev@outlook.com">Email</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../../../js/docs.js"></script>
+</body>
+</html>
