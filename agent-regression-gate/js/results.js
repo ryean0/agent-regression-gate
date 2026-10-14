@@ -20,24 +20,22 @@
  * such as $1.25 is ordinary caption text. A model id is shown when present and
  * does not change the suite label.
  *
- * Version 2.1.0 may also set schema_version to "2.1.0", record
- * verdicts.overall.model_ids.baseline and .candidate, and copy gate settings
- * from suite.yaml. Those ids are preferred over the per-arm model_id when they
- * are present. Gate settings are display-only. When they are missing the page
- * shows δ = 5 pp / 90%.
- *
- * Harness PR #13 was not readable here, so the optional gate keys this reader
- * accepts are delta, alpha, min_valid, ci_level, and miss_cap, either under
- * gate or at the top level of the file.
+ * Schema 2.1.0 is schema_version "2.1.0". It records run_kind,
+ * baseline_pool_model_id, min_valid_fraction_per_scenario, equal
+ * rollouts_per_scenario counts, and diagnostics. verdicts.overall carries
+ * delta, difference_ci, a required likely_regression boolean, and required
+ * model_ids. Those ids are preferred over the per-arm model_id. Alpha and the
+ * miss cap stay in suite.yaml. There is no gate block in results.json. When
+ * delta and the CI level are missing, the page shows δ = 5 pp / 90%.
  */
 
-import { exceedsRate, formatRatio, parseRational } from "./rational.js";
+import { exceedsRate, formatRatio, parseRational, parseSignedRational } from "./rational.js";
 
 const ARM_NAMES = ["baseline", "candidate"];
 const V2_VERSION = /^2\.\d+\.\d+$/;
-const GATE_KEYS = ["delta", "alpha", "min_valid", "ci_level", "miss_cap"];
-/** Shown when the file does not record gate settings. */
-export const GATE_FALLBACK = "δ = 5 pp / 90%";
+const RUN_KINDS = new Set(["screening", "baseline", "aa", "gate"]);
+/** Shown when verdicts.overall does not record delta and a CI level. */
+export const INTERVAL_FALLBACK = "δ = 5 pp / 90%";
 
 /** Drop real harness output at this path. The page requests nothing else. */
 export const RESULTS_PATH = "data/results.preliminary.json";
@@ -68,24 +66,23 @@ function buildView(doc, version) {
     throw new Error("status must be \"preliminary\" or \"final\"");
   }
   assertLevel(doc.level);
-  if (doc.likely_regression !== true && doc.likely_regression !== false && doc.likely_regression !== null) {
-    throw new Error("likely_regression must be true, false, or null");
-  }
+  const schema210 = isSchema210(doc, version);
+  const likelyRegression = readLikelyRegression(doc, schema210);
   const invalidRun = doc.invalid_run === true;
-  const overallModels = readOverallModelIds(doc);
+  const overall = readOverall(doc, schema210);
   const modelIdSources = {};
   const arms = {};
   for (const name of ARM_NAMES) {
-    const resolved = resolveModelId(doc.arms?.[name], name, overallModels?.[name] ?? "");
+    const resolved = resolveModelId(doc.arms?.[name], name, overall.modelIds?.[name] ?? "");
     modelIdSources[name] = resolved.source;
     arms[name] = parseArm(doc.arms?.[name], name, resolved.modelId);
   }
 
   const verdict = invalidRun
     ? "invalid_run"
-    : doc.likely_regression === null
+    : likelyRegression === null
       ? "insufficient_evidence"
-      : doc.likely_regression
+      : likelyRegression
         ? "likely_regression"
         : "no_regression";
 
@@ -94,7 +91,7 @@ function buildView(doc, version) {
     schemaVersion: schemaVersionOf(doc),
     status,
     level: 0.9,
-    likelyRegression: doc.likely_regression,
+    likelyRegression,
     invalidRun,
     verdict,
     headline: headlineFor(verdict),
@@ -102,14 +99,19 @@ function buildView(doc, version) {
     banner: bannerFor(status),
     summaryNote: noteText(doc.notes, "summary"),
     suite: typeof doc.suite === "string" ? doc.suite : "",
+    runKind: readRunKind(doc),
+    baselinePoolModelId: readPoolModelId(doc),
+    minValidFraction: readMinValidFraction(doc),
+    rolloutsPerScenario: readRolloutsPerScenario(doc),
     modelIds: {
       baseline: arms.baseline.modelId || "",
       candidate: arms.candidate.modelId || "",
     },
     modelIdSources,
-    gate: readGate(doc),
+    interval: intervalView(overall),
     arms,
     scenarios: parseScenarios(doc.scenarios),
+    diagnostics: parseDiagnostics(doc.diagnostics),
     charts: {
       mde: parseChart(doc, "mde", {
         status: "preliminary",
@@ -151,6 +153,27 @@ function schemaVersionOf(doc) {
   return typeof doc.schema_version === "string" ? doc.schema_version : null;
 }
 
+function isSchema210(doc, version) {
+  return version === "2.1.0" || doc.schema_version === "2.1.0";
+}
+
+function readLikelyRegression(doc, schema210) {
+  if (schema210) {
+    const value = doc.verdicts?.overall?.likely_regression;
+    if (typeof value !== "boolean") {
+      throw new Error("verdicts.overall.likely_regression must be a boolean");
+    }
+    if (doc.likely_regression !== undefined && doc.likely_regression !== true && doc.likely_regression !== false && doc.likely_regression !== null) {
+      throw new Error("likely_regression must be true, false, or null");
+    }
+    return value;
+  }
+  if (doc.likely_regression !== true && doc.likely_regression !== false && doc.likely_regression !== null) {
+    throw new Error("likely_regression must be true, false, or null");
+  }
+  return doc.likely_regression;
+}
+
 function versionToken(version) {
   if (typeof version === "string" || typeof version === "number" || typeof version === "boolean") {
     return String(version);
@@ -168,29 +191,194 @@ function assertLevel(level) {
   throw new Error("level must be 0.9");
 }
 
-function readOverallModelIds(doc) {
-  if (doc.verdicts == null) return null;
+function readOverall(doc, required) {
+  if (doc.verdicts == null) {
+    if (required) throw new Error("verdicts.overall is required");
+    return { modelIds: null, delta: null, ciLevel: null };
+  }
   if (typeof doc.verdicts !== "object" || Array.isArray(doc.verdicts)) {
     throw new Error("verdicts must be an object");
   }
-  if (doc.verdicts.overall == null) return null;
-  if (typeof doc.verdicts.overall !== "object" || Array.isArray(doc.verdicts.overall)) {
+  if (doc.verdicts.overall == null) {
+    if (required) throw new Error("verdicts.overall is required");
+    return { modelIds: null, delta: null, ciLevel: null };
+  }
+  const overall = doc.verdicts.overall;
+  if (typeof overall !== "object" || Array.isArray(overall)) {
     throw new Error("verdicts.overall must be an object");
   }
-  if (doc.verdicts.overall.model_ids == null) return null;
-  const modelIds = doc.verdicts.overall.model_ids;
-  if (typeof modelIds !== "object" || Array.isArray(modelIds)) {
-    throw new Error("verdicts.overall.model_ids must be an object");
-  }
   return {
-    baseline: readNamedModelId(modelIds, "baseline"),
-    candidate: readNamedModelId(modelIds, "candidate"),
+    modelIds: readModelIdPair(overall.model_ids, "verdicts.overall.model_ids", required),
+    delta: overall.delta === undefined ? null : readFraction(overall.delta, "verdicts.overall.delta").text,
+    ciLevel: overall.difference_ci === undefined ? null : readDifferenceCi(overall.difference_ci, "verdicts.overall.difference_ci").level,
   };
 }
 
-function readNamedModelId(modelIds, name) {
-  if (!Object.prototype.hasOwnProperty.call(modelIds, name)) return "";
-  return readModelId(modelIds[name], `verdicts.overall.model_ids.${name}`);
+function readModelIdPair(modelIds, label, required) {
+  if (modelIds == null) {
+    if (required) throw new Error(`${label} is required`);
+    return null;
+  }
+  if (typeof modelIds !== "object" || Array.isArray(modelIds)) {
+    throw new Error(`${label} must be an object`);
+  }
+  return {
+    baseline: readNamedModelId(modelIds, "baseline", label, required),
+    candidate: readNamedModelId(modelIds, "candidate", label, required),
+  };
+}
+
+function readNamedModelId(modelIds, name, label, required) {
+  if (!Object.prototype.hasOwnProperty.call(modelIds, name)) {
+    if (required) throw new Error(`${label}.${name} is required`);
+    return "";
+  }
+  const id = readModelId(modelIds[name], `${label}.${name}`);
+  if (required && !id) throw new Error(`${label}.${name} is required`);
+  return id;
+}
+
+function readRunKind(doc) {
+  if (doc.run_kind == null) return "";
+  if (!RUN_KINDS.has(doc.run_kind)) {
+    throw new Error("run_kind must be screening, baseline, aa, or gate");
+  }
+  return doc.run_kind;
+}
+
+function readPoolModelId(doc) {
+  if (doc.baseline_pool_model_id == null) return "";
+  return readModelId(doc.baseline_pool_model_id, "baseline_pool_model_id");
+}
+
+function readMinValidFraction(doc) {
+  if (doc.min_valid_fraction_per_scenario == null) return null;
+  const fraction = readFraction(doc.min_valid_fraction_per_scenario, "min_valid_fraction_per_scenario");
+  return fraction;
+}
+
+function readRolloutsPerScenario(doc) {
+  if (doc.rollouts_per_scenario == null) return null;
+  const pair = readCountPair(doc.rollouts_per_scenario, "rollouts_per_scenario");
+  if (pair.baseline !== pair.candidate) {
+    throw new Error("rollouts_per_scenario baseline and candidate must be equal");
+  }
+  return pair;
+}
+
+function readFraction(value, label) {
+  if (typeof value !== "string") {
+    throw new Error(`${label} must be a string such as "0.6"`);
+  }
+  const text = value.trim();
+  if (!text) throw new Error(`${label} must be a string such as "0.6"`);
+  return { text, ratio: parseRational(text) };
+}
+
+function readSignedFraction(value, label) {
+  if (typeof value !== "string") {
+    throw new Error(`${label} must be a string such as "0.05" or "-0.05"`);
+  }
+  const text = value.trim();
+  if (!text) throw new Error(`${label} must be a string such as "0.05" or "-0.05"`);
+  return { text, ratio: parseSignedRational(text) };
+}
+
+function readDifferenceCi(raw, label) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error(`${label} must be an object`);
+  }
+  const lower = readSignedFraction(raw.lower, `${label}.lower`);
+  const upper = readSignedFraction(raw.upper, `${label}.upper`);
+  assertLevel(raw.level);
+  return { lower, upper, level: raw.level };
+}
+
+function readCountPair(raw, label) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error(`${label} must be an object`);
+  }
+  return {
+    baseline: requireCount(raw.baseline, `${label}.baseline`),
+    candidate: requireCount(raw.candidate, `${label}.candidate`),
+  };
+}
+
+function readCountMap(raw, label) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error(`${label} must be an object`);
+  }
+  const counts = {};
+  for (const key of Object.keys(raw)) {
+    counts[key] = requireCount(raw[key], `${label}.${key}`);
+  }
+  return counts;
+}
+
+function readStringList(raw, label) {
+  if (!Array.isArray(raw)) throw new Error(`${label} must be an array`);
+  return raw.map((item, index) => {
+    if (typeof item !== "string") throw new Error(`${label}[${index}] must be a string`);
+    return item;
+  });
+}
+
+function parseDiagnostics(raw) {
+  if (raw === undefined) return [];
+  if (!Array.isArray(raw)) throw new Error("diagnostics must be an array");
+  return raw.map((row, index) => {
+    if (!row || typeof row !== "object" || Array.isArray(row)) {
+      throw new Error(`diagnostics[${index}] must be an object`);
+    }
+    const label = `diagnostics[${index}]`;
+    const scenarioId = readModelId(row.scenario_id, `${label}.scenario_id`);
+    if (!scenarioId) throw new Error(`${label}.scenario_id is required`);
+    const familyId = readModelId(row.family_id, `${label}.family_id`);
+    if (!familyId) throw new Error(`${label}.family_id is required`);
+    const baseline = readFraction(row.baseline_pass_rate, `${label}.baseline_pass_rate`);
+    const candidate = readFraction(row.candidate_pass_rate, `${label}.candidate_pass_rate`);
+    const difference = readSignedFraction(row.difference, `${label}.difference`);
+    const differenceCi = readDifferenceCi(row.difference_ci, `${label}.difference_ci`);
+    const cassette = row.missing_cassette_keys;
+    if (!cassette || typeof cassette !== "object" || Array.isArray(cassette)) {
+      throw new Error(`${label}.missing_cassette_keys must be an object`);
+    }
+    return {
+      scenarioId,
+      familyId,
+      scheduledRollouts: readCountPair(row.scheduled_rollouts, `${label}.scheduled_rollouts`),
+      missCounts: {
+        baseline: readCountMap(row.miss_counts?.baseline, `${label}.miss_counts.baseline`),
+        candidate: readCountMap(row.miss_counts?.candidate, `${label}.miss_counts.candidate`),
+      },
+      missingCassetteKeys: {
+        baseline: readStringList(cassette.baseline, `${label}.missing_cassette_keys.baseline`),
+        candidate: readStringList(cassette.candidate, `${label}.missing_cassette_keys.candidate`),
+      },
+      baselineText: formatRatio(baseline.ratio),
+      candidateText: formatRatio(candidate.ratio),
+      differenceText: formatRatio(difference.ratio),
+      differenceCi: {
+        lowerText: formatRatio(differenceCi.lower.ratio),
+        upperText: formatRatio(differenceCi.upper.ratio),
+        level: differenceCi.level,
+      },
+    };
+  });
+}
+
+function intervalView(overall) {
+  if (overall.delta == null && overall.ciLevel == null) {
+    return { fromFile: false, text: INTERVAL_FALLBACK, delta: null, ciLevel: null };
+  }
+  const deltaText = overall.delta == null ? "δ = 5 pp" : formatDelta(overall.delta);
+  const ciText = overall.ciLevel == null ? "90%" : formatCi(overall.ciLevel);
+  return {
+    fromFile: true,
+    text: `${deltaText} · ${ciText}`,
+    delta: overall.delta,
+    ciLevel: overall.ciLevel,
+  };
 }
 
 function resolveModelId(raw, name, preferred) {
@@ -294,59 +482,6 @@ function readModelId(value, label) {
   return value.trim();
 }
 
-function readGate(doc) {
-  const nested = doc.gate != null;
-  if (nested && (typeof doc.gate !== "object" || Array.isArray(doc.gate))) {
-    throw new Error("gate must be an object");
-  }
-  const bag = nested ? doc.gate : doc;
-  const prefix = nested ? "gate." : "";
-  const values = {};
-  let fromFile = false;
-  for (const key of GATE_KEYS) {
-    if (!Object.prototype.hasOwnProperty.call(bag, key)) {
-      values[key] = null;
-      continue;
-    }
-    values[key] = readGateValue(bag[key], `${prefix}${key}`);
-    if (values[key] != null) fromFile = true;
-  }
-  return {
-    fromFile,
-    text: gateText(values, fromFile),
-    delta: values.delta,
-    alpha: values.alpha,
-    minValid: values.min_valid,
-    ciLevel: values.ci_level,
-    missCap: values.miss_cap,
-  };
-}
-
-function readGateValue(value, label) {
-  if (value == null) return null;
-  if (typeof value === "number") {
-    if (!Number.isFinite(value) || value < 0) {
-      throw new Error(`${label} must be a non-negative number or a string`);
-    }
-    return value;
-  }
-  if (typeof value === "string") {
-    const text = value.trim();
-    return text ? text : null;
-  }
-  throw new Error(`${label} must be a non-negative number or a string`);
-}
-
-function gateText(values, fromFile) {
-  if (!fromFile) return GATE_FALLBACK;
-  const parts = [values.delta == null ? "δ = 5 pp" : formatDelta(values.delta)];
-  if (values.alpha != null) parts.push(`α = ${rawText(values.alpha)}`);
-  if (values.min_valid != null) parts.push(`min valid ${formatRate(values.min_valid)}`);
-  parts.push(values.ci_level == null ? "90%" : formatCi(values.ci_level));
-  if (values.miss_cap != null) parts.push(`miss cap ${formatRate(values.miss_cap)}`);
-  return parts.join(" · ");
-}
-
 function rawText(value) {
   return typeof value === "string" ? value.trim() : String(value);
 }
@@ -368,10 +503,6 @@ function ratePercent(value) {
   const whole = Math.trunc(tenths / 10);
   const frac = Math.abs(tenths % 10);
   return `${whole}.${frac}%`;
-}
-
-function formatRate(value) {
-  return ratePercent(value) || rawText(value);
 }
 
 function formatDelta(value) {

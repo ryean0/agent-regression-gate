@@ -16,6 +16,17 @@ const routes = [
   "results/index.html",
   "integrations/index.html",
   "docs/index.html",
+  "docs/quickstart/index.html",
+  "docs/concepts/index.html",
+  "docs/guides/scenarios/index.html",
+  "docs/guides/adapters/index.html",
+  "docs/guides/spend/index.html",
+  "docs/reference/results/index.html",
+  "docs/reference/adapter/index.html",
+  "docs/reference/ci/index.html",
+  "docs/reference/data/index.html",
+  "docs/changelog/index.html",
+  "docs/roadmap/index.html",
 ];
 
 function htmlFiles(dir, out = []) {
@@ -149,7 +160,10 @@ const shippedView = parseResultsV2(shipped);
 assert.equal(shippedView.version, "2.1.0");
 assert.equal(shippedView.schemaVersion, "2.1.0");
 assert.equal(shippedView.headline, "Pass");
-assert.equal(shippedView.gate.fromFile, true);
+assert.equal(shippedView.runKind, "screening");
+assert.equal(shippedView.interval.fromFile, true);
+assert.equal(shippedView.interval.delta, "0.05");
+assert.equal(shippedView.interval.ciLevel, "0.9");
 assert.equal(shippedView.modelIdSources.baseline, "overall");
 assert.equal(shippedView.modelIdSources.candidate, "overall");
 assert.equal(typeof shippedView.arms.baseline.modelId, "string");
