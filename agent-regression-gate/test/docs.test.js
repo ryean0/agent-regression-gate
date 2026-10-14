@@ -1,0 +1,178 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import test from "node:test";
+import { fileURLToPath } from "node:url";
+
+import { DOCS_INDEX } from "../js/docs-index.js";
+import { docsHref, filterHeadings } from "../js/docs-search.js";
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+function read(rel) {
+  return fs.readFileSync(path.join(root, rel), "utf8");
+}
+
+function docsHtml() {
+  const found = [];
+  function walk(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith(".html")) found.push(full);
+    }
+  }
+  walk(path.join(root, "docs"));
+  return found;
+}
+
+test("docs search keeps relative hrefs and filters headings", () => {
+  assert.equal(docsHref("./", "", "between"), "./#between");
+  assert.equal(docsHref("../", "quickstart/", ""), "../quickstart/");
+  assert.equal(docsHref("../../", "reference/data/", "cloud"), "../../reference/data/#cloud");
+  assert.equal(filterHeadings(DOCS_INDEX, "   ").length, 0);
+  const misses = filterHeadings(DOCS_INDEX, "Misses");
+  assert.equal(misses.some((hit) => hit.id === "misses" && hit.path === "concepts/"), true);
+  const cloud = filterHeadings(DOCS_INDEX, "your cloud");
+  assert.equal(cloud.some((hit) => hit.id === "cloud"), true);
+  assert.equal(filterHeadings(DOCS_INDEX, "no-such-heading-xyz").length, 0);
+});
+
+test("every docs page has a sidebar, search, on-this-page list, and pager", () => {
+  const files = docsHtml();
+  assert.equal(files.length, DOCS_INDEX.length);
+  for (const file of files) {
+    const html = fs.readFileSync(file, "utf8");
+    assert.match(html, /class="docs-shell"/);
+    assert.match(html, /id="docs-q"/);
+    assert.match(html, /Search headings/);
+    assert.match(html, /aria-labelledby="on-this-page"/);
+    assert.match(html, /class="docs-pager"/);
+    assert.match(html, /aria-label="Documentation"/);
+    assert.match(html, /js\/docs\.js"/);
+    const rel = path.relative(root, file);
+    const page = DOCS_INDEX.find((item) => {
+      const indexFile = item.path ? path.join("docs", item.path, "index.html") : path.join("docs", "index.html");
+      return indexFile === rel;
+    });
+    assert.ok(page, rel);
+    for (const heading of page.headings) {
+      assert.ok(html.includes(`id="${heading.id}"`), `${rel} ${heading.id}`);
+      assert.ok(html.includes(heading.text), `${rel} ${heading.text}`);
+    }
+  }
+});
+
+test("guides and reference ship copyable samples", () => {
+  for (const rel of [
+    "docs/quickstart/index.html",
+    "docs/guides/scenarios/index.html",
+    "docs/guides/adapters/index.html",
+    "docs/guides/spend/index.html",
+    "docs/reference/results/index.html",
+    "docs/reference/adapter/index.html",
+    "docs/reference/ci/index.html",
+  ]) {
+    assert.match(read(rel), /class="code-copy"/);
+    assert.match(read(rel), /<pre tabindex="0"><code>/);
+  }
+});
+
+test("quickstart names the five steps and marks the unshipped workflow", () => {
+  const html = read("docs/quickstart/index.html");
+  for (const step of ["Add the workflow", "Add the adapter", "Allowlist the model", "Set the secret", "Open a pull request"]) {
+    assert.ok(html.includes(step), step);
+  }
+  assert.match(html, /id="workflow"[\s\S]*data-state="planned"/);
+  assert.match(html, /id="adapter"[\s\S]*data-state="built"/);
+  assert.match(html, /gemini-3\.5-flash-lite/);
+});
+
+test("concepts keep the gate rule, the four statuses, and the miss cap", () => {
+  const html = read("docs/concepts/index.html");
+  assert.match(html, /non-inferiority, δ = 5 pp/i);
+  assert.match(html, /90% interval/);
+  assert.match(html, /above −5 pp/);
+  assert.match(html, /below −5 pp/);
+  for (const status of ["Pass", "Block", "Insufficient evidence", "Invalid run"]) {
+    assert.ok(html.includes(status), status);
+  }
+  assert.match(html, /Likely regression warning/);
+  for (const kind of ["agent_timeout", "agent_error", "infra_timeout", "rate_limit", "http_5xx", "ci_kill", "env_miss"]) {
+    assert.ok(html.includes(kind), kind);
+  }
+  assert.match(html, /1\/20/);
+  assert.match(html, /invalid_run/);
+  assert.match(html, /minimum detectable effect/i);
+  const results = read("docs/reference/results/index.html");
+  assert.match(results, /schema_version/);
+  assert.match(results, /verdicts\.overall\.model_ids/);
+  assert.match(results, /δ = 5 pp \/ 90%/);
+  assert.match(results, /Still in progress/);
+  assert.match(results, /No per-family verdict|no verdict/);
+});
+
+test("enterprise strip labels data residency Planned and the other three Built", () => {
+  const home = read("index.html");
+  assert.match(home, /id="why"/);
+  assert.match(home, /Dashboards and tracing tools score a run and keep the trace/);
+  assert.match(home, /gates the merge on statistics, with a spend cap/);
+  assert.equal(home.includes("logo"), false);
+  const strip = home.slice(home.indexOf('class="enterprise"'), home.indexOf('href="docs/">More details'));
+  function card(name) {
+    const anchors = [...strip.matchAll(/<a\b[\s\S]*?<\/a>/g)].map((match) => match[0]);
+    const found = anchors.find((anchor) => anchor.includes(name));
+    assert.ok(found, name);
+    return found;
+  }
+  assert.match(card("Keyless CI"), /data-state="built"/);
+  assert.match(card("Spend governance"), /data-state="built"/);
+  assert.match(card("Reproducible audit trail"), /data-state="built"/);
+  const data = card("Data stays in your cloud");
+  assert.match(data, /data-state="planned"/);
+  assert.match(data, /S3 bucket the team controls/);
+  assert.equal(/data-state="built"/.test(data), false);
+  assert.match(data, /href="docs\/reference\/data\/#cloud"/);
+});
+
+test("data residency docs match the Planned strip", () => {
+  const data = read("docs/reference/data/index.html");
+  assert.match(data, /Data stays in your cloud is Planned/);
+  assert.match(data, /S3 bucket the team controls/);
+  assert.match(data, /post-MVP/);
+  assert.match(data, /id="cloud"[\s\S]*data-state="planned"/);
+  const ci = read("docs/reference/ci/index.html");
+  assert.match(ci, /no stored cloud key|does not store a cloud key/i);
+  assert.match(ci, /read-only/i);
+  assert.match(ci, /S3 bucket the team controls/);
+  assert.match(ci, /post-MVP/);
+});
+
+test("roadmap lanes are Built, Next, and Planned", () => {
+  const html = read("docs/roadmap/index.html");
+  assert.match(html, /id="built"/);
+  assert.match(html, /id="next"/);
+  assert.match(html, /id="planned"/);
+  assert.match(html, /Wk4/);
+  assert.match(html, /Gemini adapter/);
+  assert.match(html, /Spend stop/);
+  assert.match(html, /Stats gate rule/);
+  assert.match(html, /In progress until the Wk4 stats engine/);
+  assert.match(html, /No per-family verdict/);
+  assert.match(html, /The gate stays on the pooled result/);
+  assert.match(html, /Cost per verdict/);
+  assert.match(html, /MDE on the check/);
+  for (const item of [
+    "Packaged GitHub Action",
+    "A second provider",
+    "Bring-your-own scenarios",
+    "OTel trace import",
+    "Bring-your-own bucket",
+  ]) {
+    assert.ok(html.includes(item), item);
+  }
+  assert.match(html, /OpenAI or Anthropic/);
+  assert.match(html, /Data stays in your cloud is Planned, and post-MVP/);
+  const css = read("css/site.css");
+  assert.match(css, /prefers-reduced-motion:\s*reduce[\s\S]*\.roadmap/);
+});

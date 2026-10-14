@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { coverageFloor, parseRational, ratiosEqual } from "../js/rational.js";
+import { coverageFloor, parseRational, parseSignedRational, ratiosEqual } from "../js/rational.js";
 
 test("coverage floor uses exact rational arithmetic", () => {
   assert.equal(coverageFloor(5, 3, 5), 3);
@@ -27,4 +27,12 @@ test("decimal strings become exact rationals", () => {
 
 test("numeric rates are rejected", () => {
   assert.throws(() => parseRational(0.6), /string/);
+  assert.throws(() => parseSignedRational(0.05), /string/);
+});
+
+test("signed fraction strings stay exact", () => {
+  assert.deepEqual(parseSignedRational("-0.3"), { numerator: -3, denominator: 10 });
+  assert.deepEqual(parseSignedRational("-1/20"), { numerator: -1, denominator: 20 });
+  assert.ok(ratiosEqual(parseSignedRational("0.05"), parseRational("1/20")));
+  assert.throws(() => parseRational("-0.05"), /negative/);
 });
