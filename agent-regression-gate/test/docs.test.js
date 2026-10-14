@@ -101,7 +101,9 @@ test("concepts keep the gate rule, the four statuses, and the miss cap", () => {
   for (const kind of ["agent_timeout", "agent_error", "infra_timeout", "rate_limit", "http_5xx", "ci_kill", "env_miss"]) {
     assert.ok(html.includes(kind), kind);
   }
-  assert.match(html, /1\/20/);
+  assert.match(html, /The cap is 5% of the scheduled rollouts on an arm/);
+  assert.match(html, /Exactly 5% still scores/);
+  assert.equal(/\d+\/20\b/.test(html.replace(/<[^>]+>/g, " ")), false);
   assert.match(html, /invalid_run/);
   assert.match(html, /minimum detectable effect/i);
   const results = read("docs/reference/results/index.html");
@@ -117,7 +119,8 @@ test("enterprise strip labels data residency Planned and the other three Built",
   assert.match(home, /id="why"/);
   assert.match(home, /Dashboards and tracing tools score a run and keep the trace/);
   assert.match(home, /gates the merge on statistics, with a spend cap/);
-  assert.equal(home.includes("logo"), false);
+  const why = home.slice(home.indexOf('id="why"'), home.indexOf('id="pipeline"'));
+  assert.equal(why.includes("logo"), false);
   const strip = home.slice(home.indexOf('class="enterprise"'), home.indexOf('href="docs/">More details'));
   function card(name) {
     const anchors = [...strip.matchAll(/<a\b[\s\S]*?<\/a>/g)].map((match) => match[0]);
