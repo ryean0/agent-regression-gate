@@ -1,6 +1,6 @@
 # Brand names
 
-The locked product name is **Anubys**. The tagline is “Anubys, a CI-native agent regression model harness.” Script copy reads `BRAND` in `agent-regression-gate/js/brand.js`. HTML that crawlers read hardcodes the same name in the spots listed there.
+The locked product name is **Anubys**. The tagline is “Anubys, a CI-native agent regression model harness.” Script copy reads `BRAND` in `agent-regression-gate/js/brand.js`. HTML that crawlers read hardcodes the same name in the spots listed there. The visual wordmark is `WORDMARK` (`Anubys.dev`): “Anubys” in neon orange and “.dev” in white, in the header, the footer, and the hero lockup. Prose stays on Anubys.
 
 The shortlist below is the conflict scan from 12 October 2026. It is a record of that search, not the shipped name. This is not a trademark search, a domain check, or legal advice.
 
