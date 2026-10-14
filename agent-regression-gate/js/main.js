@@ -430,6 +430,15 @@ function renderResults(view) {
     armRows.unshift(["Model", view.arms.baseline.modelId || "—", view.arms.candidate.modelId || "—"]);
   }
 
+  const diagnosticRows = view.diagnostics.length
+    ? view.diagnostics.map((row) => ({
+        name: row.scenarioId,
+        caption: row.familyId,
+        baselineText: row.baselineText,
+        candidateText: row.candidateText,
+      }))
+    : view.scenarios;
+
   root.replaceChildren(el("div", { class: "panel" }, [
     el("p", { class: "kicker" }, "Suite check"),
     el("article", { class: "verdict", "data-verdict": view.verdict }, [
@@ -437,7 +446,10 @@ function renderResults(view) {
       el("h3", {}, view.headline),
       el("p", { class: "why" }, view.why),
     ]),
-    el("p", { class: "fine", "data-gate": view.gate.fromFile ? "file" : "fallback" }, view.gate.text),
+    el("p", {
+      class: "fine",
+      "data-interval": view.interval.fromFile ? "file" : "fallback",
+    }, [view.runKind, view.interval.text].filter(Boolean).join(" · ")),
     el("div", { class: "sheet sheet-head" }, [
       el("span", {}, "Recorded"),
       armHead("Baseline", view.arms.baseline.caption),
@@ -451,7 +463,7 @@ function renderResults(view) {
     el("table", { class: "diag" }, [
       el("caption", {}, "Diagnostics only. These rates do not pass or block a scenario."),
       el("thead", {}, el("tr", {}, [el("th", { scope: "col" }, "Scenario"), el("th", { scope: "col" }, "Baseline rate"), el("th", { scope: "col" }, "Candidate rate")])),
-      el("tbody", {}, view.scenarios.map((row) => el("tr", {}, [
+      el("tbody", {}, diagnosticRows.map((row) => el("tr", {}, [
         el("th", { scope: "row", ...(row.caption ? { title: row.caption } : {}) }, [
           row.name,
           row.caption ? el("span", { class: "subtitle" }, row.caption) : null,

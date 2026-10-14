@@ -78,6 +78,23 @@ export function parseRational(input) {
   return reduceRatio(numerator, denominator);
 }
 
+/**
+ * Same exact fraction grammar as parseRational, including a leading minus.
+ * Pass rates stay on parseRational, which rejects a negative value.
+ */
+export function parseSignedRational(input) {
+  if (typeof input !== "string") {
+    throw new Error("a fraction must be a string such as \"0.05\" or \"-1/20\"");
+  }
+  const text = input.trim();
+  const negative = text.startsWith("-");
+  const body = negative || text.startsWith("+") ? text.slice(1) : text;
+  if (!body) throw new Error(`invalid fraction: ${input}`);
+  const ratio = parseRational(body);
+  if (!negative) return ratio;
+  return reduceRatio(-ratio.numerator, ratio.denominator);
+}
+
 export function formatRatio(ratio) {
   return `${ratio.numerator}/${ratio.denominator}`;
 }
