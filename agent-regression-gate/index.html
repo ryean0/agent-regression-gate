@@ -3,7 +3,7 @@
 <head>
   <!-- brand: title, meta description, og:title, og:description, twitter:title, twitter:description, json-ld name, header wordmark, footer wordmark, hero tagline. Name constant: js/brand.js. -->
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Anubys</title>
   <meta name="description" content="Anubys, a CI-native agent regression model harness.">
   <link rel="canonical" href="./">
@@ -41,7 +41,7 @@
   <header class="nav" id="nav">
     <div class="nav-inner">
       <a class="brand" href="./">
-        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg>
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle cx="32" cy="22" r="2.2" fill="currentColor"/></svg>
         Anubys
       </a>
       <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
@@ -60,6 +60,18 @@
     <section class="hero" id="product">
       <div class="wrap hero-grid">
         <div class="hero-copy">
+          <figure class="scale lockup">
+            <svg class="lockup-svg" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+              <path class="lockup-stand" d="M32 22V52M22 52H42"/>
+              <g class="lockup-beam">
+                <path d="M10 22H54"/>
+                <path d="M10 22 6 36H18L14 22"/>
+                <path d="M54 22 50 36H62L58 22"/>
+                <circle cx="32" cy="22" r="2.2"/>
+              </g>
+            </svg>
+            <figcaption class="lockup-name">Anubys</figcaption>
+          </figure>
           <p class="eyebrow">CI gate</p>
           <h1>
             <span class="line">Catch agent regressions</span>
@@ -73,78 +85,43 @@
           </div>
           <a class="more" href="how-it-works/">More details</a>
         </div>
-        <aside class="hero-visual">
-          <div class="hero-run" aria-label="Sample suite checks. Each one keeps the scale, the status label, and the console on the same verdict.">
-            <div class="hero-phase" data-state="pass" data-pose="level" data-tone="white" data-verdict="Pass">
-              <figure class="scale">
-                <svg class="scale-svg" viewBox="0 0 520 280" aria-hidden="true" focusable="false">
-                  <g class="scale-stand"><path d="M260 124 V236"/><path d="M214 236 H306"/></g>
-                  <g class="scale-beam">
-                    <path class="scale-beam-line" d="M78 124 H442"/>
-                    <circle class="scale-fulcrum" cx="260" cy="124" r="3.2"/>
-                    <g class="scale-pan scale-pan-left"><path d="M78 124 L54 186 H126 L102 124"/><path d="M54 186 H126"/><text x="90" y="214" text-anchor="middle">Baseline</text></g>
-                    <g class="scale-pan scale-pan-right"><path d="M442 124 L418 186 H490 L466 124"/><path d="M418 186 H490"/><text x="454" y="214" text-anchor="middle">Candidate</text></g>
-                  </g>
-                </svg>
-                <p class="scale-state">Pass</p>
-              </figure>
-              <div class="shot">
-                <div class="shot-card">
-                  <header class="shot-bar"><span>Suite check</span><span>sample</span></header>
-                  <div class="shot-arm"><p><span>Baseline</span><b>18/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:0" data-kind="pass"></i><i style="--i:1" data-kind="pass"></i><i style="--i:2" data-kind="pass"></i><i style="--i:3" data-kind="pass"></i><i style="--i:4" data-kind="pass"></i><i style="--i:5" data-kind="pass"></i><i style="--i:6" data-kind="pass"></i><i style="--i:7" data-kind="pass"></i></div></div>
-                  <div class="shot-arm"><p><span>Candidate</span><b>17/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:8" data-kind="pass"></i><i style="--i:9" data-kind="pass"></i><i style="--i:10" data-kind="pass"></i><i style="--i:11" data-kind="pass"></i><i style="--i:12" data-kind="pass"></i><i style="--i:13" data-kind="pass"></i><i style="--i:14" data-kind="pass"></i><i style="--i:15" data-kind="pass"></i></div></div>
-                  <div class="shot-gap"><span>Gap</span><b>−2.5 pp</b><span class="shot-ci" aria-hidden="true"><i></i></span><span>lower above −5 pp</span></div>
-                  <p class="shot-status"><span class="resolved">Pass</span></p>
-                </div>
-              </div>
-            </div>
-            <div class="hero-phase" data-state="insufficient" data-pose="wobble" data-tone="grey" data-verdict="Insufficient evidence">
-              <figure class="scale">
-                <svg class="scale-svg" viewBox="0 0 520 280" aria-hidden="true" focusable="false">
-                  <g class="scale-stand"><path d="M260 124 V236"/><path d="M214 236 H306"/></g>
-                  <g class="scale-beam">
-                    <path class="scale-beam-line" d="M78 124 H442"/>
-                    <circle class="scale-fulcrum" cx="260" cy="124" r="3.2"/>
-                    <g class="scale-pan scale-pan-left"><path d="M78 124 L54 186 H126 L102 124"/><path d="M54 186 H126"/><text x="90" y="214" text-anchor="middle">Baseline</text></g>
-                    <g class="scale-pan scale-pan-right"><path d="M442 124 L418 186 H490 L466 124"/><path d="M418 186 H490"/><text x="454" y="214" text-anchor="middle">Candidate</text></g>
-                  </g>
-                </svg>
-                <p class="scale-state">Insufficient evidence</p>
-              </figure>
-              <div class="shot">
-                <div class="shot-card">
-                  <header class="shot-bar"><span>Suite check</span><span>sample</span></header>
-                  <div class="shot-arm"><p><span>Baseline</span><b>18/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:0" data-kind="pass"></i><i style="--i:1" data-kind="pass"></i><i style="--i:2" data-kind="pass"></i><i style="--i:3" data-kind="gap"></i><i style="--i:4" data-kind="pass"></i><i style="--i:5" data-kind="pass"></i><i style="--i:6" data-kind="pass"></i><i style="--i:7" data-kind="pass"></i></div></div>
-                  <div class="shot-arm"><p><span>Candidate</span><b>16/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:8" data-kind="pass"></i><i style="--i:9" data-kind="gap"></i><i style="--i:10" data-kind="pass"></i><i style="--i:11" data-kind="pass"></i><i style="--i:12" data-kind="gap"></i><i style="--i:13" data-kind="pass"></i><i style="--i:14" data-kind="pass"></i><i style="--i:15" data-kind="pass"></i></div></div>
-                  <div class="shot-gap"><span>Gap</span><b>−3.0 pp</b><span class="shot-ci" aria-hidden="true"><i></i></span><span>interval crosses −5 pp</span></div>
-                  <p class="shot-status"><span class="resolved">Insufficient evidence</span></p>
-                </div>
-              </div>
-            </div>
-            <div class="hero-phase" data-state="block" data-pose="tip" data-tone="orange" data-verdict="Block">
-              <figure class="scale">
-                <svg class="scale-svg" viewBox="0 0 520 280" aria-hidden="true" focusable="false">
-                  <g class="scale-stand"><path d="M260 124 V236"/><path d="M214 236 H306"/></g>
-                  <g class="scale-beam">
-                    <path class="scale-beam-line scale-hot" d="M78 124 H442"/>
-                    <circle class="scale-fulcrum" cx="260" cy="124" r="3.2"/>
-                    <g class="scale-pan scale-pan-left"><path d="M78 124 L54 186 H126 L102 124"/><path d="M54 186 H126"/><text x="90" y="214" text-anchor="middle">Baseline</text></g>
-                    <g class="scale-pan scale-pan-right"><path class="scale-hot" d="M442 124 L418 186 H490 L466 124"/><path class="scale-hot" d="M418 186 H490"/><text x="454" y="214" text-anchor="middle">Candidate</text></g>
-                  </g>
-                </svg>
-                <p class="scale-state">Block</p>
-              </figure>
-              <div class="shot">
-                <div class="shot-card">
-                  <header class="shot-bar"><span>Suite check</span><span>sample</span></header>
-                  <div class="shot-arm"><p><span>Baseline</span><b>18/20</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:0" data-kind="pass"></i><i style="--i:1" data-kind="pass"></i><i style="--i:2" data-kind="pass"></i><i style="--i:3" data-kind="pass"></i><i style="--i:4" data-kind="fail"></i><i style="--i:5" data-kind="pass"></i><i style="--i:6" data-kind="pass"></i><i style="--i:7" data-kind="pass"></i><i style="--i:8" data-kind="pass"></i><i style="--i:9" data-kind="fail"></i><i style="--i:10" data-kind="pass"></i><i style="--i:11" data-kind="pass"></i></div></div>
-                  <div class="shot-arm"><p><span>Candidate</span><b>2/5</b></p><div class="shot-cells" aria-hidden="true"><i style="--i:12" data-kind="pass"></i><i style="--i:13" data-kind="fail"></i><i style="--i:14" data-kind="fail"></i><i style="--i:15" data-kind="pass"></i><i style="--i:16" data-kind="fail"></i></div></div>
-                  <div class="shot-gap"><span>Gap</span><b>−37.5 pp</b><span class="shot-ci" aria-hidden="true"><i></i></span><span>upper below −5 pp</span></div>
-                  <p class="shot-status"><span class="resolved">Block</span></p>
-                </div>
-              </div>
-            </div>
-          </div>
+        <aside class="hero-cards" aria-label="Example verdicts. The logo scale holds level for Pass, tips for Block, and wobbles for Insufficient evidence.">
+          <article class="verdict-card" data-state="pass" data-pose="level" data-tone="white">
+            <header class="verdict-card-top">
+              <h2>Pass</h2>
+              <span class="example-tag">Example</span>
+            </header>
+            <dl class="verdict-rates">
+              <div><dt>Baseline</dt><dd>92%</dd></div>
+              <div><dt>Candidate</dt><dd>91%</dd></div>
+            </dl>
+            <p class="verdict-gap"><span>Gap</span><b>−1 pp</b></p>
+            <p class="verdict-bound">lower bound −4 pp · above −5 pp</p>
+          </article>
+          <article class="verdict-card" data-state="block" data-pose="tip" data-tone="orange">
+            <header class="verdict-card-top">
+              <h2>Block</h2>
+              <span class="example-tag">Example</span>
+            </header>
+            <dl class="verdict-rates">
+              <div><dt>Baseline</dt><dd>92%</dd></div>
+              <div><dt>Candidate</dt><dd>70%</dd></div>
+            </dl>
+            <p class="verdict-gap"><span>Gap</span><b>−22 pp</b></p>
+            <p class="verdict-bound">upper bound −14 pp · below −5 pp</p>
+          </article>
+          <article class="verdict-card" data-state="insufficient" data-pose="wobble" data-tone="grey">
+            <header class="verdict-card-top">
+              <h2>Insufficient evidence</h2>
+              <span class="example-tag">Example</span>
+            </header>
+            <dl class="verdict-rates">
+              <div><dt>Baseline</dt><dd>92%</dd></div>
+              <div><dt>Candidate</dt><dd>88%</dd></div>
+            </dl>
+            <p class="verdict-gap"><span>Gap</span><b>−4 pp</b></p>
+            <p class="verdict-bound">interval −11 to +3 pp</p>
+          </article>
         </aside>
       </div>
     </section>
@@ -375,7 +352,7 @@
   <footer class="footer">
     <div class="wrap footer-grid">
       <div>
-        <p class="brand"><svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 7.5V21.5M11 25.5h10M16 21.5V25.5M6 10.5h20M6 10.5 4.2 17h6.2L8.4 10.5M26 10.5 24.2 17h6.2L28.4 10.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square" stroke-linejoin="miter"/></svg> Anubys</p>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle cx="32" cy="22" r="2.2" fill="currentColor"/></svg> Anubys</p>
         <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
       </div>
       <nav aria-label="Pages">

@@ -270,6 +270,7 @@ test("every route avoids the retired gate phrases", () => {
     }
     const visible = html.replace(/<span class="term-tip"[\s\S]*?<\/span>/g, " ");
     const text = visible.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+    assert.equal(/\d+\/20\b/.test(text), false, `${path.relative(root, file)} visible copy matches /20`);
     const withoutWarning = text
       .replace(/likely regression warning/gi, "")
       .replace(/warning · likely regression/gi, "");

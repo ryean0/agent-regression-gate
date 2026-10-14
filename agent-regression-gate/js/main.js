@@ -727,7 +727,7 @@ function renderDemo() {
 
   function armGrid(name, arm, official, caption) {
     const label = official
-      ? `${official.passes}/${official.valid} pass`
+      ? formatPercent(official.passes, official.valid)
       : `${arm.scheduled} scheduled`;
     return el("div", {}, [
       el("p", { class: "arm-label", ...(caption ? { title: caption } : {}) }, [name, el("b", {}, label)]),

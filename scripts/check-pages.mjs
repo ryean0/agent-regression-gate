@@ -143,7 +143,7 @@ assert.match(home, new RegExp(TAGLINE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
 assert.match(home, /"name": "Anubys"/);
 assert.doesNotMatch(home, /CI Agent Regression Harness/);
 assert.ok((home.match(/More details/g) || []).length >= 7);
-assert.match(home, /class="scale"/);
+assert.match(home, /class="scale\b/);
 assert.match(home, /Baseline/);
 assert.match(home, /Candidate/);
 
@@ -223,4 +223,53 @@ assert.match(workflow, /needs:\s*test/);
 assert.match(workflow, /enablement:\s*true/);
 assert.match(workflow, /continue-on-error:\s*true/);
 
+const stylesheet = fs.readFileSync(path.join(site, "css/site.css"), "utf8");
+const overflow = fixedWidthsThatOverflow(stylesheet);
+assert.deepEqual(overflow, [], `fixed widths that overflow a 320px screen:\n${overflow.join("\n")}`);
+
 console.log(`pages check ok (${routes.length} routes, ${seen.size} scripts, results file, favicon, og.png)`);
+
+function fixedWidthsThatOverflow(css) {
+  const text = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const risks = [];
+  const decl = /(?<![\w-(])((?:min-)?)width\s*:\s*([^;}{]+)/g;
+  for (const match of text.matchAll(decl)) {
+    const property = `${match[1]}width`;
+    const value = match[2].trim();
+    const bare = stripFluidFunctions(value);
+    const px = [...bare.matchAll(/(\d+(?:\.\d+)?)px/g)].map((item) => Number(item[1]));
+    const rem = [...bare.matchAll(/(\d+(?:\.\d+)?)rem/g)].map((item) => Number(item[1]) * 16);
+    const wide = [...px, ...rem].filter((size) => size > 320);
+    if (wide.length) risks.push(`${property}: ${value} (${wide.join(", ")}px)`);
+  }
+  return risks;
+}
+
+function stripFluidFunctions(value) {
+  let out = "";
+  let index = 0;
+  while (index < value.length) {
+    const fn = /^(?:min|max|clamp|calc)\(/.exec(value.slice(index));
+    if (!fn) {
+      out += value[index];
+      index += 1;
+      continue;
+    }
+    let depth = 0;
+    let end = index;
+    for (; end < value.length; end += 1) {
+      if (value[end] === "(") depth += 1;
+      else if (value[end] === ")") {
+        depth -= 1;
+        if (depth === 0) {
+          end += 1;
+          break;
+        }
+      }
+    }
+    const chunk = value.slice(index, end);
+    out += /%|vw|vh|vmin|vmax|svw|dvw|cqw/.test(chunk) ? " 0px " : chunk;
+    index = end;
+  }
+  return out;
+}
