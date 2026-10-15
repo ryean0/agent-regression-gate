@@ -1,10 +1,10 @@
 # Anubys
 
-Launch page for Anubys, a CI-native agent regression model harness. It reads a results file and shows one suite status: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a Likely regression warning. Site paths are relative, so the same files work when this repository is renamed to `anubys`. The Pages artifact is still the `agent-regression-gate` folder.
+Launch page for Anubys, a CI-native agent regression model harness. It reads a results file and shows one suite status: Pass, Block, Insufficient evidence, or Invalid run. Insufficient evidence can carry a Likely regression warning. In-site links and assets stay relative. Canonical, Open Graph, Twitter, and JSON-LD URLs are absolute `https://anubys.dev/` addresses. The Pages artifact is still the `agent-regression-gate` folder.
 
-Live site: https://ryean0.github.io/agent-regression-gate/
+Live site: https://anubys.dev/
 
-The site files live in `agent-regression-gate/`. GitHub Actions uploads that folder as the Pages artifact, so the project site is served at the URL above.
+The site files live in `agent-regression-gate/`. GitHub Actions uploads that folder as the Pages artifact. The custom domain is set in repository Settings → Pages, so no CNAME file is shipped, and the site is served at the URL above.
 
 The owner must set **Settings → Pages → Source** to **GitHub Actions**. The deploy job tries to turn that source on. If the token cannot, the job stays green and prints a reminder, and the live URL stays a 404 until the setting is saved and the workflow is re-run.
 
@@ -17,7 +17,7 @@ npm run preview
 
 Open http://127.0.0.1:4173/agent-regression-gate/
 
-`npm test` runs the 77 site tests, then checks that every route, the favicon, stylesheet, scripts, results file, and Open Graph image resolve with relative paths.
+`npm test` runs the site tests, then checks that every route, the favicon, stylesheet, scripts, results file, and Open Graph image resolve. Share URLs must be `https://anubys.dev/`. In-site links stay relative.
 
 ## Swap in a real results file
 

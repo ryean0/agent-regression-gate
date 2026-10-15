@@ -4,7 +4,7 @@ The locked product name is **Anubys**. The tagline is “Anubys, a CI-native age
 
 The shortlist below is the conflict scan from 12 October 2026. It is a record of that search, not the shipped name. This is not a trademark search, a domain check, or legal advice.
 
-The Pages artifact folder is still `agent-regression-gate`. Site paths are relative so a later rename of the repository to `anubys` does not require HTML edits.
+The Pages artifact folder is still `agent-regression-gate`. In-site links stay relative. Canonical, Open Graph, Twitter, and JSON-LD URLs are absolute `https://anubys.dev/` addresses, so renaming the repository does not change the public origin.
 
 ## Earlier pick: Mullion
 
