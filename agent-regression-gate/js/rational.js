@@ -84,7 +84,7 @@ export function parseRational(input) {
  */
 export function parseSignedRational(input) {
   if (typeof input !== "string") {
-    throw new Error("a fraction must be a string such as \"0.05\" or \"-1/20\"");
+    throw new Error("a fraction must be a string such as \"0.05\" or \"-0.05\"");
   }
   const text = input.trim();
   const negative = text.startsWith("-");
