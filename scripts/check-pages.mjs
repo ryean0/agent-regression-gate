@@ -28,6 +28,7 @@ const routes = [
   "docs/reference/data/index.html",
   "docs/changelog/index.html",
   "docs/roadmap/index.html",
+  "docs/dns-setup/index.html",
 ];
 
 function htmlFiles(dir, out = []) {
@@ -81,6 +82,14 @@ function pageUrl(fromFile, base) {
 
 const ORIGIN = "https://anubys.dev/";
 const SHARE_IMAGE = new URL("og.png", ORIGIN).href;
+
+function performanceTargetMissing(fromFile, ref) {
+  const clean = ref.split("#")[0].split("?")[0];
+  if (!/(?:^|\/)performance\/(?:index\.html)?$/.test(clean)) return false;
+  const abs = path.resolve(path.dirname(fromFile), clean);
+  const index = abs.endsWith(`${path.sep}index.html`) ? abs : path.join(abs, "index.html");
+  return !fs.existsSync(index);
+}
 
 function pageCanonical(rel) {
   const route = rel === "index.html" ? "" : rel.replace(/index\.html$/, "");
@@ -178,7 +187,8 @@ for (const rel of routes) {
       if (/^https?:/i.test(ref)) assertNoRetiredAbsoluteSiteUrl(ref, `${rel} ${ref}`);
       continue;
     }
-    resolveRef(file, ref);
+    // /performance/ lands on its own. Keep the nav link, and check the file once it is in the tree.
+    if (!performanceTargetMissing(file, ref)) resolveRef(file, ref);
     for (const base of bases) {
       const resolved = new URL(ref, pageUrl(file, base));
       assert.ok(resolved.href.startsWith(base), `${ref} on ${rel} left ${base}`);

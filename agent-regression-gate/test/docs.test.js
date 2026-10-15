@@ -184,3 +184,70 @@ test("roadmap lanes are Built, Next, and Planned", () => {
   assert.equal(css.includes(".docs-side"), false);
   assert.equal(css.includes(".docs-links"), false);
 });
+
+test("dns setup points anubys.dev at GitHub Pages and omits the verification value", () => {
+  const html = read("docs/dns-setup/index.html");
+  assert.match(html, /https:\/\/anubys\.dev\/docs\/dns-setup\//);
+  assert.match(html, /hosted on GitHub Pages/);
+  assert.match(html, /Squarespace only provides DNS/);
+  assert.match(html, /no Squarespace site plan/);
+  assert.match(html, /class="dns-flow"/);
+  assert.match(html, /<strong>Browser<\/strong>/);
+  assert.match(html, /DNS lookup at Squarespace/);
+  assert.match(html, /ryean0\/anubys/);
+  assert.match(html, /HTTPS certificate/);
+  for (const address of [
+    "185.199.108.153",
+    "185.199.109.153",
+    "185.199.110.153",
+    "185.199.111.153",
+    "2606:50c0:8000::153",
+    "2606:50c0:8001::153",
+    "2606:50c0:8002::153",
+    "2606:50c0:8003::153",
+  ]) {
+    assert.ok(html.includes(address), address);
+  }
+  assert.match(html, /<td>A<\/td>/);
+  assert.match(html, /<td>AAAA<\/td>/);
+  assert.match(html, /<td>CNAME<\/td>/);
+  assert.match(html, /<td>TXT<\/td>/);
+  assert.match(html, /<code>www<\/code>/);
+  assert.match(html, /<code>ryean0\.github\.io<\/code>/);
+  assert.match(html, /Alias so www\.anubys\.dev follows along/);
+  assert.match(html, /for redundancy/);
+  assert.match(html, /newer networks and phones/);
+  assert.match(html, /Account-specific\. Copy from GitHub/);
+  assert.match(html, /not listed on this page/);
+  assert.match(html, /blocks a takeover/);
+  assert.equal(html.includes("ryean0.github.io/anubys"), false);
+  assert.doesNotMatch(html, /_github-pages-challenge-[A-Za-z0-9.-]+=\S+/);
+  assert.match(html, /Remove the Squarespace default records/);
+  assert.match(html, /parking page/);
+  assert.match(html, /Leave Domain Nameservers untouched/);
+  assert.match(html, /Leave DNSSEC untouched/);
+  assert.match(html, /\.dev requires HTTPS/);
+  assert.match(html, /up to 24 hours/);
+  assert.match(html, /tick Enforce HTTPS/);
+  assert.match(html, /dig anubys\.dev \+short/);
+  assert.match(html, /dig www\.anubys\.dev CNAME \+short/);
+  assert.match(html, /curl -I https:\/\/anubys\.dev/);
+  assert.match(html, /href="\.\.\/\.\.\/performance\/">Performance</);
+  assert.match(html, /class="wordmark"/);
+  assert.match(html, /wordmark-name">Anubys</);
+  assert.match(html, /wordmark-tld">\.dev</);
+  const page = DOCS_INDEX.find((item) => item.path === "dns-setup/");
+  assert.ok(page);
+  assert.equal(page.title, "DNS setup");
+  for (const file of docsHtml()) {
+    const source = fs.readFileSync(file, "utf8");
+    const label = path.relative(root, file);
+    assert.match(source, />DNS setup<\/a>/, label);
+    if (label !== path.join("docs", "dns-setup", "index.html")) {
+      assert.match(source, /href="[^"]*dns-setup\/"/, label);
+    }
+  }
+  const roadmap = read("docs/roadmap/index.html");
+  assert.match(roadmap, /class="docs-next" href="\.\.\/dns-setup\/"/);
+  assert.match(html, /class="docs-prev" href="\.\.\/roadmap\/"/);
+});

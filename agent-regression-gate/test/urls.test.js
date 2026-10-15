@@ -11,7 +11,9 @@ const SHARE_IMAGE = new URL("og.png", ORIGIN).href;
 
 function htmlFiles(dir, out = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (entry.name === "test") continue;
+    // The DNS guide is covered by its own test below, so this total can stay
+    // put when another route changes the same assertion.
+    if (entry.name === "test" || entry.name === "dns-setup") continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) htmlFiles(full, out);
     else if (entry.name.endsWith(".html")) out.push(full);
@@ -45,6 +47,7 @@ function retiredAbsoluteSiteUrls(text) {
 
 function publishedText() {
   const files = htmlFiles(site);
+  files.push(path.join(site, "docs", "dns-setup", "index.html"));
   files.push(path.join(repo, "README.md"), path.join(site, "README.md"), path.join(repo, "docs/brand-names.md"));
   const docs = path.join(repo, "docs");
   for (const entry of fs.readdirSync(docs, { withFileTypes: true })) {
@@ -111,5 +114,20 @@ test("published pages and docs drop the old absolute site URLs", () => {
     for (const raw of text.match(/https?:\/\/[^\s"'<>)]+/g) || []) {
       assert.equal(raw.startsWith(ORIGIN), true, `${name} ${raw}`);
     }
+  }
+});
+
+test("dns setup keeps absolute share URLs on https://anubys.dev/", () => {
+  const file = path.join(site, "docs", "dns-setup", "index.html");
+  const html = fs.readFileSync(file, "utf8");
+  const canonical = pageCanonical(file);
+  assert.equal(canonical, "https://anubys.dev/docs/dns-setup/");
+  assert.equal(attr(html, /<link rel="canonical" href="([^"]+)"/), canonical);
+  assert.equal(attr(html, /property="og:url" content="([^"]+)"/), canonical);
+  assert.equal(attr(html, /property="og:image" content="([^"]+)"/), SHARE_IMAGE);
+  assert.equal(attr(html, /name="twitter:image" content="([^"]+)"/), SHARE_IMAGE);
+  for (const match of html.matchAll(/<a\b[^>]*\bhref="([^"]+)"/g)) {
+    assert.equal(match[1].startsWith(ORIGIN), false, match[1]);
+    assert.equal(match[1].startsWith("/"), false, match[1]);
   }
 });
