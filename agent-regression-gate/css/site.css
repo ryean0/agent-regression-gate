@@ -1184,9 +1184,44 @@ html.motion .status-card {
 .docs-code pre {
   margin: 0; padding: 0.9rem 1rem; overflow: auto; max-width: 100%;
   background: #101012;
-  border: 1px solid var(--line); border-radius: 0.7rem; color: var(--ink);
+  border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 0.7rem; color: var(--ink);
   font-family: var(--mono); font-size: 0.82rem; line-height: 1.55;
 }
+.beta-banner, .beta-mark {
+  font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--accent);
+}
+.beta-banner { margin: 0 0 0.55rem; }
+.docs-callout {
+  border: 1px solid rgba(255, 122, 26, 0.45);
+  border-left: 3px solid var(--accent);
+  border-radius: 0.7rem;
+  background: var(--elev);
+  padding: 0.9rem 1rem;
+}
+.docs-callout .kicker { margin-bottom: 0.35rem; }
+.docs-callout p { color: var(--muted); }
+.docs-fold {
+  margin-top: 1.25rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 0.7rem;
+  background: var(--elev);
+  padding: 0.15rem 0.95rem 0.95rem;
+}
+.docs-fold summary {
+  cursor: pointer;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  list-style: none;
+}
+.docs-fold summary::-webkit-details-marker { display: none; }
+.docs-fold p { color: var(--muted); }
 .docs-pager {
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.6rem;
   margin-top: 2.4rem; padding-top: 1rem; border-top: 1px solid var(--line);

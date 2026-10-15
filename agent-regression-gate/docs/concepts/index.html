@@ -58,7 +58,7 @@
         <details class="docs-menu">
           <summary>Documentation</summary>
           <nav class="docs-nav" aria-label="Documentation">
-            <p class="docs-group">Start</p><a href="../">Introduction</a><a href="../quickstart/">Quickstart</a><a href="./" aria-current="page">Concepts</a><p class="docs-group">Guides</p><a href="../guides/scenarios/">Writing scenarios</a><a href="../guides/adapters/">Adding a provider adapter</a><a href="../guides/spend/">Spend governance</a><p class="docs-group">Reference</p><a href="../reference/results/">results.json</a><a href="../reference/adapter/">Adapter contract</a><a href="../reference/ci/">CI and OIDC</a><a href="../reference/data/">Where results go</a><p class="docs-group">Project</p><a href="../changelog/">Changelog</a><a href="../roadmap/">Roadmap</a><p class="docs-group">Site</p><a href="../dns-setup/">DNS setup</a>
+            <p class="docs-group">Start</p><a href="../">Introduction</a><a href="../quickstart/">Quickstart</a><a href="../install/">Install</a><a href="./" aria-current="page">Concepts</a><p class="docs-group">Guides</p><a href="../guides/scenarios/">Writing scenarios</a><a href="../guides/adapters/">Adding a provider adapter</a><a href="../guides/spend/">Spend governance</a><p class="docs-group">Reference</p><a href="../reference/results/">results.json</a><a href="../reference/adapter/">Adapter contract</a><a href="../reference/ci/">CI and OIDC</a><a href="../reference/data/">Where results go</a><p class="docs-group">Project</p><a href="../changelog/">Changelog</a><a href="../roadmap/">Roadmap</a><p class="docs-group">Site</p><a href="../dns-setup/">DNS setup</a>
           </nav>
         </details>
       </div>
@@ -79,7 +79,7 @@
 <section class="docs-sec" id="misses" aria-labelledby="misses-title"><h2 id="misses-title">Misses and fails</h2><p><code>agent_timeout</code> and <code>agent_error</code> are fails. They score 0 and stay in the sample. A rollout that misses the expected outcome is a fail too.</p><p><code>infra_timeout</code>, <code>rate_limit</code>, <code>http_5xx</code>, <code>ci_kill</code>, and <code>env_miss</code> are misses. A miss is excluded from the score and counts toward the cap.</p><table class="docs-table"><caption>Fails stay in the score. Misses are excluded.</caption><thead><tr><th scope="col">Kind</th><th scope="col">Class</th><th scope="col">Effect</th></tr></thead><tbody><tr><td><code>fail</code></td><td>Fail</td><td>Scores 0</td></tr><tr><td><code>agent_timeout</code></td><td>Fail</td><td>Scores 0</td></tr><tr><td><code>agent_error</code></td><td>Fail</td><td>Scores 0</td></tr><tr><td><code>infra_timeout</code></td><td>Miss</td><td>Excluded</td></tr><tr><td><code>rate_limit</code></td><td>Miss</td><td>Excluded</td></tr><tr><td><code>http_5xx</code></td><td>Miss</td><td>Excluded</td></tr><tr><td><code>ci_kill</code></td><td>Miss</td><td>Excluded</td></tr><tr><td><code>env_miss</code></td><td>Miss</td><td>Excluded</td></tr></tbody></table><p>The cap is 5% of the scheduled rollouts on an arm. Exactly 5% still scores. Over the cap, the run is <code>invalid_run</code> and the status is Invalid run.</p><p>Each scenario also needs a coverage floor of ceil(0.6 × scheduled) usable rollouts on both arms. That floor is separate from the miss cap.</p></section>
 <section class="docs-sec" id="mde" aria-labelledby="mde-title"><h2 id="mde-title">MDE</h2><p>MDE is the minimum detectable effect: the smallest gap this sample can separate from noise. It is not a status. The four statuses stay Pass, Block, Insufficient evidence, and Invalid run.</p><p>Showing the MDE on the check is Next, in Wk4. The <a href="../roadmap/">roadmap</a> lists it there, with cost per verdict and the per-family breakdown.</p></section>
         </div>
-        <nav class="docs-pager" aria-label="Previous and next"><a class="docs-prev" href="../quickstart/"><span>Previous</span><b>Quickstart</b></a><a class="docs-next" href="../guides/scenarios/"><span>Next</span><b>Writing scenarios</b></a></nav>
+        <nav class="docs-pager" aria-label="Previous and next"><a class="docs-prev" href="../install/"><span>Previous</span><b>Install and setup</b></a><a class="docs-next" href="../guides/scenarios/"><span>Next</span><b>Writing scenarios</b></a></nav>
       </article>
     </div>
   </main>
@@ -99,6 +99,7 @@
         <a href="../../performance/">Performance</a>
         <a href="../../integrations/">Integrations</a>
         <a href="../">Docs</a>
+        <a href="../install/">Install</a>
       </nav>
       <nav aria-label="Elsewhere">
         <p>Contact</p>

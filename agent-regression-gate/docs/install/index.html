@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../../" data-docs-root="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Install and setup · Anubys</title>
+  <meta name="description" content="Install the harness and run the offline checks. Beta testing. A full local gate is marked Coming soon.">
+  <link rel="canonical" href="https://anubys.dev/docs/install/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://anubys.dev/docs/install/">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="https://anubys.dev/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="https://anubys.dev/og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../../">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg>
+        <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span>
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../../">Product</a>
+        <a href="../../how-it-works/">How it works</a>
+        <a href="../../method/">Method</a>
+        <a href="../../gate/">Gate</a>
+        <a href="../../results/">Results</a>
+        <a href="../../performance/">Performance</a>
+        <a href="../../integrations/">Integrations</a>
+        <a href="../" aria-current="page">Docs</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <div class="docs-shell">
+      <div class="docs-tools">
+        <form class="docs-search" role="search" action="./">
+          <label for="docs-q">Search headings</label>
+          <input id="docs-q" type="search" name="q" placeholder="Filter headings" autocomplete="off" aria-controls="docs-hits" aria-expanded="false">
+        </form>
+        <p class="docs-hit-status" id="docs-hit-status" role="status" aria-live="polite"></p>
+        <ul class="docs-hits" id="docs-hits" hidden></ul>
+        <details class="docs-menu">
+          <summary>Documentation</summary>
+          <nav class="docs-nav" aria-label="Documentation">
+            <p class="docs-group">Start</p><a href="../">Introduction</a><a href="../quickstart/">Quickstart</a><a href="./" aria-current="page">Install</a><a href="../concepts/">Concepts</a><p class="docs-group">Guides</p><a href="../guides/scenarios/">Writing scenarios</a><a href="../guides/adapters/">Adding a provider adapter</a><a href="../guides/spend/">Spend governance</a><p class="docs-group">Reference</p><a href="../reference/results/">results.json</a><a href="../reference/adapter/">Adapter contract</a><a href="../reference/ci/">CI and OIDC</a><a href="../reference/data/">Where results go</a><p class="docs-group">Project</p><a href="../changelog/">Changelog</a><a href="../roadmap/">Roadmap</a><p class="docs-group">Site</p><a href="../dns-setup/">DNS setup</a>
+          </nav>
+        </details>
+      </div>
+      <article class="docs-article">
+        <header class="docs-head">
+          <p class="kicker">Start</p>
+          <p class="beta-banner">(beta testing)</p>
+          <h1>Install and setup</h1>
+          <p class="docs-lede">Install the harness and run the offline checks. A full local gate is still Coming soon. The license is MIT. The repository is <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">ci-agent-regression-harness</a> <span class="beta-mark">(beta testing)</span>.</p>
+        </header>
+        <nav class="docs-toc" aria-labelledby="on-this-page">
+          <p class="docs-toc-label" id="on-this-page">On this page</p>
+          <ol>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#local">Run it locally</a></li>
+            <li><a href="#enterprise">Enterprise and CI</a></li>
+            <li><a href="#background">New to this?</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+          </ol>
+        </nav>
+        <div class="docs-body">
+          <section class="docs-sec" id="prerequisites" aria-labelledby="prerequisites-title">
+            <h2 id="prerequisites-title">Prerequisites</h2>
+            <p>Python 3.11 or newer, git, and a virtualenv at the repository root. The install command below runs inside that virtualenv.</p>
+            <p><code>GEMINI_API_KEY</code> is only for a live run. The offline checks on this page do not call a model, so they do not need the key. Samples use the placeholder <code>your-key-here</code>. Do not commit a real key.</p>
+          </section>
+          <section class="docs-sec" id="local" aria-labelledby="local-title">
+            <h2 id="local-title">Run it locally</h2>
+            <p>Commands below are the ones on harness main. The repository is <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">ci-agent-regression-harness</a> <span class="beta-mark">(beta testing)</span>.</p>
+            <h3 id="clone">Clone <span class="beta-mark">(beta testing)</span></h3>
+            <p>Clone the repository, then change into it.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell · (beta testing)</p><button type="button" class="code-copy">Copy</button></div>
+              <pre tabindex="0"><code>git clone https://github.com/rphua-dev/ci-agent-regression-harness.git
+cd ci-agent-regression-harness</code></pre>
+            </div>
+            <h3 id="install-deps">Install</h3>
+            <p>From the virtualenv at the repository root:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy">Copy</button></div>
+              <pre tabindex="0"><code>python -m pip install -e ".[dev]"</code></pre>
+            </div>
+            <h3 id="verify">Verify the setup</h3>
+            <p>These checks stay offline. They do not call a model.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy">Copy</button></div>
+              <pre tabindex="0"><code>pytest
+python -m harness validate suites/tau_retail
+python -m harness validate-results docs/examples/results.preliminary.json
+python -m harness gates suites/tau_retail/scenarios
+python scripts/check_monthly_spend.py</code></pre>
+            </div>
+            <p><code>python scripts/check_monthly_spend.py</code> stops at <span class="example-tag">Example</span> $38 of logged spend this month. The same stop is described on <a href="../guides/spend/">spend governance</a>.</p>
+            <h3 id="key">The provider key</h3>
+            <p>Set <code>GEMINI_API_KEY</code> only when a live run calls the provider. The line below is a placeholder.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">environment · placeholder</p><button type="button" class="code-copy">Copy</button></div>
+              <pre tabindex="0"><code>GEMINI_API_KEY=your-key-here</code></pre>
+            </div>
+            <p>In CI, that value is an environment secret on the <code>live-experiments</code> environment. It is not a repository secret. Live runs are manual, on the experiment workflow (<code>.github/workflows/experiment.yml</code>). That workflow starts with the spend check. The model id is an explicit input, pinned, and checked against the allowlist (<code>config/allowed_models.txt</code>). Ids that contain latest, preview, or exp are rejected. There is no fallback.</p>
+            <details class="docs-fold">
+              <summary>Contributors</summary>
+              <p>Lint and format, from the repository root:</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy">Copy</button></div>
+                <pre tabindex="0"><code>ruff check .
+ruff format --check .</code></pre>
+              </div>
+              <p>Terraform validation does not need an AWS account:</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy">Copy</button></div>
+                <pre tabindex="0"><code>cd infra
+terraform init -backend=false
+terraform fmt -check -recursive
+terraform validate</code></pre>
+              </div>
+            </details>
+            <h3 id="verdict">Read the verdict <span class="docs-badge" data-state="planned">Coming soon</span></h3>
+            <p>A full gate on your machine is Coming soon. On main, the runner, environments, scoring, statistics, and report are placeholders. This page does not print a run command.</p>
+            <p>When a run does print a suite status, read it as one of three: <strong>Pass</strong>, <strong>Block</strong>, or <strong>Insufficient evidence</strong>. <code>likely_regression</code> is a warning. It is not a status. An invalid run is not scored. Scenario rows stay diagnostics. The rule is on <a href="../concepts/">Concepts</a>.</p>
+          </section>
+          <section class="docs-sec" id="enterprise" aria-labelledby="enterprise-title">
+            <h2 id="enterprise-title">Enterprise and CI</h2>
+            <p>The packaged GitHub Action is <span class="docs-badge" data-state="planned">Coming soon</span>. The <code>action/</code> directory is an intentional stub.</p>
+            <p>CI on main is <code>.github/workflows/ci.yml</code>. It runs on pull requests and on pushes to main. The job is read-only (<code>contents: read</code>). The workflow has no secrets. A pull request run does not receive an OIDC token.</p>
+            <p>A live model call is a different workflow. It is manual, it starts with the spend check, and it reads <code>GEMINI_API_KEY</code> from the <code>live-experiments</code> environment. Pull request runs never receive that secret. <span class="example-tag">Example</span> The spend check stops at $38 of logged spend this month. The experiment workflow also has a dollar ceiling.</p>
+          </section>
+          <section class="docs-sec" id="background" aria-labelledby="background-title">
+            <h2 id="background-title" class="sr-only">New to this?</h2>
+            <aside class="docs-callout">
+              <p class="kicker">New to this?</p>
+              <p>The harness repository is adding a plain-language guide in an open pull request. Read <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/docs/BACKGROUND.md" rel="noopener noreferrer">docs/BACKGROUND.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+            </aside>
+          </section>
+          <section class="docs-sec" id="troubleshooting" aria-labelledby="troubleshooting-title">
+            <h2 id="troubleshooting-title">Troubleshooting</h2>
+            <ul>
+              <li><strong>Missing key.</strong> Offline checks do not need <code>GEMINI_API_KEY</code>. A live run does. If the variable is unset, the provider call cannot start. The placeholder is <code>your-key-here</code>. In CI the real value is an environment secret on <code>live-experiments</code>.</li>
+              <li><strong>Spend cap stop.</strong> <code>python scripts/check_monthly_spend.py</code> halts the run when logged spend this month reaches the stop. <span class="example-tag">Example</span> That stop is $38.</li>
+              <li><strong>Insufficient evidence.</strong> The interval does not support Pass, and it does not support Block. <code>likely_regression</code> on that result is a warning, not its own status. Read the statuses on <a href="../concepts/#statuses">Concepts</a>.</li>
+            </ul>
+          </section>
+        </div>
+        <nav class="docs-pager" aria-label="Previous and next"><a class="docs-prev" href="../quickstart/"><span>Previous</span><b>Quickstart</b></a><a class="docs-next" href="../concepts/"><span>Next</span><b>Concepts</b></a></nav>
+      </article>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg> <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span></p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../../">Overview</a>
+        <a href="../../how-it-works/">How it works</a>
+        <a href="../../method/">Method</a>
+        <a href="../../gate/">Gate</a>
+        <a href="../../results/">Results</a>
+        <a href="../../performance/">Performance</a>
+        <a href="../../integrations/">Integrations</a>
+        <a href="../">Docs</a>
+        <a href="./">Install</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a> <span class="beta-mark">(beta testing)</span>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <a href="mailto:ryanphua.dev@outlook.com">Email</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../../js/docs.js"></script>
+</body>
+</html>
