@@ -93,10 +93,6 @@
         <h2 id="mitigations-title">What keeps the check from lingering.</h2>
         <ul class="mitigations">
           <li>
-            <h3>Cassette replay</h3>
-            <p>Re-runs reuse recorded model calls. No API waits. No spend.</p>
-          </li>
-          <li>
             <h3>Wall-clock and max_steps caps</h3>
             <p>A stuck agent can't hang the check.</p>
           </li>
@@ -117,6 +113,10 @@
             <p>One small file, only after merge to main.</p>
           </li>
         </ul>
+        <article class="mitigation-review">
+          <h3>Cassette replay <span class="ship-tag">Landing with harness #14</span></h3>
+          <p>Re-runs reuse recorded model calls. No API waits. No spend. Harness #14 is not merged yet.</p>
+        </article>
       </div>
     </section>
 

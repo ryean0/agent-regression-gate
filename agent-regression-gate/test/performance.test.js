@@ -37,6 +37,8 @@ test("the landing section compares a runtime guardrail with the CI path", () => 
   assert.match(latency, /class="path-flow path-flow-ci"/);
   assert.match(latency, /Untouched/);
   assert.match(latency, /Orange marks the Anubys CI path/);
+  assert.match(latency, /Cassette replay <span class="ship-tag">Landing with harness #14<\/span>/);
+  assert.equal(latency.includes("Built today"), false);
   assert.match(latency, /<a class="more" href="performance\/">More details<\/a>/);
   assert.match(home, /<a href="performance\/">Performance<\/a>/);
   assert.equal(/p95/i.test(latency), false);
@@ -83,6 +85,21 @@ test("the performance route states the built mitigations and the rollout tradeof
     assert.ok(html.includes(fact), fact);
   }
   assert.match(html, /class="example-tag">Example</);
+  const builtAt = html.indexOf('class="mitigations"');
+  const builtList = html.slice(builtAt, html.indexOf("</ul>", builtAt));
+  assert.equal(builtList.includes("Cassette replay"), false);
+  assert.match(html, /class="mitigation-review"[\s\S]*Cassette replay <span class="ship-tag">Landing with harness #14<\/span>/);
+  assert.match(html, /Harness #14 is not merged yet/);
+  const spend = read("docs/guides/spend/index.html");
+  const integrations = read("integrations/index.html");
+  assert.match(spend, /Record\/replay cassettes: In review, on harness #14/);
+  assert.match(integrations, /Record\/replay cassettes · In review/);
+  assert.equal(/cassettes are planned/i.test(integrations), false);
+  assert.equal(/cassettes · planned/i.test(integrations), false);
+  assert.match(integrations, /GitHub Action · planned/);
+  const css = read("css/site.css");
+  assert.match(css, /\.ship-tag\s*\{[^}]*color:\s*var\(--faint\)/);
+  assert.equal(/\.ship-tag\s*\{[^}]*#ff7a1a/.test(css), false);
   assert.equal(/p95/i.test(html), false);
   assert.equal(/parallel/i.test(html), false);
   assert.equal(html.includes("https://anubys.dev/performance/\" >"), false);

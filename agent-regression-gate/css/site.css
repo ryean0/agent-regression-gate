@@ -1923,8 +1923,44 @@ a.brand:hover .wordmark-name,
   background: var(--elev);
   padding: 0.95rem 1rem 1.05rem;
 }
-.mitigations h3 { font-size: 1.05rem; margin-bottom: 0.35rem; }
-.mitigations p { color: var(--muted); font-size: 0.95rem; }
+.mitigations h3, .mitigation-review h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.55rem;
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+}
+.mitigations p, .mitigation-review p { color: var(--muted); font-size: 0.95rem; }
+.ship-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.6rem;
+  margin-top: 0.95rem;
+  color: var(--muted);
+}
+.ship-tag {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--faint);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.16rem 0.5rem;
+}
+.mitigation-review {
+  margin-top: 0.7rem;
+  min-width: 0;
+  border: 1px dashed var(--line-strong);
+  border-radius: 0.85rem;
+  background: var(--elev);
+  padding: 0.95rem 1rem 1.05rem;
+}
 .knob {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;

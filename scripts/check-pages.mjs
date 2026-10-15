@@ -280,7 +280,7 @@ assert.match(integrations, /in progress/);
 assert.match(integrations, /OpenAI Agents SDK · adapter example/);
 assert.match(integrations, /Claude Agent SDK · adapter example/);
 assert.match(integrations, /GitHub Action · planned/);
-assert.match(integrations, /Record\/replay cassettes · planned/);
+assert.match(integrations, /Record\/replay cassettes · In review/);
 assert.match(integrations, /No official partnerships/);
 assert.doesNotMatch(integrations, /gpt-4\.1-nano/i);
 assert.doesNotMatch(integrations, /GPT-4\.1-nano/);
