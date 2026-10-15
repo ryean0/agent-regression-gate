@@ -32,8 +32,33 @@ test("install guide exists, is marked beta, and has no real-looking key", () => 
   assert.match(html, /GEMINI_API_KEY/);
   assert.match(html, /your-key-here/);
   assert.match(html, /Coming soon/);
-  assert.match(html, /milestone M3/);
   assert.match(html, /class="code-copy"/);
+  assert.match(html, /Python 3\.11 or newer/);
+  assert.match(html, /git clone https:\/\/github\.com\/rphua-dev\/ci-agent-regression-harness\.git/);
+  assert.match(html, /cd ci-agent-regression-harness/);
+  assert.match(html, /python -m pip install -e "\.\[dev\]"/);
+  for (const command of [
+    "pytest",
+    "python -m harness validate suites/tau_retail",
+    "python -m harness validate-results docs/examples/results.preliminary.json",
+    "python -m harness gates suites/tau_retail/scenarios",
+    "python scripts/check_monthly_spend.py",
+    "ruff check .",
+    "ruff format --check .",
+    "terraform init -backend=false",
+    "terraform fmt -check -recursive",
+    "terraform validate",
+  ]) {
+    assert.ok(html.includes(command), command);
+  }
+  assert.match(html, /<details class="docs-fold">/);
+  assert.equal(html.includes("<details class=\"docs-fold\" open"), false);
+  assert.match(html, /id="verdict"[\s\S]*Coming soon/);
+  assert.match(html, /action\/[\s\S]*intentional stub|intentional stub/);
+  assert.match(html, /live-experiments/);
+  assert.match(html, /does not receive an OIDC token/);
+  assert.doesNotMatch(html, /python -m harness run/);
+  assert.equal(html.includes("$40"), false);
   assert.match(html, /class="wordmark"/);
   assert.doesNotMatch(html, /AIza[0-9A-Za-z\-_]{10,}/);
   assert.doesNotMatch(html, /\bsk-[A-Za-z0-9]{8,}/);
@@ -45,10 +70,10 @@ test("install guide exists, is marked beta, and has no real-looking key", () => 
   assert.doesNotMatch(html, /\bFail\b/);
   assert.doesNotMatch(html, /\d+\/20\b/);
   assert.doesNotMatch(html, /gemini-/);
-  for (const amount of ["$38", "$40"]) {
-    const at = html.indexOf(amount);
-    assert.ok(at > -1, amount);
-    assert.match(html.slice(Math.max(0, at - 80), at), /Example/);
+  const amounts = [...html.matchAll(/\$38/g)];
+  assert.ok(amounts.length >= 1);
+  for (const amount of amounts) {
+    assert.match(html.slice(Math.max(0, amount.index - 80), amount.index), /Example/);
   }
   const page = DOCS_INDEX.find((item) => item.path === "install/");
   assert.ok(page);
