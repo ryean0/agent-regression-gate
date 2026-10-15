@@ -231,6 +231,7 @@ test("dns setup points anubys.dev at GitHub Pages and omits the verification val
   assert.match(html, /dig anubys\.dev \+short/);
   assert.match(html, /dig www\.anubys\.dev CNAME \+short/);
   assert.match(html, /curl -I https:\/\/anubys\.dev/);
+  assert.match(html, /href="\.\.\/\.\.\/performance\/">Performance</);
   assert.match(html, /class="wordmark"/);
   assert.match(html, /wordmark-name">Anubys</);
   assert.match(html, /wordmark-tld">\.dev</);
