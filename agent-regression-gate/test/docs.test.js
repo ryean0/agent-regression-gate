@@ -85,7 +85,8 @@ test("quickstart names the five steps and marks the unshipped workflow", () => {
   }
   assert.match(html, /id="workflow"[\s\S]*data-state="planned"/);
   assert.match(html, /id="adapter"[\s\S]*data-state="built"/);
-  assert.match(html, /gemini-3\.5-flash-lite/);
+  assert.match(html, /a pinned Gemini Flash-Lite model id \(exact version set in suite config\)/);
+  assert.doesNotMatch(html, /gemini-/);
 });
 
 test("concepts keep the gate rule, the four statuses, and the miss cap", () => {

@@ -11,6 +11,7 @@ import {
   reduceFlow,
 } from "./method.js";
 import { RESULTS_PATH, parseResults, parseResultsV2 } from "./results.js";
+import { TIMING_SAMPLE_PATH, readTiming, renderTimingHtml } from "./timing.js";
 import { bindFilm, bindStory, renderFilmHtml, renderStoryHtml } from "./story.js";
 import { METHOD_NOTES, armMissExceeds, formatPercent, formatPoints, formatSignedNumber, scoreRun } from "./verdict.js";
 
@@ -26,6 +27,10 @@ const SLOT_LABEL = {
 function asset(path) {
   const base = document.documentElement.dataset.base || "./";
   return new URL(path, new URL(base, window.location.href)).href;
+}
+
+function siteFile(path) {
+  return asset(path);
 }
 
 function el(tag, attrs = {}, children = []) {
@@ -865,5 +870,21 @@ if (document.getElementById("results-root") || document.getElementById("results-
       const meta = document.querySelector("#results-teaser .teaser-meta");
       if (meta) meta.textContent = "Results file could not be read";
       renderResultsError(error instanceof Error ? error : new Error("Could not read results.json"));
+    });
+}
+
+const timingRoot = document.getElementById("timing-root");
+if (timingRoot) {
+  const rel = timingRoot.getAttribute("data-timing") || TIMING_SAMPLE_PATH;
+  fetch(siteFile(rel))
+    .then((response) => {
+      if (!response.ok) throw new Error(`Could not load timing sample (${response.status}).`);
+      return response.json();
+    })
+    .then((doc) => {
+      timingRoot.innerHTML = renderTimingHtml(readTiming(doc));
+    })
+    .catch(() => {
+      timingRoot.innerHTML = renderTimingHtml(readTiming(undefined));
     });
 }

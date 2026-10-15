@@ -14,6 +14,7 @@ const routes = [
   "method/index.html",
   "gate/index.html",
   "results/index.html",
+  "performance/index.html",
   "integrations/index.html",
   "docs/index.html",
   "docs/quickstart/index.html",
@@ -167,7 +168,7 @@ for (const rel of routes) {
   assert.match(html, /name="twitter:title" content="Anubys"/);
   assert.match(html, new RegExp(`property="og:description" content="${TAGLINE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`));
   assert.match(html, /class="brand-mark"/);
-  for (const label of ["Product", "How it works", "Method", "Gate", "Results", "Integrations", "Docs"]) {
+  for (const label of ["Product", "How it works", "Method", "Gate", "Results", "Performance", "Integrations", "Docs"]) {
     assert.ok(html.includes(`>${label}</a>`), `${rel} nav ${label}`);
   }
   const dataBase = attr(html, /data-base="([^"]*)"/);
@@ -273,13 +274,13 @@ assert.match(fs.readFileSync(path.join(site, "css/site.css"), "utf8"), /\.scale-
 const integrations = fs.readFileSync(path.join(site, "integrations/index.html"), "utf8");
 assert.match(integrations, /id="integrations"/);
 assert.match(integrations, /adapter example/);
-assert.match(integrations, /Gemini 3\.5 Flash-Lite/);
-assert.match(integrations, /gemini-3\.5-flash-lite/);
+assert.match(integrations, /a pinned Gemini Flash-Lite model id \(exact version set in suite config\)/);
+assert.doesNotMatch(integrations, /gemini-/);
 assert.match(integrations, /in progress/);
 assert.match(integrations, /OpenAI Agents SDK · adapter example/);
 assert.match(integrations, /Claude Agent SDK · adapter example/);
 assert.match(integrations, /GitHub Action · planned/);
-assert.match(integrations, /Record\/replay cassettes · planned/);
+assert.match(integrations, /Record\/replay cassettes · In review/);
 assert.match(integrations, /No official partnerships/);
 assert.doesNotMatch(integrations, /gpt-4\.1-nano/i);
 assert.doesNotMatch(integrations, /GPT-4\.1-nano/);

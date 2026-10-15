@@ -60,7 +60,7 @@ function publishedText() {
 
 test("canonical, Open Graph, Twitter, and JSON-LD use https://anubys.dev/", () => {
   const files = htmlFiles(site);
-  assert.equal(files.length, 18);
+  assert.equal(files.length, 19);
   for (const file of files) {
     const html = fs.readFileSync(file, "utf8");
     const canonical = pageCanonical(file);
@@ -82,6 +82,14 @@ test("canonical, Open Graph, Twitter, and JSON-LD use https://anubys.dev/", () =
       assert.equal(match[1].startsWith(ORIGIN), false, `${label} ${match[1]}`);
       assert.equal(match[1].startsWith("/"), false, `${label} ${match[1]}`);
     }
+  }
+});
+
+test("site HTML does not name a gemini- version string", () => {
+  const version = /gemini-/;
+  for (const file of htmlFiles(site)) {
+    const html = fs.readFileSync(file, "utf8");
+    assert.equal(version.test(html), false, path.relative(site, file));
   }
 });
 

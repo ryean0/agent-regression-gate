@@ -1,9 +1,10 @@
 /**
  * results.json v1, harness schema 2.0.0, and schema 2.1.0.
  *
- * RESULTS_PATH is the only file the page loads. Replace that file in place
- * with real harness output (expected around 30 October 2026). No other path
- * is consulted.
+ * RESULTS_PATH is the only results file the results panel loads. Replace that
+ * file in place with real harness output (expected around 30 October 2026).
+ * The results panel consults no other results path. Example check timings
+ * live in data/timing.sample.json and are not a results file.
  *
  * parseResults still accepts version 1. A 2.x.y file, including 2.0.0 and
  * 2.1.0, is read by parseResultsV2.

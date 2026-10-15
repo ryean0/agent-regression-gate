@@ -58,11 +58,11 @@
               "required": ["baseline", "candidate"],
               "properties": {
                 "baseline": {
-                  "description": "Baseline model id, for example gemini-2.5-flash-lite-001.",
+                  "description": "Baseline model id. The exact version is set in suite config.",
                   "type": "string"
                 },
                 "candidate": {
-                  "description": "Candidate model id, for example gemini-3.5-flash-lite.",
+                  "description": "Candidate model id, for example a pinned Gemini Flash-Lite model id (exact version set in suite config).",
                   "type": "string"
                 }
               }
@@ -102,6 +102,41 @@
       "properties": {
         "mde": { "$ref": "#/$defs/chart" },
         "aa": { "$ref": "#/$defs/chart" }
+      }
+    },
+    "timing": {
+      "description": "Optional efficiency field. Current results files omit it. data/timing.sample.json uses this shape, and the reader tolerates a missing timing field. Family rows are wall-clock only and are not verdicts.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "gate_wall_clock_s": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "live": { "type": "number" },
+            "replay": { "type": "number" }
+          }
+        },
+        "rollout_s": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "p50": { "type": "number" },
+            "max": { "type": "number" }
+          }
+        },
+        "retries_429": { "type": "number" },
+        "per_family_wall_clock_s": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "family_id": { "type": "string" },
+              "seconds": { "type": "number" }
+            }
+          }
+        }
       }
     }
   },
