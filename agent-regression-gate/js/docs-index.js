@@ -45,6 +45,32 @@ export const DOCS_INDEX = [
     ]
   },
   {
+    "path": "install/",
+    "title": "Install and setup",
+    "headings": [
+      {
+        "id": "prerequisites",
+        "text": "Prerequisites"
+      },
+      {
+        "id": "local",
+        "text": "Run it locally"
+      },
+      {
+        "id": "enterprise",
+        "text": "Enterprise and CI"
+      },
+      {
+        "id": "background",
+        "text": "New to this?"
+      },
+      {
+        "id": "troubleshooting",
+        "text": "Troubleshooting"
+      }
+    ]
+  },
+  {
     "path": "concepts/",
     "title": "Concepts",
     "headings": [

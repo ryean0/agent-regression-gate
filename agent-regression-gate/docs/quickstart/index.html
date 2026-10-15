@@ -58,7 +58,7 @@
         <details class="docs-menu">
           <summary>Documentation</summary>
           <nav class="docs-nav" aria-label="Documentation">
-            <p class="docs-group">Start</p><a href="../">Introduction</a><a href="./" aria-current="page">Quickstart</a><a href="../concepts/">Concepts</a><p class="docs-group">Guides</p><a href="../guides/scenarios/">Writing scenarios</a><a href="../guides/adapters/">Adding a provider adapter</a><a href="../guides/spend/">Spend governance</a><p class="docs-group">Reference</p><a href="../reference/results/">results.json</a><a href="../reference/adapter/">Adapter contract</a><a href="../reference/ci/">CI and OIDC</a><a href="../reference/data/">Where results go</a><p class="docs-group">Project</p><a href="../changelog/">Changelog</a><a href="../roadmap/">Roadmap</a><p class="docs-group">Site</p><a href="../dns-setup/">DNS setup</a>
+            <p class="docs-group">Start</p><a href="../">Introduction</a><a href="./" aria-current="page">Quickstart</a><a href="../install/">Install</a><a href="../concepts/">Concepts</a><p class="docs-group">Guides</p><a href="../guides/scenarios/">Writing scenarios</a><a href="../guides/adapters/">Adding a provider adapter</a><a href="../guides/spend/">Spend governance</a><p class="docs-group">Reference</p><a href="../reference/results/">results.json</a><a href="../reference/adapter/">Adapter contract</a><a href="../reference/ci/">CI and OIDC</a><a href="../reference/data/">Where results go</a><p class="docs-group">Project</p><a href="../changelog/">Changelog</a><a href="../roadmap/">Roadmap</a><p class="docs-group">Site</p><a href="../dns-setup/">DNS setup</a>
           </nav>
         </details>
       </div>
@@ -96,7 +96,7 @@ allow:
 <section class="docs-sec" id="secret" aria-labelledby="secret-title"><h2 id="secret-title">Set the secret <span class="docs-badge" data-state="built">Built</span></h2><p>Set the secret is the keyless step. Do not store a cloud key on the repository. The workflow asks GitHub for an OIDC token. The role it assumes can read the pull request and cannot write it.</p><p>That path is Built. A long-lived cloud key is not part of the setup. Keyless CI, spend governance, and the audit trail are Built. <a href="../reference/data/">Data stays in your cloud</a> is Planned.</p></section>
 <section class="docs-sec" id="pr" aria-labelledby="pr-title"><h2 id="pr-title">Open a pull request <span class="docs-badge" data-state="planned">Planned</span></h2><p>Open a PR. The check is meant to run on that event and post one suite status. Requiring the check waits on the packaged Action, which is Planned.</p><p>This site already reads the results file that job is meant to upload. Replace that file in place when a real run is ready. The page does not change.</p></section>
         </div>
-        <nav class="docs-pager" aria-label="Previous and next"><a class="docs-prev" href="../"><span>Previous</span><b>Introduction</b></a><a class="docs-next" href="../concepts/"><span>Next</span><b>Concepts</b></a></nav>
+        <nav class="docs-pager" aria-label="Previous and next"><a class="docs-prev" href="../"><span>Previous</span><b>Introduction</b></a><a class="docs-next" href="../install/"><span>Next</span><b>Install and setup</b></a></nav>
       </article>
     </div>
   </main>
@@ -116,6 +116,7 @@ allow:
         <a href="../../performance/">Performance</a>
         <a href="../../integrations/">Integrations</a>
         <a href="../">Docs</a>
+        <a href="../install/">Install</a>
       </nav>
       <nav aria-label="Elsewhere">
         <p>Contact</p>

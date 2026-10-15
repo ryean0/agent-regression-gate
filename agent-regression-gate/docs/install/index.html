@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../../" data-docs-root="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Install and setup · Anubys</title>
+  <meta name="description" content="Initialize and run the harness. Beta testing. Steps without a published command are marked Coming soon.">
+  <link rel="canonical" href="https://anubys.dev/docs/install/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://anubys.dev/docs/install/">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="https://anubys.dev/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="https://anubys.dev/og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../../">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg>
+        <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span>
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../../">Product</a>
+        <a href="../../how-it-works/">How it works</a>
+        <a href="../../method/">Method</a>
+        <a href="../../gate/">Gate</a>
+        <a href="../../results/">Results</a>
+        <a href="../../performance/">Performance</a>
+        <a href="../../integrations/">Integrations</a>
+        <a href="../" aria-current="page">Docs</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <div class="docs-shell">
+      <div class="docs-tools">
+        <form class="docs-search" role="search" action="./">
+          <label for="docs-q">Search headings</label>
+          <input id="docs-q" type="search" name="q" placeholder="Filter headings" autocomplete="off" aria-controls="docs-hits" aria-expanded="false">
+        </form>
+        <p class="docs-hit-status" id="docs-hit-status" role="status" aria-live="polite"></p>
+        <ul class="docs-hits" id="docs-hits" hidden></ul>
+        <details class="docs-menu">
+          <summary>Documentation</summary>
+          <nav class="docs-nav" aria-label="Documentation">
+            <p class="docs-group">Start</p><a href="../">Introduction</a><a href="../quickstart/">Quickstart</a><a href="./" aria-current="page">Install</a><a href="../concepts/">Concepts</a><p class="docs-group">Guides</p><a href="../guides/scenarios/">Writing scenarios</a><a href="../guides/adapters/">Adding a provider adapter</a><a href="../guides/spend/">Spend governance</a><p class="docs-group">Reference</p><a href="../reference/results/">results.json</a><a href="../reference/adapter/">Adapter contract</a><a href="../reference/ci/">CI and OIDC</a><a href="../reference/data/">Where results go</a><p class="docs-group">Project</p><a href="../changelog/">Changelog</a><a href="../roadmap/">Roadmap</a><p class="docs-group">Site</p><a href="../dns-setup/">DNS setup</a>
+          </nav>
+        </details>
+      </div>
+      <article class="docs-article">
+        <header class="docs-head">
+          <p class="kicker">Start</p>
+          <p class="beta-banner">(beta testing)</p>
+          <h1>Install and setup</h1>
+          <p class="docs-lede">Initialize and run the harness, then read the suite status. The license is MIT. The repository is <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">ci-agent-regression-harness</a> <span class="beta-mark">(beta testing)</span>.</p>
+        </header>
+        <nav class="docs-toc" aria-labelledby="on-this-page">
+          <p class="docs-toc-label" id="on-this-page">On this page</p>
+          <ol>
+            <li><a href="#prerequisites">Prerequisites</a></li>
+            <li><a href="#local">Run it locally</a></li>
+            <li><a href="#enterprise">Enterprise and CI</a></li>
+            <li><a href="#background">New to this?</a></li>
+            <li><a href="#troubleshooting">Troubleshooting</a></li>
+          </ol>
+        </nav>
+        <div class="docs-body">
+          <section class="docs-sec" id="prerequisites" aria-labelledby="prerequisites-title">
+            <h2 id="prerequisites-title">Prerequisites</h2>
+            <p>The provider key is the environment variable <code>GEMINI_API_KEY</code>. Samples and this page use a placeholder. Do not commit a real key, and do not paste one into a workflow file.</p>
+            <p>The language version and the package manager are the ones named on the harness main branch. <span class="docs-badge" data-state="planned">Coming soon</span> That list is not guessed here.</p>
+          </section>
+          <section class="docs-sec" id="local" aria-labelledby="local-title">
+            <h2 id="local-title">Run it locally</h2>
+            <p>Work starts from <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">ci-agent-regression-harness</a> <span class="beta-mark">(beta testing)</span>. Clone, install, and the sample or offline suite are not printed as commands until those lines are the ones on main. This page does not invent flags or file names.</p>
+            <h3 id="clone">Clone <span class="docs-badge" data-state="planned">Coming soon</span></h3>
+            <p>The clone command is Coming soon. Open the repository above once it is public, and use the command printed there.</p>
+            <h3 id="install-deps">Install <span class="docs-badge" data-state="planned">Coming soon</span></h3>
+            <p>The install command is Coming soon. It will be the install line from the harness main branch, not a stand-in.</p>
+            <h3 id="key">Configure the provider key</h3>
+            <p>Put the key in <code>GEMINI_API_KEY</code> before a run that calls the provider. The line below is a placeholder for samples. It is not a live credential.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">environment · placeholder</p><button type="button" class="code-copy">Copy</button></div>
+              <pre tabindex="0"><code>GEMINI_API_KEY=your-key-here</code></pre>
+            </div>
+            <h3 id="sample">Run the sample suite <span class="docs-badge" data-state="planned">Coming soon</span></h3>
+            <p>The sample suite, including an offline run, is Coming soon. The command is omitted until main publishes it.</p>
+            <h3 id="verdict">Read the verdict <span class="docs-badge" data-state="planned">Coming soon</span></h3>
+            <p>The command that prints the verdict is Coming soon, for the same reason.</p>
+            <p>When a run does print a suite status, read it as one of three: <strong>Pass</strong>, <strong>Block</strong>, or <strong>Insufficient evidence</strong>. <code>likely_regression</code> is a warning. It is not a status. An invalid run is not scored. Scenario rows stay diagnostics. The rule is on <a href="../concepts/">Concepts</a>.</p>
+          </section>
+          <section class="docs-sec" id="enterprise" aria-labelledby="enterprise-title">
+            <h2 id="enterprise-title">Enterprise and CI</h2>
+            <p>The packaged GitHub Action is <span class="docs-badge" data-state="planned">Coming soon</span>. The target is milestone M3.</p>
+            <p>No workflow from the harness main branch is copied here. A sample workflow is not guessed. The <a href="../reference/ci/">CI reference</a> is the contract this site already states: the job can be required only when it runs on a pull request, and it does not store a cloud key.</p>
+            <ul>
+              <li>The provider key is a repository secret. Keep it out of the workflow file.</li>
+              <li>Keyless OIDC. The job asks GitHub for a short-lived token. It does not store a cloud key.</li>
+              <li>Spend cap. <span class="example-tag">Example</span> CI stops at $38. <span class="example-tag">Example</span> An alert is set at $40. The stop is the same idea as <a href="../guides/spend/">spend governance</a>. The figure there is an example, not a price for every install.</li>
+              <li>A pull request from a fork never receives repository secrets.</li>
+              <li>A run that spends money is manual, and a reviewer has to allow it.</li>
+            </ul>
+          </section>
+          <section class="docs-sec" id="background" aria-labelledby="background-title">
+            <h2 id="background-title" class="sr-only">New to this?</h2>
+            <aside class="docs-callout">
+              <p class="kicker">New to this?</p>
+              <p>The harness repository is adding a plain-language guide in an open pull request. Read <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/docs/BACKGROUND.md" rel="noopener noreferrer">docs/BACKGROUND.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+            </aside>
+          </section>
+          <section class="docs-sec" id="troubleshooting" aria-labelledby="troubleshooting-title">
+            <h2 id="troubleshooting-title">Troubleshooting</h2>
+            <ul>
+              <li><strong>Missing key.</strong> <code>GEMINI_API_KEY</code> is unset or empty, so a provider call cannot start. Set the variable in the environment. Keep the real value out of the repository. The placeholder is <code>your-key-here</code>.</li>
+              <li><strong>Spend cap stop.</strong> Recorded spend reached the stop, so the run halted. <span class="example-tag">Example</span> The stop is $38. <span class="example-tag">Example</span> The alert is $40.</li>
+              <li><strong>Insufficient evidence.</strong> The interval does not support Pass, and it does not support Block. <code>likely_regression</code> on that result is a warning, not its own status. Read the statuses on <a href="../concepts/#statuses">Concepts</a>.</li>
+            </ul>
+          </section>
+        </div>
+        <nav class="docs-pager" aria-label="Previous and next"><a class="docs-prev" href="../quickstart/"><span>Previous</span><b>Quickstart</b></a><a class="docs-next" href="../concepts/"><span>Next</span><b>Concepts</b></a></nav>
+      </article>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg> <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span></p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../../">Overview</a>
+        <a href="../../how-it-works/">How it works</a>
+        <a href="../../method/">Method</a>
+        <a href="../../gate/">Gate</a>
+        <a href="../../results/">Results</a>
+        <a href="../../performance/">Performance</a>
+        <a href="../../integrations/">Integrations</a>
+        <a href="../">Docs</a>
+        <a href="./">Install</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a> <span class="beta-mark">(beta testing)</span>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <a href="mailto:ryanphua.dev@outlook.com">Email</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../../js/docs.js"></script>
+</body>
+</html>

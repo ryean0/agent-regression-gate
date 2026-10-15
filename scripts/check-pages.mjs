@@ -18,6 +18,7 @@ const routes = [
   "integrations/index.html",
   "docs/index.html",
   "docs/quickstart/index.html",
+  "docs/install/index.html",
   "docs/concepts/index.html",
   "docs/guides/scenarios/index.html",
   "docs/guides/adapters/index.html",
