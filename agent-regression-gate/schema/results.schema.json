@@ -103,6 +103,41 @@
         "mde": { "$ref": "#/$defs/chart" },
         "aa": { "$ref": "#/$defs/chart" }
       }
+    },
+    "timing": {
+      "description": "Optional efficiency field. Current results files omit it. data/timing.sample.json uses this shape, and the reader tolerates a missing timing field. Family rows are wall-clock only and are not verdicts.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "gate_wall_clock_s": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "live": { "type": "number" },
+            "replay": { "type": "number" }
+          }
+        },
+        "rollout_s": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "p50": { "type": "number" },
+            "max": { "type": "number" }
+          }
+        },
+        "retries_429": { "type": "number" },
+        "per_family_wall_clock_s": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "family_id": { "type": "string" },
+              "seconds": { "type": "number" }
+            }
+          }
+        }
+      }
     }
   },
   "allOf": [

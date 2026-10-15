@@ -21,7 +21,7 @@ Open http://127.0.0.1:4173/agent-regression-gate/
 
 ## Swap in a real results file
 
-The page fetches `agent-regression-gate/data/results.preliminary.json` on load. That path is the only place to drop real harness output. Replace the file in place around 30 October 2026, when the harness run is ready. Keep the filename: the page requests that path and no other. The shipped sample is harness results schema 2.1.0. Version 1 and 2.0.0 files still parse. The shape is described in `agent-regression-gate/schema/results.schema.json`.
+The results panel fetches `agent-regression-gate/data/results.preliminary.json` on load. That path is the only place to drop real harness output. Replace the file in place around 30 October 2026, when the harness run is ready. Keep the filename: the results panel requests that path and no other. The shipped sample is harness results schema 2.1.0. Version 1 and 2.0.0 files still parse. The shape is described in `agent-regression-gate/schema/results.schema.json`.
 
 The checked-in file is a preliminary example (`"status": "preliminary"`, `"schema_version": "2.1.0"`), so the results panel renders before a real run is copied in. Schema 2.1.0 records `run_kind`, `baseline_pool_model_id`, `min_valid_fraction_per_scenario`, equal `rollouts_per_scenario` counts, and `diagnostics`. `verdicts.overall` carries `delta`, `difference_ci`, a required `likely_regression` boolean, and required `model_ids`. Those ids are preferred over a per-arm `model_id`. Alpha and the miss cap stay in suite.yaml. There is no gate block in the results file. When delta and the CI level are missing, the panel shows δ = 5 pp / 90%.
 

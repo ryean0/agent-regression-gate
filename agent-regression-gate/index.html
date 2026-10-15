@@ -51,6 +51,7 @@
         <a href="method/">Method</a>
         <a href="gate/">Gate</a>
         <a href="results/">Results</a>
+        <a href="performance/">Performance</a>
         <a href="integrations/">Integrations</a>
         <a href="docs/">Docs</a>
       </nav>
@@ -200,6 +201,47 @@
           </li>
         </ul>
         <a class="more" href="docs/">More details</a>
+      </div>
+    </section>
+
+    <section class="section v-section" id="latency" aria-labelledby="latency-title">
+      <div class="wrap">
+        <p class="kicker">Production</p>
+        <h2 id="latency-title">Zero latency in production.</h2>
+        <div class="path-compare">
+          <article class="path-card">
+            <p class="path-kicker">Runtime guardrail</p>
+            <ol class="path-flow">
+              <li><span class="path-node">User</span></li>
+              <li><span class="path-node">Guard</span></li>
+              <li><span class="path-node">Model</span></li>
+              <li><span class="path-node">Guard</span></li>
+              <li><span class="path-node">User</span></li>
+            </ol>
+            <p class="path-note">Latency on every request.</p>
+          </article>
+          <article class="path-card">
+            <p class="path-kicker">Anubys</p>
+            <div class="path-ci-block">
+              <p class="path-lane">CI check</p>
+              <ol class="path-flow path-flow-ci">
+                <li><span class="path-node">PR</span></li>
+                <li><span class="path-node path-node-gate"><b>CI gate</b><small>baseline vs candidate</small></span></li>
+                <li><span class="path-node">Merge</span></li>
+              </ol>
+            </div>
+            <p class="path-lane">Production</p>
+            <ol class="path-flow">
+              <li><span class="path-node">User</span></li>
+              <li><span class="path-node">Model</span></li>
+              <li><span class="path-node">User</span></li>
+            </ol>
+            <p class="path-note">Untouched.</p>
+          </article>
+        </div>
+        <p class="path-legend"><i aria-hidden="true"></i>Orange marks the Anubys CI path.</p>
+        <p class="v-line">Anubys never sits in the live request path. It runs as a CI check when a PR opens, so it adds 0 ms to production model responses. The cost is time on the PR check.</p>
+        <a class="more" href="performance/">More details</a>
       </div>
     </section>
 
@@ -362,6 +404,7 @@
         <a href="method/">Method</a>
         <a href="gate/">Gate</a>
         <a href="results/">Results</a>
+        <a href="performance/">Performance</a>
         <a href="integrations/">Integrations</a>
         <a href="docs/">Docs</a>
       </nav>

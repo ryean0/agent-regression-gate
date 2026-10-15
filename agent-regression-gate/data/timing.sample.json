@@ -1,0 +1,9 @@
+{
+  "gate_wall_clock_s": { "live": 900, "replay": 45 },
+  "rollout_s": { "p50": 12, "max": 80 },
+  "retries_429": 4,
+  "per_family_wall_clock_s": [
+    { "family_id": "support", "seconds": 210 },
+    { "family_id": "refund", "seconds": 320 }
+  ]
+}
