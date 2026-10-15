@@ -118,7 +118,7 @@ python scripts/check_monthly_spend.py</code></pre>
               <div class="docs-code-bar"><p class="docs-code-label">environment · placeholder</p><button type="button" class="code-copy">Copy</button></div>
               <pre tabindex="0"><code>GEMINI_API_KEY=your-key-here</code></pre>
             </div>
-            <p>In CI, that value is an environment secret on the <code>live-experiments</code> environment. It is not a repository secret. Live runs are manual, on the experiment workflow (<code>.github/workflows/experiment.yml</code>). That workflow starts with the spend check. The model id is an explicit input, pinned, and checked against the allowlist (<code>config/allowed_models.txt</code>). Ids that contain latest, preview, or exp are rejected. There is no fallback. This page does not name a model.</p>
+            <p>In CI, that value is an environment secret on the <code>live-experiments</code> environment. It is not a repository secret. Live runs are manual, on the experiment workflow (<code>.github/workflows/experiment.yml</code>). That workflow starts with the spend check. The model id is an explicit input, pinned, and checked against the allowlist (<code>config/allowed_models.txt</code>). Ids that contain latest, preview, or exp are rejected. There is no fallback.</p>
             <details class="docs-fold">
               <summary>Contributors</summary>
               <p>Lint and format, from the repository root:</p>
