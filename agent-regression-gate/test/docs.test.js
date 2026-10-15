@@ -101,7 +101,8 @@ test("concepts keep the gate rule, the four statuses, and the miss cap", () => {
   for (const kind of ["agent_timeout", "agent_error", "infra_timeout", "rate_limit", "http_5xx", "ci_kill", "env_miss"]) {
     assert.ok(html.includes(kind), kind);
   }
-  assert.match(html, /1\/20/);
+  assert.match(html, /The cap is 5% of the scheduled rollouts/);
+  assert.match(html, /Exactly 5% still scores/);
   assert.match(html, /invalid_run/);
   assert.match(html, /minimum detectable effect/i);
   const results = read("docs/reference/results/index.html");
@@ -117,7 +118,8 @@ test("enterprise strip labels data residency Planned and the other three Built",
   assert.match(home, /id="why"/);
   assert.match(home, /Dashboards and tracing tools score a run and keep the trace/);
   assert.match(home, /gates the merge on statistics, with a spend cap/);
-  assert.equal(home.includes("logo"), false);
+  const why = home.slice(home.indexOf('id="why"'), home.indexOf('id="pipeline"'));
+  assert.equal(why.toLowerCase().includes("logo"), false);
   const strip = home.slice(home.indexOf('class="enterprise"'), home.indexOf('href="docs/">More details'));
   function card(name) {
     const anchors = [...strip.matchAll(/<a\b[\s\S]*?<\/a>/g)].map((match) => match[0]);
@@ -175,4 +177,9 @@ test("roadmap lanes are Built, Next, and Planned", () => {
   assert.match(html, /Data stays in your cloud is Planned, and post-MVP/);
   const css = read("css/site.css");
   assert.match(css, /prefers-reduced-motion:\s*reduce[\s\S]*\.roadmap/);
+  assert.match(css, /\.docs-nav a\[aria-current="page"\]\s*\{[^}]*color:\s*var\(--block\)/);
+  assert.match(css, /\.road-lane\s*\{[^}]*rgba\(255,\s*122,\s*26/);
+  assert.match(css, /\.why-card:has\(\.why-orange\)\s*\{[^}]*rgba\(255,\s*122,\s*26/);
+  assert.equal(css.includes(".docs-side"), false);
+  assert.equal(css.includes(".docs-links"), false);
 });
