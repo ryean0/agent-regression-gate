@@ -1069,6 +1069,7 @@ html.motion .status-card {
   width: min(1180px, calc(100% - 2.5rem)); margin: 0 auto;
   padding: 1.4rem 0 3.5rem; display: grid; gap: 1.2rem;
 }
+.docs-shell > * { min-width: 0; }
 .docs-search label {
   display: block; margin-bottom: 0.4rem; color: var(--muted);
   font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase;
@@ -1148,14 +1149,17 @@ html.motion .status-card {
   font: inherit; font-size: 0.85rem; cursor: pointer;
 }
 .code-copy:hover { border-color: var(--ink); color: var(--ink); }
+.docs-code { min-width: 0; max-width: 100%; }
 .docs-code pre {
-  margin: 0; padding: 0.9rem 1rem; overflow: auto; background: #101012;
+  margin: 0; padding: 0.9rem 1rem; overflow: auto; max-width: 100%;
+  background: #101012;
   border: 1px solid var(--line); border-radius: 0.7rem; color: var(--ink);
   font-family: var(--mono); font-size: 0.82rem; line-height: 1.55;
 }
 .docs-pager {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.6rem;
   margin-top: 2.4rem; padding-top: 1rem; border-top: 1px solid var(--line);
+  min-width: 0; max-width: 100%;
 }
 .docs-pager a {
   display: grid; gap: 0.2rem; align-content: center; text-decoration: none; color: var(--ink);
