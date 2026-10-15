@@ -85,6 +85,14 @@ test("canonical, Open Graph, Twitter, and JSON-LD use https://anubys.dev/", () =
   }
 });
 
+test("site HTML does not name a gemini- version string", () => {
+  const version = /gemini-/;
+  for (const file of htmlFiles(site)) {
+    const html = fs.readFileSync(file, "utf8");
+    assert.equal(version.test(html), false, path.relative(site, file));
+  }
+});
+
 test("published pages and docs drop the old absolute site URLs", () => {
   const files = publishedText();
   assert.ok(files.length >= 18);

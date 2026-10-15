@@ -58,11 +58,11 @@
               "required": ["baseline", "candidate"],
               "properties": {
                 "baseline": {
-                  "description": "Baseline model id, for example gemini-2.5-flash-lite-001.",
+                  "description": "Baseline model id. The exact version is set in suite config.",
                   "type": "string"
                 },
                 "candidate": {
-                  "description": "Candidate model id, for example gemini-3.5-flash-lite.",
+                  "description": "Candidate model id, for example a pinned Gemini Flash-Lite model id (exact version set in suite config).",
                   "type": "string"
                 }
               }

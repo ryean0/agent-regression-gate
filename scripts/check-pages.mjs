@@ -274,8 +274,8 @@ assert.match(fs.readFileSync(path.join(site, "css/site.css"), "utf8"), /\.scale-
 const integrations = fs.readFileSync(path.join(site, "integrations/index.html"), "utf8");
 assert.match(integrations, /id="integrations"/);
 assert.match(integrations, /adapter example/);
-assert.match(integrations, /Gemini 3\.5 Flash-Lite/);
-assert.match(integrations, /gemini-3\.5-flash-lite/);
+assert.match(integrations, /a pinned Gemini Flash-Lite model id \(exact version set in suite config\)/);
+assert.doesNotMatch(integrations, /gemini-/);
 assert.match(integrations, /in progress/);
 assert.match(integrations, /OpenAI Agents SDK · adapter example/);
 assert.match(integrations, /Claude Agent SDK · adapter example/);

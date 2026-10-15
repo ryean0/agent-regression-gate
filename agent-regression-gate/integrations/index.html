@@ -63,7 +63,7 @@
         <div class="logo-strip" aria-label="First backend, in progress">
           <p>In progress</p>
           <ul>
-            <li>Gemini 3.5 Flash-Lite · <code>gemini-3.5-flash-lite</code> · in progress</li>
+            <li>a pinned Gemini Flash-Lite model id (exact version set in suite config) · in progress</li>
           </ul>
         </div>
         <div class="logo-strip" aria-label="Roadmap adapter examples">
@@ -97,7 +97,7 @@
           <details>
             <summary>Technical details</summary>
             <p>The adapter contract is provider-agnostic, and it is the intended seam. This repository does not ship an adapter. One rollout is one call: scenario id, SHA-256 of the scenario text, arm (<code>baseline</code> or <code>candidate</code>), and a step budget. The adapter returns pass, fail, agent timeout, or an infrastructure miss. An agent timeout scores 0. A provider error, a rate limit, or a killed runner is excluded from the score and counted toward the 5% miss cap. The model name does not enter the suite verdict.</p>
-            <p>First backend, in progress. The harness calls Gemini 3.5 Flash-Lite at the stable id <code>gemini-3.5-flash-lite</code>, the pin published 21 July 2026. That id is a specific stable model. The floating alias <code>gemini-flash-latest</code> is not the pin, because it moves. The adapter stays labeled in progress until it merges. OpenAI Agents SDK, Claude Agent SDK, LangGraph, LlamaIndex, CrewAI, AutoGen, and Microsoft Agent Framework are roadmap adapter examples, not backends in development, and not partnerships.</p>
+            <p>First backend, in progress. The harness calls a pinned Gemini Flash-Lite model id (exact version set in suite config). That version is not final. A floating alias is not the pin, because it moves. The adapter stays labeled in progress until it merges. OpenAI Agents SDK, Claude Agent SDK, LangGraph, LlamaIndex, CrewAI, AutoGen, and Microsoft Agent Framework are roadmap adapter examples, not backends in development, and not partnerships.</p>
             <p>The scorer does not import an agent SDK. It pairs scenarios, builds the 90% interval, and the check fails on Block. Scenario rows stay diagnostics. They are not individual gates.</p>
             <p>GitHub Action, planned. Trigger <code>pull_request</code> so the check can be required. The job runs both arms through the adapter and uploads <code>results.json</code>. It fails the check on Block. An invalid run is reported as invalid and isn't scored. A merge queue would also need the <code>merge_group</code> event. Buildkite, Jenkins, and your own runner are the same planned job, not separate products.</p>
             <p>Record/replay cassettes: In review, on harness #14. Not merged yet. Record mode would store model and tool traffic keyed by the scenario hash and the arm. Replay mode would return that recording and would not call the provider. A hash mismatch is a miss, not a silent reuse. A cassette is an input to scoring. It is not a verdict.</p>
@@ -115,7 +115,7 @@
           </ul>
         </div>
         <div class="faq-list">
-          <details><summary>Which frameworks does it work with?</summary><p>None are official integrations. The gate stays provider-agnostic. The first backend is Gemini 3.5 Flash-Lite, pinned to <code>gemini-3.5-flash-lite</code>, and that adapter is in progress until it merges. OpenAI Agents SDK, Claude Agent SDK, and the other framework names are roadmap adapter examples. The GitHub Action is planned. Record/replay cassettes are In review on harness #14. This page does read the results file.</p></details>
+          <details><summary>Which frameworks does it work with?</summary><p>None are official integrations. The gate stays provider-agnostic. The first backend is a pinned Gemini Flash-Lite model id (exact version set in suite config), and that adapter is in progress until it merges. OpenAI Agents SDK, Claude Agent SDK, and the other framework names are roadmap adapter examples. The GitHub Action is planned. Record/replay cassettes are In review on harness #14. This page does read the results file.</p></details>
         </div>
       </div>
     </section>

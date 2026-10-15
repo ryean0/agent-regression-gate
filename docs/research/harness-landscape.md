@@ -109,10 +109,8 @@ A check created by a workflow job is a required pull-request check only when the
 
 Shipped here: a static page and a results reader for results.json version `1` and `2.x.y` (the 2.0.0 caption revision and the 2.1.0 model-id and gate-settings revision). The reader is the contract the page enforces. It is not an adapter, an Action, or a cassette player.
 
-The first backend the harness is being built against is **Gemini 3.5 Flash-Lite**, pinned to the stable model id `gemini-3.5-flash-lite`. Google’s model page lists that id as the stable code, and the Vertex model page dates the GA release 21 July 2026. Stable ids are the pin production apps are told to use. `gemini-flash-latest` is a different string: it is an alias that moves when a new release ships. The site labels this adapter **in progress** until it merges. It is not an official Google partnership, and the suite verdict still does not depend on the provider. OpenAI Agents SDK, Claude Agent SDK, and the other framework wrappers are **roadmap adapter examples**, not backends in development.
+The first backend the harness is being built against is **a pinned Gemini Flash-Lite model id (exact version set in suite config)**. That version is not final. A floating alias is not the pin, because it moves. The site labels this adapter **in progress** until it merges. It is not an official Google partnership, and the suite verdict still does not depend on the provider. OpenAI Agents SDK, Claude Agent SDK, and the other framework wrappers are **roadmap adapter examples**, not backends in development.
 
-- [Gemini 3.5 Flash-Lite](https://ai.google.dev/gemini-api/docs/models/gemini-3.5-flash-lite)
-- [Vertex model page, release date 21 July 2026](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/3-5-flash-lite)
-- [Model version name patterns](https://ai.google.dev/gemini-api/docs/models)
+- [Gemini models and version name patterns](https://ai.google.dev/gemini-api/docs/models)
 
 Not shipped here, and labeled on the page as **planned** or **roadmap adapter example**: the GitHub Action and wrappers for the other SDKs and eval tools above. Record/replay cassettes are labeled **In review** (harness #14, not merged). No official partnerships. The page does not name GPT-4.1-nano.
