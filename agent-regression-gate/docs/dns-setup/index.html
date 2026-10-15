@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../../" data-docs-root="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DNS setup · Anubys</title>
+  <meta name="description" content="How anubys.dev points at GitHub Pages. Squarespace only provides DNS.">
+  <link rel="canonical" href="https://anubys.dev/docs/dns-setup/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://anubys.dev/docs/dns-setup/">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="https://anubys.dev/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="https://anubys.dev/og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../../">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg>
+        <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span>
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../../">Product</a>
+        <a href="../../how-it-works/">How it works</a>
+        <a href="../../method/">Method</a>
+        <a href="../../gate/">Gate</a>
+        <a href="../../results/">Results</a>
+        <a href="../../integrations/">Integrations</a>
+        <a href="../" aria-current="page">Docs</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <div class="docs-shell">
+      <div class="docs-tools">
+        <form class="docs-search" role="search" action="./">
+          <label for="docs-q">Search headings</label>
+          <input id="docs-q" type="search" name="q" placeholder="Filter headings" autocomplete="off" aria-controls="docs-hits" aria-expanded="false">
+        </form>
+        <p class="docs-hit-status" id="docs-hit-status" role="status" aria-live="polite"></p>
+        <ul class="docs-hits" id="docs-hits" hidden></ul>
+        <details class="docs-menu">
+          <summary>Documentation</summary>
+          <nav class="docs-nav" aria-label="Documentation">
+            <p class="docs-group">Start</p><a href="../">Introduction</a><a href="../quickstart/">Quickstart</a><a href="../concepts/">Concepts</a><p class="docs-group">Guides</p><a href="../guides/scenarios/">Writing scenarios</a><a href="../guides/adapters/">Adding a provider adapter</a><a href="../guides/spend/">Spend governance</a><p class="docs-group">Reference</p><a href="../reference/results/">results.json</a><a href="../reference/adapter/">Adapter contract</a><a href="../reference/ci/">CI and OIDC</a><a href="../reference/data/">Where results go</a><p class="docs-group">Project</p><a href="../changelog/">Changelog</a><a href="../roadmap/">Roadmap</a><p class="docs-group">Site</p><a href="./" aria-current="page">DNS setup</a>
+          </nav>
+        </details>
+      </div>
+      <article class="docs-article">
+        <header class="docs-head">
+          <p class="kicker">Site</p>
+          <h1>DNS setup</h1>
+          <p class="docs-lede">anubys.dev is hosted on GitHub Pages. Squarespace only provides DNS. There is no Squarespace site plan.</p>
+        </header>
+        <nav class="docs-toc" aria-labelledby="on-this-page">
+          <p class="docs-toc-label" id="on-this-page">On this page</p>
+          <ol><li><a href="#points">How the name points</a></li><li><a href="#path">The path</a></li><li><a href="#records">Records</a></li><li><a href="#defaults">Remove the Squarespace defaults</a></li><li><a href="#nameservers">Nameservers and DNSSEC</a></li><li><a href="#https">HTTPS on .dev</a></li><li><a href="#check">Check the name</a></li></ol>
+        </nav>
+        <div class="docs-body">
+          <section class="docs-sec" id="points" aria-labelledby="points-title"><h2 id="points-title">How the name points</h2><p>The site is the GitHub Pages site for <a href="https://github.com/ryean0/anubys" rel="noopener noreferrer">ryean0/anubys</a>. Squarespace holds the domain and publishes the DNS records. It does not serve the pages. A Squarespace site plan is not part of this setup.</p></section>
+          <section class="docs-sec" id="path" aria-labelledby="path-title"><h2 id="path-title">The path</h2><p>A request takes three steps. Squarespace answers the name. GitHub Pages serves the site.</p>
+            <figure class="dns-flow-fig">
+              <ol class="dns-flow" aria-label="Browser to Squarespace DNS to GitHub Pages">
+                <li>
+                  <div>
+                    <strong>Browser</strong>
+                    <p>Asks for anubys.dev.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>DNS lookup at Squarespace</strong>
+                    <p>Squarespace answers the lookup. It does not serve the site.</p>
+                  </div>
+                </li>
+                <li>
+                  <div>
+                    <strong>GitHub Pages</strong>
+                    <p>Serves ryean0/anubys and the HTTPS certificate.</p>
+                  </div>
+                </li>
+              </ol>
+              <figcaption>Browser → DNS lookup at Squarespace → GitHub Pages serves ryean0/anubys and the HTTPS certificate.</figcaption>
+            </figure>
+          </section>
+          <section class="docs-sec" id="records" aria-labelledby="records-title"><h2 id="records-title">Records</h2><p>Add these in Squarespace DNS, after the default records in the next section are gone. The host <code>@</code> is the bare domain, anubys.dev.</p>
+            <table class="docs-table">
+              <caption>DNS records for anubys.dev</caption>
+              <thead>
+                <tr><th scope="col">Type</th><th scope="col">Host</th><th scope="col">Value</th><th scope="col">Why</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>A</td><td><code>@</code></td><td><code>185.199.108.153</code></td><td>Maps the bare domain to GitHub Pages IPv4 servers. Four, for redundancy.</td></tr>
+                <tr><td>A</td><td><code>@</code></td><td><code>185.199.109.153</code></td><td>Maps the bare domain to GitHub Pages IPv4 servers. Four, for redundancy.</td></tr>
+                <tr><td>A</td><td><code>@</code></td><td><code>185.199.110.153</code></td><td>Maps the bare domain to GitHub Pages IPv4 servers. Four, for redundancy.</td></tr>
+                <tr><td>A</td><td><code>@</code></td><td><code>185.199.111.153</code></td><td>Maps the bare domain to GitHub Pages IPv4 servers. Four, for redundancy.</td></tr>
+                <tr><td>AAAA</td><td><code>@</code></td><td><code>2606:50c0:8000::153</code></td><td>Same map over IPv6, for newer networks and phones.</td></tr>
+                <tr><td>AAAA</td><td><code>@</code></td><td><code>2606:50c0:8001::153</code></td><td>Same map over IPv6, for newer networks and phones.</td></tr>
+                <tr><td>AAAA</td><td><code>@</code></td><td><code>2606:50c0:8002::153</code></td><td>Same map over IPv6, for newer networks and phones.</td></tr>
+                <tr><td>AAAA</td><td><code>@</code></td><td><code>2606:50c0:8003::153</code></td><td>Same map over IPv6, for newer networks and phones.</td></tr>
+                <tr><td>CNAME</td><td><code>www</code></td><td><code>ryean0.github.io</code></td><td>Alias so www.anubys.dev follows along.</td></tr>
+                <tr><td>TXT</td><td>As GitHub shows it</td><td>Account-specific. Copy from GitHub.</td><td>GitHub verification. Proves domain ownership to GitHub and blocks a takeover. The value is not listed on this page.</td></tr>
+              </tbody>
+            </table>
+            <p>The TXT value belongs to this GitHub account. GitHub shows it in the Pages custom-domain settings. Paste that string into Squarespace. Do not reuse a sample, and do not publish the value here.</p>
+          </section>
+          <section class="docs-sec" id="defaults" aria-labelledby="defaults-title"><h2 id="defaults-title">Remove the Squarespace defaults</h2><p>Remove the Squarespace default records before you rely on the table above. Squarespace adds them for its parking page, or for a Squarespace website. If a default address stays beside the GitHub addresses, a lookup can return either one. Visitors then randomly hit the parking page or the site.</p></section>
+          <section class="docs-sec" id="nameservers" aria-labelledby="nameservers-title"><h2 id="nameservers-title">Nameservers and DNSSEC</h2><p>Leave Domain Nameservers untouched. Leave DNSSEC untouched. Squarespace stays the DNS host. This page only replaces records inside that DNS. It does not move the domain to other nameservers.</p></section>
+          <section class="docs-sec" id="https" aria-labelledby="https-title"><h2 id="https-title">HTTPS on .dev</h2><p>.dev requires HTTPS. Browsers will not load the name over plain HTTP, so the site loads only after GitHub issues the certificate. That can take up to 24 hours. When the certificate is in place, tick Enforce HTTPS in the GitHub Pages settings for anubys.dev.</p></section>
+          <section class="docs-sec" id="check" aria-labelledby="check-title"><h2 id="check-title">Check the name</h2><p>From a machine with <code>dig</code> and <code>curl</code>:</p>
+            <div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>dig anubys.dev +short
+dig www.anubys.dev CNAME +short
+curl -I https://anubys.dev</code></pre></div>
+            <p><code>dig anubys.dev +short</code> should list the four GitHub Pages IPv4 addresses. A resolver that answers with IPv6 lists the four AAAA addresses as well.</p>
+            <p><code>dig www.anubys.dev CNAME +short</code> should print <code>ryean0.github.io</code>.</p>
+            <p><code>curl -I https://anubys.dev</code> should return response headers once the certificate exists. Before that, it fails because .dev requires HTTPS, not because the DNS records are missing.</p>
+          </section>
+        </div>
+        <nav class="docs-pager" aria-label="Previous and next"><a class="docs-prev" href="../roadmap/"><span>Previous</span><b>Roadmap</b></a></nav>
+      </article>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg> <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span></p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../../">Overview</a>
+        <a href="../../how-it-works/">How it works</a>
+        <a href="../../method/">Method</a>
+        <a href="../../gate/">Gate</a>
+        <a href="../../results/">Results</a>
+        <a href="../../integrations/">Integrations</a>
+        <a href="../">Docs</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <a href="mailto:ryanphua.dev@outlook.com">Email</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../../js/docs.js"></script>
+</body>
+</html>

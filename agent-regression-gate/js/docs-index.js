@@ -235,5 +235,39 @@ export const DOCS_INDEX = [
         "text": "Planned"
       }
     ]
+  },
+  {
+    "path": "dns-setup/",
+    "title": "DNS setup",
+    "headings": [
+      {
+        "id": "points",
+        "text": "How the name points"
+      },
+      {
+        "id": "path",
+        "text": "The path"
+      },
+      {
+        "id": "records",
+        "text": "Records"
+      },
+      {
+        "id": "defaults",
+        "text": "Remove the Squarespace defaults"
+      },
+      {
+        "id": "nameservers",
+        "text": "Nameservers and DNSSEC"
+      },
+      {
+        "id": "https",
+        "text": "HTTPS on .dev"
+      },
+      {
+        "id": "check",
+        "text": "Check the name"
+      }
+    ]
   }
 ];

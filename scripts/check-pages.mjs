@@ -27,6 +27,7 @@ const routes = [
   "docs/reference/data/index.html",
   "docs/changelog/index.html",
   "docs/roadmap/index.html",
+  "docs/dns-setup/index.html",
 ];
 
 function htmlFiles(dir, out = []) {
