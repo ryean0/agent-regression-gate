@@ -1,17 +1,14 @@
 # Anubys
 
-Self-contained static site for Anubys, a CI-native agent regression model harness. The landing page is visual; method, gate, results, integrations, and how it works each have their own `index.html`. Docs are static pages under `docs/` (introduction, quickstart, concepts, guides, reference, changelog, and roadmap). Every asset path is relative (`./css`, `./js`, `./data`, or `../` from a nested route), so the same files work at `https://ryean0.github.io/agent-regression-gate/` and, after the repository rename, at `https://ryean0.github.io/anubys/`.
+Self-contained static site for Anubys, a CI-native agent regression model harness. The landing page is visual; method, gate, results, integrations, and how it works each have their own `index.html`. Docs are static pages under `docs/` (introduction, quickstart, concepts, guides, reference, changelog, and roadmap). Asset paths stay relative (`./css`, `./js`, `./data`, or `../` from a nested route). Canonical, Open Graph, Twitter, and JSON-LD URLs are absolute `https://anubys.dev/` addresses.
 
-Optional prefix: set `data-base` on `<html>` (`./` on the landing page, `../` on a nested route). Canonical and Open Graph URLs are relative.
+Optional prefix: set `data-base` on `<html>` (`./` on the landing page, `../` on a nested route). That prefix is only for scripts that fetch site files. Canonical and Open Graph URLs stay on `https://anubys.dev/`. In-site links stay relative.
 
 ## Go live
 
-1. Create the public repository `ryean0/agent-regression-gate`.
-2. Put these files at that repository’s root (`index.html` at `/`, not nested again).
-3. Enable GitHub Pages, source **Deploy from a branch**, branch `main`, folder `/ (root)`.
-4. The site is then `https://ryean0.github.io/agent-regression-gate/`.
+GitHub Actions uploads this folder as the Pages artifact. The custom domain is set in the repository Pages settings, so this folder does not include a CNAME file. The public site is https://anubys.dev/.
 
-This portfolio repository publishes only the Next.js `out/` directory. This folder is not part of that deploy. The portfolio pages were not changed.
+This folder is not the portfolio site. The portfolio pages were not changed.
 
 ## Results file
 
