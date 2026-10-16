@@ -16,6 +16,7 @@ const routes = [
   "results/index.html",
   "performance/index.html",
   "integrations/index.html",
+  "about/index.html",
   "docs/index.html",
   "docs/quickstart/index.html",
   "docs/install/index.html",
@@ -178,7 +179,7 @@ for (const rel of routes) {
   assert.match(html, /name="twitter:title" content="Anubys"/);
   assert.match(html, new RegExp(`property="og:description" content="${TAGLINE.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}"`));
   assert.match(html, /class="brand-mark"/);
-  for (const label of ["Product", "How it works", "Method", "Gate", "Results", "Performance", "Integrations", "Docs"]) {
+  for (const label of ["Product", "How it works", "Method", "Gate", "Results", "Performance", "Integrations", "Docs", "About"]) {
     assert.ok(html.includes(`>${label}</a>`), `${rel} nav ${label}`);
   }
   const dataBase = attr(html, /data-base="([^"]*)"/);

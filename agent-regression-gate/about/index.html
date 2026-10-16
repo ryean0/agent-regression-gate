@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>About · Anubys</title>
+  <meta name="description" content="Anubys is a CI-native agent regression harness. Public beta for teams shipping LLM agents.">
+  <link rel="canonical" href="https://anubys.dev/about/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://anubys.dev/about/">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="https://anubys.dev/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="https://anubys.dev/og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg>
+        <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span>
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../">Product</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../performance/">Performance</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+        <a href="../about/" aria-current="page">About</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <section class="section page-head about-hero" id="about" aria-labelledby="about-title">
+      <div class="wrap">
+        <p class="kicker">About</p>
+        <p class="beta-banner">Public beta</p>
+        <h1 id="about-title">Anubys is a CI-native agent regression harness.</h1>
+        <p class="lede">It runs in the pull request. The candidate and the baseline face the same scenarios, and the merge gets a statistics-backed check.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="../docs/install/">Get started</a>
+          <a class="btn btn-ghost" href="../method/">Read the method</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="problem" aria-labelledby="problem-title">
+      <div class="wrap">
+        <p class="kicker">The problem</p>
+        <h2 id="problem-title">Regressions stay quiet.</h2>
+        <p class="v-line">An LLM agent can regress when a model, prompt, or tool changes. Ordinary tests miss the drop. Reading a few transcripts misses it too. Teams ship without a signal, or they hold the change on too little evidence.</p>
+      </div>
+    </section>
+
+    <section class="section" id="check" aria-labelledby="check-title">
+      <div class="wrap">
+        <p class="kicker">What Anubys does</p>
+        <h2 id="check-title">A merge check, with a verdict.</h2>
+        <p class="v-line">In CI, Anubys runs the candidate and the baseline on paired scenarios. The pull request receives one statistics-backed verdict.</p>
+        <ul class="status-board about-verdicts">
+          <li class="status-card" data-status="pass">
+            <span class="status-mark" aria-hidden="true"></span>
+            <h3>Pass</h3>
+          </li>
+          <li class="status-card" data-status="block">
+            <span class="status-mark" aria-hidden="true"></span>
+            <h3>Block</h3>
+          </li>
+          <li class="status-card" data-status="insufficient">
+            <span class="status-mark" aria-hidden="true"></span>
+            <h3>Insufficient evidence</h3>
+          </li>
+          <li class="status-card" data-status="invalid">
+            <span class="status-mark" aria-hidden="true"></span>
+            <h3>Invalid run</h3>
+          </li>
+        </ul>
+        <dl class="about-facts">
+          <div>
+            <dt>Added in production</dt>
+            <dd>0 ms</dd>
+          </div>
+          <div>
+            <dt>Spend stop</dt>
+            <dd>$38</dd>
+          </div>
+        </dl>
+        <p class="v-line about-follow">The check runs only in CI, so production responses stay on their existing path. Spend has a hard stop, and the run halts at the cap.</p>
+        <a class="more" href="../gate/">More details</a>
+      </div>
+    </section>
+
+    <section class="section" id="scope" aria-labelledby="scope-title">
+      <div class="wrap">
+        <p class="kicker">Scope</p>
+        <h2 id="scope-title">For teams shipping agents.</h2>
+        <div class="about-split">
+          <article class="about-panel">
+            <h3>Who it is for</h3>
+            <ul>
+              <li>Teams shipping LLM agents to production</li>
+              <li>Platform, ML infrastructure, and DevOps</li>
+            </ul>
+          </article>
+          <article class="about-panel">
+            <h3>Out of scope</h3>
+            <ul>
+              <li>Production guardrails and request proxies</li>
+              <li>Model eval leaderboards</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="status" aria-labelledby="status-title">
+      <div class="wrap">
+        <p class="kicker">Status</p>
+        <h2 id="status-title">Public beta.</h2>
+        <p class="v-line">Built is in the product today. Coming is not.</p>
+        <div class="about-split">
+          <article class="about-panel">
+            <p class="about-flag">Built now</p>
+            <ul>
+              <li>Scenario schema and validator</li>
+              <li>tau-bench retail suite</li>
+              <li>Gemini adapter with record/replay</li>
+              <li>Results checker</li>
+              <li><b class="about-figure">$38</b> spend stop</li>
+              <li>Sanitization gates</li>
+            </ul>
+          </article>
+          <article class="about-panel">
+            <p class="about-flag">Coming</p>
+            <ul>
+              <li>Runner on main</li>
+              <li>Packaged GitHub Action, November 5</li>
+              <li>A second provider</li>
+              <li>Per-family breakdown and cost per verdict</li>
+            </ul>
+          </article>
+        </div>
+        <a class="more" href="../docs/roadmap/">More details</a>
+      </div>
+    </section>
+
+    <section class="section" id="founders" aria-labelledby="founders-title">
+      <div class="wrap">
+        <p class="kicker">Founders</p>
+        <h2 id="founders-title">Founders</h2>
+        <!-- founders: edit FOUNDERS in js/founders.js. Photo, bio, and links are that one list. -->
+        <ul class="founder-list" id="founder-list"></ul>
+        <noscript><p class="founder-fallback">ryanphua.dev [at] outlook.com</p></noscript>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg> <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span></p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../">Overview</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../performance/">Performance</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+        <a href="../docs/install/">Install</a>
+        <a href="../about/">About</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+        <button type="button" class="footer-mail" data-founder-email="0">Email</button>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../js/main.js"></script>
+</body>
+</html>

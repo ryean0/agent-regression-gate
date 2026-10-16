@@ -14,6 +14,7 @@ import { RESULTS_PATH, parseResults, parseResultsV2 } from "./results.js";
 import { TIMING_SAMPLE_PATH, readTiming, renderTimingHtml } from "./timing.js";
 import { bindFilm, bindStory, renderFilmHtml, renderStoryHtml } from "./story.js";
 import { METHOD_NOTES, armMissExceeds, formatPercent, formatPoints, formatSignedNumber, scoreRun } from "./verdict.js";
+import { bindFounderEmails, renderFoundersHtml } from "./founders.js";
 
 const EMAIL = "ryanphua.dev@outlook.com";
 const SLOT_LABEL = {
@@ -840,6 +841,10 @@ function recordedCaption(id) {
 }
 
 let repaintConsole = () => {};
+
+const founderList = document.getElementById("founder-list");
+if (founderList) founderList.innerHTML = renderFoundersHtml();
+bindFounderEmails(document);
 
 const howRoot = document.getElementById("how-root");
 if (howRoot) howRoot.innerHTML = renderStoryHtml();
