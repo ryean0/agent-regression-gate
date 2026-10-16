@@ -96,7 +96,7 @@
             <pre tabindex="0"><code>python -m harness validate suites/tau_retail/examples</code></pre>
           </div>
           <p>This reads the example files and checks their shape. It does not run an agent.</p>
-          <p class="guide-see"><b>You should see</b></p>
+          <p class="guide-see"><b>You should see:</b></p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
             <pre tabindex="0"><code>ok 9 scenario(s), 0 suite file(s)</code></pre>
@@ -107,7 +107,7 @@
             <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: validate the retail suite">Copy</button></div>
             <pre tabindex="0"><code>python -m harness validate suites/tau_retail</code></pre>
           </div>
-          <p class="guide-see"><b>You should see</b></p>
+          <p class="guide-see"><b>You should see:</b></p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
             <pre tabindex="0"><code>ok 87 scenario(s), 1 suite file(s)</code></pre>
@@ -128,7 +128,7 @@
           </div>
           <p>This runs six safety checks on the scenarios folder. It does not call a model. Gitleaks, an optional extra secret scanner, is not required on your own computer.</p>
           <p>You don't need to understand every line. This command is <code>python -m harness gates suites/tau_retail/scenarios</code>. Look for <code>ok 6 gate(s)</code> at the end of its output. That line is from this command only.</p>
-          <p class="guide-see"><b>You should see</b></p>
+          <p class="guide-see"><b>You should see:</b></p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
             <pre tabindex="0"><code>schema: pass (78 scenario(s), 0 suite file(s))
@@ -155,17 +155,18 @@ ok 6 gate(s)</code></pre>
             <pre tabindex="0"><code>python -m harness validate-results docs/examples/results.preliminary.json</code></pre>
           </div>
           <p>This checks that the results file has the fields Anubys expects. It does not print the verdict.</p>
-          <p class="guide-see"><b>You should see</b></p>
+          <p class="guide-see"><b>You should see:</b></p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
             <pre tabindex="0"><code>ok 1 results file(s)</code></pre>
           </div>
-          <p>That means the file is valid. Read the verdict with <code>scripts/show_verdict.py</code>. It opens the results file and prints the verdict word plus one plain sentence.</p>
+          <p>That means the file is valid. Read the verdict with:</p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: show the sample verdict">Copy</button></div>
             <pre tabindex="0"><code>python scripts/show_verdict.py docs/examples/results.preliminary.json</code></pre>
           </div>
-          <p class="guide-see"><b>You should see</b></p>
+          <p>This opens the results file and prints the verdict word plus one plain sentence.</p>
+          <p class="guide-see"><b>You should see:</b></p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
             <pre tabindex="0"><code>insufficient_evidence
@@ -188,7 +189,7 @@ This test cannot yet tell whether the new agent is close enough, so it is not a 
             <pre tabindex="0"><code>python -m harness convert-tau-retail --dry-run</code></pre>
           </div>
           <p>This counts the local retail tasks on the test split and prints three policy labels. <code>--dry-run</code> writes nothing. The tasks are already in the repository, so this does not download them and does not call a model.</p>
-          <p class="guide-see"><b>You should see</b></p>
+          <p class="guide-see"><b>You should see:</b></p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
             <pre tabindex="0"><code>split test: 115 tasks
@@ -228,33 +229,36 @@ This test cannot yet tell whether the new agent is close enough, so it is not a 
           </div>
           <div class="os-panel" id="mac-key" data-os-panel="mac" role="tabpanel" aria-labelledby="os-tab-mac">
             <h3 class="os-panel-label">macOS</h3>
-            <p>In the same terminal where the virtual environment is on, this holds the key in that terminal until you close the window.</p>
+            <p>In the same terminal where the virtual environment is on:</p>
             <div class="docs-code">
               <div class="docs-code-bar"><p class="docs-code-label">shell · placeholder</p><button type="button" class="code-copy" aria-label="Copy command: hold the key in this terminal">Copy</button></div>
               <pre tabindex="0"><code>export GEMINI_API_KEY="paste-the-key-here"</code></pre>
             </div>
+            <p>This holds the key in that terminal until you close the window.</p>
           </div>
           <div class="os-panel" id="windows-key" data-os-panel="windows" role="tabpanel" aria-labelledby="os-tab-windows">
             <h3 class="os-panel-label">Windows (PowerShell)</h3>
-            <p>This does the same thing in PowerShell.</p>
             <div class="docs-code">
               <div class="docs-code-bar"><p class="docs-code-label">PowerShell · placeholder</p><button type="button" class="code-copy" aria-label="Copy command: hold the key in PowerShell">Copy</button></div>
               <pre tabindex="0"><code>$env:GEMINI_API_KEY = "paste-the-key-here"</code></pre>
             </div>
+            <p>This does the same thing in PowerShell.</p>
           </div>
           <div class="os-panel" id="linux-key" data-os-panel="linux" role="tabpanel" aria-labelledby="os-tab-linux">
             <h3 class="os-panel-label">Linux</h3>
-            <p>In the same terminal where the virtual environment is on, this holds the key in that terminal until you close the window.</p>
+            <p>In the same terminal where the virtual environment is on:</p>
             <div class="docs-code">
               <div class="docs-code-bar"><p class="docs-code-label">shell · placeholder</p><button type="button" class="code-copy" aria-label="Copy command: hold the key in this terminal on Linux">Copy</button></div>
               <pre tabindex="0"><code>export GEMINI_API_KEY="paste-the-key-here"</code></pre>
             </div>
+            <p>This holds the key in that terminal until you close the window.</p>
           </div>
-          <p>Check that the key is present without printing it. This prints <code>set</code> when the variable has a key, and <code>missing</code> when it does not. It does not print the key.</p>
+          <p>Check that the key is present without printing it:</p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: check the key without printing it">Copy</button></div>
             <pre tabindex="0"><code>python -c "import os; print('set' if os.environ.get('GEMINI_API_KEY','').strip() else 'missing')"</code></pre>
           </div>
+          <p>This prints <code>set</code> when the variable has a key, and <code>missing</code> when it does not. It does not print the key.</p>
           <p>With no key, which is how every free command on this page was run, you should see:</p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
@@ -265,11 +269,12 @@ This test cannot yet tell whether the new agent is close enough, so it is not a 
           <p><strong>Per-rollout dollar limit.</strong> A live rollout can be given a dollar ceiling. If the model cost of that one rollout is above the ceiling, Anubys records the reason <code>spend_ceiling</code>. On main today that rollout is recorded as a miss. It is being changed to count as a fail (team decision October 16). The cost is still written to the spend log. The suite can continue with the next rollout. That miss or fail is a result for one rollout. The suite verdict is still only Pass, Block, Insufficient evidence, or Invalid run.</p>
           <p><strong>The <span class="example-tag">Example</span> $38 monthly check.</strong> The <span class="example-tag">Example</span> $38 monthly check stops new live rollouts once logged spend reaches <span class="example-tag">Example</span> $38 and can overshoot slightly. Anubys adds up <code>spend/spend_log.jsonl</code> for the current calendar month in UTC. Before it starts a new live rollout, it also adds what that rollout is allowed to cost: your per-rollout ceiling, or the cost of the previous logged row when no ceiling is set. If that sum would reach <span class="example-tag">Example</span> $38, the next rollout does not start. A rollout that has already started is allowed to finish, so the logged total can end a little above <span class="example-tag">Example</span> $38.</p>
           <p>A budget alert in Google's own console does not stop the calls. The monthly check is what stops new live rollouts, and a small overshoot is possible.</p>
-          <p>You can run the monthly check itself for free. It only reads the log. Stay in the project folder. The key can stay unset. This sums the log for the current UTC month and compares it with <span class="example-tag">Example</span> $38. It does not call a model.</p>
+          <p>You can run the monthly check itself for free. It only reads the log. Stay in the project folder. The key can stay unset.</p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: check monthly spend">Copy</button></div>
             <pre tabindex="0"><code>python scripts/check_monthly_spend.py --threshold 38</code></pre>
           </div>
+          <p>This sums the log for the current UTC month and compares it with <span class="example-tag">Example</span> $38. It does not call a model.</p>
           <p>The check on 16 October 2026 printed:</p>
           <div class="docs-code">
             <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
