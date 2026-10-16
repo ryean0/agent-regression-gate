@@ -58,6 +58,9 @@ test("install guide exists, is marked beta, and has no real-looking key", () => 
   assert.match(html, /live-experiments/);
   assert.match(html, /does not receive an OIDC token/);
   assert.doesNotMatch(html, /python -m harness run/);
+  assert.match(html, /The rollout runner is implemented/);
+  assert.match(html, /Suite scoring, statistics, and report rendering are still placeholders/);
+  assert.doesNotMatch(html, /the runner, environments, scoring/);
   assert.equal(html.includes("$40"), false);
   assert.match(html, /class="wordmark"/);
   assert.doesNotMatch(html, /AIza[0-9A-Za-z\-_]{10,}/);
@@ -108,7 +111,7 @@ test("install nav links resolve and the landing page offers Get started", () => 
     assert.equal(fs.existsSync(target), true, href);
   }
   const home = read("index.html");
-  assert.match(home, /class="btn btn-primary" href="docs\/install\/">Get started</);
+  assert.match(home, /class="btn btn-primary" href="docs\/getting-started\/">Get started</);
   assert.match(home, /href="docs\/install\/">Install</);
   for (const file of htmlFiles(root)) {
     const html = fs.readFileSync(file, "utf8");

@@ -19,6 +19,40 @@ export const DOCS_INDEX = [
     ]
   },
   {
+    "path": "getting-started/",
+    "title": "Getting started",
+    "headings": [
+      {
+        "id": "what-anubys-does",
+        "text": "What Anubys does"
+      },
+      {
+        "id": "before-you-start",
+        "text": "Before you start"
+      },
+      {
+        "id": "install-anubys",
+        "text": "Install Anubys"
+      },
+      {
+        "id": "sample-use-cases",
+        "text": "Sample use cases"
+      },
+      {
+        "id": "keeping-it-free-and-safe",
+        "text": "Keeping it free and safe"
+      },
+      {
+        "id": "glossary",
+        "text": "Glossary"
+      },
+      {
+        "id": "getting-help",
+        "text": "Getting help"
+      }
+    ]
+  },
+  {
     "path": "quickstart/",
     "title": "Quickstart",
     "headings": [
