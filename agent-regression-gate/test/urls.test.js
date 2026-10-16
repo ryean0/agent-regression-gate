@@ -63,7 +63,7 @@ function publishedText() {
 
 test("canonical, Open Graph, Twitter, and JSON-LD use https://anubys.dev/", () => {
   const files = htmlFiles(site);
-  assert.equal(files.length, 20);
+  assert.equal(files.length, 21);
   for (const file of files) {
     const html = fs.readFileSync(file, "utf8");
     const canonical = pageCanonical(file);
