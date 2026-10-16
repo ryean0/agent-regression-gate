@@ -3,6 +3,8 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import Ajv2020 from "ajv/dist/2020.js";
+import addFormats from "ajv-formats";
 
 import { parseResults, parseRunSummary, publicText, summaryRows } from "../js/results.js";
 
@@ -70,7 +72,10 @@ test("results schema 2.1.0 records model ids on the suite verdict", () => {
   assert.equal(resultsSchema.title, "ResultsDocument");
   assert.equal(resultsSchema.additionalProperties, false);
   assert.equal(resultsSchema.properties.schema_version.const, "2.1.0");
-  assert.equal(Object.hasOwn(resultsSchema.properties, "suite_id"), false);
+  assert.equal(resultsSchema.required.includes("suite_id"), false);
+  assert.equal(resultsSchema.properties.suite_id.type, "string");
+  assert.equal(resultsSchema.properties.suite_id.default, "tau_retail");
+  assert.equal(resultsSchema.properties.suite_id.minLength, 1);
   assert.equal(Object.hasOwn(resultsSchema.properties, "run_summary"), false);
   assert.equal(Object.hasOwn(resultsSchema.properties, "arms"), false);
   for (const name of ["schema_version", "run_kind", "baseline_pool_model_id", "verdicts", "environment_misses", "mde"]) {
@@ -112,6 +117,18 @@ test("results schema 2.1.0 records model ids on the suite verdict", () => {
   assert.doesNotMatch(shown, /\/20(?!\d)/);
   rejectCopy(JSON.stringify(summarySchema), "run summary schema");
   rejectCopy(JSON.stringify(summary), "run summary example");
+});
+
+test("a results file with suite_id validates against the site schema", () => {
+  const ajv = new Ajv2020({ allErrors: true, strict: false });
+  addFormats(ajv);
+  const validate = ajv.compile(resultsSchema);
+  assert.equal(validate(example), true, JSON.stringify(validate.errors));
+  const withSuite = structuredClone(example);
+  withSuite.suite_id = "tau_retail";
+  assert.equal(validate(withSuite), true, JSON.stringify(validate.errors));
+  withSuite.suite_id = "";
+  assert.equal(validate(withSuite), false);
 });
 
 test("run_summary example is a separate schema 1.0.0 file", () => {

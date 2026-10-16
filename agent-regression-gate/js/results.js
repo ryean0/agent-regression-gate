@@ -794,7 +794,7 @@ function buildHarnessView(doc) {
     banner: bannerFor(doc.status),
     summaryNote: publicText(note),
     suite: "",
-    suiteId: "",
+    suiteId: readSuiteId(doc),
     runSummary: null,
     runKind,
     baselineId,

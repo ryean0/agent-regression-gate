@@ -774,6 +774,13 @@
       "title": "Run Kind",
       "type": "string"
     },
+    "suite_id": {
+      "default": "tau_retail",
+      "description": "Suite this document belongs to. Omitted files default to tau_retail. Gate settings still come from the packaged tau_retail suite unless --suite is set.",
+      "minLength": 1,
+      "title": "Suite Id",
+      "type": "string"
+    },
     "note": {
       "title": "Note",
       "type": "string"

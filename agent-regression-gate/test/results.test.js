@@ -8,7 +8,7 @@ const shipped = JSON.parse(
   readFileSync(new URL("../data/results.preliminary.json", import.meta.url), "utf8"),
 );
 const bundled = JSON.parse(
-  readFileSync(new URL("./fixtures/results.legacy-2.1.0.json", import.meta.url), "utf8"),
+  readFileSync(new URL("./fixtures/results.invalid-legacy.json", import.meta.url), "utf8"),
 );
 const runSummary = JSON.parse(
   readFileSync(new URL(`../${RUN_SUMMARY_PATH}`, import.meta.url), "utf8"),
