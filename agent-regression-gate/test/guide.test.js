@@ -149,7 +149,7 @@ test("getting started ports the verified guide", () => {
   assert.match(main, /Every new terminal forgets the folder and the environment\./);
   assert.match(main, /python3-venv/);
   assert.match(main, /python3\.12-venv/);
-  assert.equal((main.match(/Username for 'https:\/\/github\.com':/g) || []).length, 2);
+  assert.equal((main.match(/<code>Username for 'https:\/\/github\.com':<\/code>/g) || []).length, 2);
   assert.equal((main.match(/Press Ctrl\+C\. Do not type a username or a password\./g) || []).length, 2);
   assert.match(main, /When Git can't ask, it prints this instead\./);
   assert.match(main, /If apt says there is no installation candidate, run <code>sudo apt update<\/code> and then run the install command again\./);
