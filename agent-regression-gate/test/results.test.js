@@ -38,8 +38,8 @@ test("the shipped harness preliminary file parses as insufficient evidence", () 
   assert.doesNotMatch(view.interval.text, /\d+\/20\b/);
   assert.equal(view.runSummary, null);
   assert.equal(view.costUsd, 1.25);
-  assert.equal(view.arms.baseline.rateText, "0 of 20");
-  assert.equal(view.arms.candidate.rateText, "1 of 20");
+  assert.equal(view.arms.baseline.rateText, "0%");
+  assert.equal(view.arms.candidate.rateText, "5%");
   assert.equal(view.arms.candidate.overMissLimit, false);
   assert.equal(view.arms.candidate.environmentMisses, 1);
   const broken = view.diagnostics.find((row) => row.scenarioId === "example.broken.v1");
@@ -49,8 +49,9 @@ test("the shipped harness preliminary file parses as insufficient evidence", () 
   assert.equal(broken.candidateText, "Not in this file");
   assert.equal(broken.missCounts.candidate, 1);
   assert.deepEqual(broken.missingCassetteKeys.candidate, ["example.broken.v1/get_order_details"]);
-  assert.doesNotMatch(broken.note, /\d+\/20\b/);
-  assert.match(broken.note, /1 of 20/);
+  assert.doesNotMatch(broken.note, /of 20/);
+  assert.doesNotMatch(broken.note, /\/20(?!\d)/);
+  assert.match(broken.note, /5%/);
   assert.equal(clean.familyId, "example.clean");
   assert.equal(clean.baselineText, "90%");
   assert.equal(clean.candidateText, "90%");

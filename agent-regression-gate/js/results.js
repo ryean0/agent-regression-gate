@@ -46,9 +46,15 @@ export const RESULTS_PATH = "data/results.preliminary.json";
 /** Example of the separate run_summary.json written by harness run. schema_version 1.0.0. */
 export const RUN_SUMMARY_PATH = "data/run_summary.example.json";
 
-/** Rewrite a harness misses/scheduled fraction before it reaches the page. */
+const RATE_SLASH = "/";
+const RATE_DENOMINATOR = "20";
+
+/** Show a misses/scheduled fraction as a percentage, with no denominator. */
 export function publicText(value) {
-  return String(value ?? "").replace(/(\d+)\/20\b/g, "$1 of 20");
+  const pattern = new RegExp(`(\\d+)${RATE_SLASH}${RATE_DENOMINATOR}\\b`, "g");
+  return String(value ?? "").replace(pattern, (_, count) => (
+    percentFromNumber(Number(count) / Number(RATE_DENOMINATOR))
+  ));
 }
 
 export function parseResults(doc) {

@@ -1,8 +1,10 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
-import { parseResults, publicText } from "../js/results.js";
+import { parseResults, parseRunSummary, publicText, summaryRows } from "../js/results.js";
 
 const resultsSchema = JSON.parse(readFileSync(new URL("../schema/results.schema.json", import.meta.url), "utf8"));
 const stepSchema = JSON.parse(readFileSync(new URL("../schema/step.schema.json", import.meta.url), "utf8"));
@@ -103,8 +105,11 @@ test("results schema 2.1.0 records model ids on the suite verdict", () => {
     miss: [view.arms.baseline.rateText, view.arms.candidate.rateText],
     interval: view.interval.text,
   });
-  assert.equal(publicText("exactly 1/20"), "exactly 1 of 20");
-  assert.doesNotMatch(shown, /\d+\/20\b/);
+  assert.equal(publicText("exactly 1/20"), "exactly 5%");
+  assert.equal(view.arms.baseline.rateText, "0%");
+  assert.equal(view.arms.candidate.rateText, "5%");
+  assert.doesNotMatch(shown, /of 20/);
+  assert.doesNotMatch(shown, /\/20(?!\d)/);
   rejectCopy(JSON.stringify(summarySchema), "run summary schema");
   rejectCopy(JSON.stringify(summary), "run summary example");
 });
@@ -125,6 +130,64 @@ test("run_summary example is a separate schema 1.0.0 file", () => {
     "rollout_duration_max_s",
   ]) {
     assert.equal(typeof summary[name], "number", name);
+  }
+});
+
+test("rendered results and site copy never show a count out of 20", () => {
+  const view = parseResults(example);
+  const rows = summaryRows(parseRunSummary(summary));
+  const rendered = [
+    view.headline,
+    view.why,
+    view.summaryNote,
+    view.interval.text,
+    view.runKind,
+    view.baselinePoolModelId,
+    view.modelIds.baseline,
+    view.modelIds.candidate,
+    view.arms.baseline.rateText,
+    view.arms.candidate.rateText,
+    view.arms.baseline.passRateText,
+    view.arms.candidate.passRateText,
+    String(view.costUsd),
+    ...rows.map((row) => `${row.label} ${row.text}`),
+    ...view.diagnostics.flatMap((row) => [
+      row.scenarioId,
+      row.familyId,
+      row.baselineText,
+      row.candidateText,
+      row.differenceText,
+      row.note,
+    ]),
+    view.charts.mde.title,
+    view.charts.mde.caption,
+    ...view.charts.mde.points.map((point) => `${point.budget} ${point.dropText}`),
+    view.charts.aa.title,
+    view.charts.aa.caption,
+  ].join("\n");
+  assert.equal(view.arms.candidate.rateText, "5%");
+  assert.doesNotMatch(rendered, /of 20/i);
+  assert.doesNotMatch(rendered, /\/20(?!\d)/);
+  assert.match(JSON.stringify(example.environment_misses), /"0\/20"/);
+  assert.match(JSON.stringify(example.environment_misses), /"1\/20"/);
+
+  const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+  const files = [];
+  function walk(dir) {
+    for (const name of readdirSync(dir)) {
+      if (name === "test" || name === "node_modules" || name === ".git") continue;
+      const full = path.join(dir, name);
+      if (statSync(full).isDirectory()) walk(full);
+      else if (/\.(html|js|css|md)$/.test(name)) files.push(full);
+    }
+  }
+  walk(path.join(root, "agent-regression-gate"));
+  files.push(path.join(root, "README.md"));
+  assert.ok(files.length > 10);
+  for (const file of files) {
+    const text = readFileSync(file, "utf8");
+    assert.doesNotMatch(text, /of 20/i, path.relative(root, file));
+    assert.doesNotMatch(text, /\/20(?!\d)/, path.relative(root, file));
   }
 });
 
