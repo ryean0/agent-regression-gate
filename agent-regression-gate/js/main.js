@@ -10,7 +10,7 @@ import {
   presentationForMotion,
   reduceFlow,
 } from "./method.js";
-import { RESULTS_PATH, parseResults, parseResultsV2, summaryRows } from "./results.js";
+import { RESULTS_PATH, RUN_SUMMARY_PATH, parseResults, parseResultsV2, parseRunSummary, summaryRows } from "./results.js";
 import { TIMING_SAMPLE_PATH, readTiming, renderTimingHtml } from "./timing.js";
 import { bindFilm, bindStory, renderFilmHtml, renderStoryHtml } from "./story.js";
 import { METHOD_NOTES, armMissExceeds, formatPercent, formatPoints, formatSignedNumber, scoreRun } from "./verdict.js";
@@ -422,19 +422,35 @@ function missLine(counts) {
   return Object.entries(counts).map(([key, value]) => `${key} ${value}`).join(", ");
 }
 
+function measure(value) {
+  const text = String(value);
+  if (!/\d/.test(text)) return text;
+  return [text, el("span", { class: "example-tag" }, "Example")];
+}
+
 function renderResults(view) {
   renderBanner(view.banner);
   const root = document.getElementById("results-root");
-  const armRows = [
-    ["Scheduled rollouts", view.arms.baseline.scheduled, view.arms.candidate.scheduled],
-    ["Environment misses", view.arms.baseline.environmentMisses, view.arms.candidate.environmentMisses],
-    ["Miss counts", missLine(view.arms.baseline.missCounts), missLine(view.arms.candidate.missCounts)],
-    ["Pass rate", view.arms.baseline.passRateText, view.arms.candidate.passRateText],
-    ["Over the 5% miss line", view.arms.baseline.overMissLimit ? "Yes" : "No", view.arms.candidate.overMissLimit ? "Yes" : "No"],
-  ];
-  if (view.arms.baseline.modelId || view.arms.candidate.modelId) {
+  const harness = view.shape === "harness";
+  const armRows = harness
+    ? [
+        ["Model", view.modelIds.baseline, view.modelIds.candidate],
+        ["Scheduled rollouts", view.arms.baseline.scheduled, view.arms.candidate.scheduled],
+        ["Environment misses", view.arms.baseline.environmentMisses, view.arms.candidate.environmentMisses],
+        ["Miss rate", view.arms.baseline.rateText, view.arms.candidate.rateText],
+        ["Over the 5% miss line", view.arms.baseline.overMissLimit ? "Yes" : "No", view.arms.candidate.overMissLimit ? "Yes" : "No"],
+      ]
+    : [
+        ["Scheduled rollouts", view.arms.baseline.scheduled, view.arms.candidate.scheduled],
+        ["Environment misses", view.arms.baseline.environmentMisses, view.arms.candidate.environmentMisses],
+        ["Miss counts", missLine(view.arms.baseline.missCounts), missLine(view.arms.candidate.missCounts)],
+        ["Pass rate", view.arms.baseline.passRateText, view.arms.candidate.passRateText],
+        ["Over the 5% miss line", view.arms.baseline.overMissLimit ? "Yes" : "No", view.arms.candidate.overMissLimit ? "Yes" : "No"],
+      ];
+  if (!harness && (view.arms.baseline.modelId || view.arms.candidate.modelId)) {
     armRows.unshift(["Model", view.arms.baseline.modelId || "—", view.arms.candidate.modelId || "—"]);
   }
+  const meta = [view.runKind, harness ? view.baselinePoolModelId : "", view.suiteId, view.interval.text].filter(Boolean).join(" · ");
 
   const diagnosticRows = view.diagnostics.length
     ? view.diagnostics.map((row) => ({
@@ -455,7 +471,14 @@ function renderResults(view) {
     el("p", {
       class: "fine",
       "data-interval": view.interval.fromFile ? "file" : "fallback",
-    }, [view.runKind, view.suiteId, view.interval.text].filter(Boolean).join(" · ")),
+    }, [
+      meta,
+      /\d/.test(meta) ? el("span", { class: "example-tag" }, "Example") : null,
+    ]),
+    harness ? el("p", { class: "fine" }, [
+      "Reported cost ",
+      el("strong", {}, measure(`$${view.costUsd}`)),
+    ]) : null,
     renderRunSummary(view.runSummary),
     el("div", { class: "sheet sheet-head" }, [
       el("span", {}, "Recorded"),
@@ -463,7 +486,9 @@ function renderResults(view) {
       armHead("Candidate", view.arms.candidate.caption),
     ]),
     ...armRows.map(([label, base, cand]) => el("div", { class: "sheet" }, [
-      el("span", {}, label), el("strong", {}, String(base)), el("strong", {}, String(cand)),
+      el("span", {}, label),
+      el("strong", {}, harness ? measure(base) : String(base)),
+      el("strong", {}, harness ? measure(cand) : String(cand)),
     ])),
     el("p", { class: "fine" }, "Environment misses may equal 5% of scheduled rollouts. Above that, on either arm, is over the cap. The check fails on Block. An invalid run isn't scored."),
     el("h3", { class: "block-title" }, "Scenario diagnostics"),
@@ -475,8 +500,8 @@ function renderResults(view) {
           row.name,
           row.caption ? el("span", { class: "subtitle" }, row.caption) : null,
         ]),
-        el("td", {}, row.baselineText),
-        el("td", {}, row.candidateText),
+        el("td", {}, harness ? measure(row.baselineText) : row.baselineText),
+        el("td", {}, harness ? measure(row.candidateText) : row.candidateText),
       ]))),
     ]),
     el("div", { class: "charts" }, [renderChart(view.charts.mde), renderChart(view.charts.aa)]),
@@ -485,6 +510,7 @@ function renderResults(view) {
       "Loaded from ",
       el("a", { href: asset(RESULTS_PATH) }, RESULTS_PATH),
       ". level 0.9.",
+      el("span", { class: "example-tag" }, "Example"),
     ]),
   ]));
 }
@@ -872,14 +898,21 @@ if (filmRoot) {
 initChrome();
 if (document.getElementById("demo-root")) renderDemo();
 
+function loadJson(path) {
+  return fetch(asset(path)).then((response) => {
+    if (!response.ok) throw new Error(`Could not load ${path} (${response.status}).`);
+    return response.json();
+  });
+}
+
 if (document.getElementById("results-root") || document.getElementById("results-teaser")) {
-  fetch(asset(RESULTS_PATH))
-    .then((response) => {
-      if (!response.ok) throw new Error(`Could not load results file (${response.status}).`);
-      return response.json();
-    })
-    .then((doc) => {
+  const summaryPromise = document.getElementById("results-root")
+    ? loadJson(RUN_SUMMARY_PATH).catch(() => null)
+    : Promise.resolve(null);
+  Promise.all([loadJson(RESULTS_PATH), summaryPromise])
+    .then(([doc, summaryDoc]) => {
       const view = doc && doc.version === 1 ? parseResults(doc) : parseResultsV2(doc);
+      if (summaryDoc) view.runSummary = parseRunSummary(summaryDoc);
       recorded = view;
       if (document.getElementById("results-root")) renderResults(view);
       renderTeaser(view);

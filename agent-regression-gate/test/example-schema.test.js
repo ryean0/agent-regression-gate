@@ -2,10 +2,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
+import { parseResults, publicText } from "../js/results.js";
+
 const resultsSchema = JSON.parse(readFileSync(new URL("../schema/results.schema.json", import.meta.url), "utf8"));
 const stepSchema = JSON.parse(readFileSync(new URL("../schema/step.schema.json", import.meta.url), "utf8"));
+const summarySchema = JSON.parse(readFileSync(new URL("../schema/run_summary.schema.json", import.meta.url), "utf8"));
 const steps = JSON.parse(readFileSync(new URL("../data/step.example.json", import.meta.url), "utf8"));
 const example = JSON.parse(readFileSync(new URL("../data/results.preliminary.json", import.meta.url), "utf8"));
+const summary = JSON.parse(readFileSync(new URL("../data/run_summary.example.json", import.meta.url), "utf8"));
 
 const FORBIDDEN = [
   [/\d+\/20\b/, "n/20"],
@@ -25,72 +29,112 @@ function rejectCopy(text, label) {
 
 function tokenField(schema, name) {
   const field = schema.properties[name];
-  assert.equal(field.type, "integer", name);
-  assert.equal(field.minimum, 0, name);
-  assert.equal(Array.isArray(schema.required) && schema.required.includes(name), false, `${name} required`);
+  assert.deepEqual(field.anyOf, [{ minimum: 0, type: "integer" }, { type: "null" }], name);
+  assert.equal(field.default, null, name);
+  assert.equal(schema.required.includes(name), false, `${name} required`);
 }
 
-function stepAccepts(step) {
-  for (const name of ["thinking_tokens", "cached_tokens"]) {
-    if (!Object.hasOwn(step, name)) continue;
-    const value = step[name];
-    if (typeof value !== "number" || !Number.isInteger(value) || value < 0) return false;
-  }
-  return step && typeof step === "object" && !Array.isArray(step);
-}
-
-test("step.schema.json keeps thinking_tokens and cached_tokens optional", () => {
+test("step.schema.json mirrors harness thinking_tokens and cached_tokens", () => {
   assert.equal(stepSchema.title, "Step");
-  assert.equal(stepSchema.additionalProperties, true);
+  assert.equal(stepSchema.additionalProperties, false);
+  assert.equal(stepSchema.$id, "https://ci-agent-regression-harness.local/schema/step/1.0.0.json");
   tokenField(stepSchema, "thinking_tokens");
   tokenField(stepSchema, "cached_tokens");
-  assert.equal(stepSchema.required, undefined);
-  assert.match(stepSchema.description, /2\.1\.0/);
-  assert.match(stepSchema.description, /not schema 3\.0\.0/);
+  assert.equal(
+    stepSchema.properties.thinking_tokens.description,
+    "Thoughts billed at the output rate. Not included in tokens_out on a live response. An older recording that folded thoughts into the output count is priced from that stored count.",
+  );
+  assert.equal(
+    stepSchema.properties.cached_tokens.description,
+    "Cached input tokens included in tokens_in. Summed across retries.",
+  );
+  for (const name of ["step_id", "run_id", "scenario_id", "family_id", "version_id", "rollout", "sequence_index", "operation_type", "status"]) {
+    assert.equal(stepSchema.required.includes(name), true, name);
+  }
   assert.equal(steps.length, 2);
-  assert.equal(stepAccepts(steps[0]), true);
   assert.equal(steps[0].thinking_tokens, 12);
   assert.equal(steps[0].cached_tokens, 30);
-  assert.equal(Object.hasOwn(steps[1], "thinking_tokens"), false);
-  assert.equal(stepAccepts(steps[1]), true);
-  assert.equal(stepAccepts({}), true);
-  assert.equal(stepAccepts({ thinking_tokens: "12" }), false);
-  assert.equal(stepAccepts({ cached_tokens: -1 }), false);
-  assert.equal(stepAccepts({ cached_tokens: 1.5 }), false);
+  assert.equal(steps[0].scenario_id, "example.clean.v1");
+  assert.equal(steps[0].family_id, "example.clean");
+  assert.equal(steps[1].thinking_tokens, null);
+  assert.equal(steps[1].cached_tokens, null);
+  assert.equal(steps[1].scenario_id, "example.broken.v1");
+  assert.equal(steps[1].family_id, "example.broken");
   rejectCopy(JSON.stringify(stepSchema), "step schema");
   rejectCopy(JSON.stringify(steps), "step example");
 });
 
-test("results schema 2.1.0 keeps suite_id and run_summary optional", () => {
-  assert.equal(resultsSchema.properties.schema_version.pattern, "^2\\.\\d+\\.\\d+$");
-  assert.equal(resultsSchema.required.includes("suite_id"), false);
-  assert.equal(resultsSchema.required.includes("run_summary"), false);
-  assert.equal(resultsSchema.properties.suite_id.type, "string");
-  const summary = resultsSchema.$defs.runSummary.properties;
+test("results schema 2.1.0 records model ids on the suite verdict", () => {
+  assert.equal(resultsSchema.title, "ResultsDocument");
+  assert.equal(resultsSchema.additionalProperties, false);
+  assert.equal(resultsSchema.properties.schema_version.const, "2.1.0");
+  assert.equal(Object.hasOwn(resultsSchema.properties, "suite_id"), false);
+  assert.equal(Object.hasOwn(resultsSchema.properties, "run_summary"), false);
+  assert.equal(Object.hasOwn(resultsSchema.properties, "arms"), false);
+  for (const name of ["schema_version", "run_kind", "baseline_pool_model_id", "verdicts", "environment_misses", "mde"]) {
+    assert.equal(resultsSchema.required.includes(name), true, name);
+  }
+  const overall = resultsSchema.$defs.OverallVerdict;
+  assert.equal(overall.required.includes("model_ids"), true);
+  assert.equal(overall.required.includes("verdict"), true);
+  assert.equal(overall.required.includes("likely_regression"), true);
+  assert.deepEqual(overall.properties.verdict.enum, ["pass", "block", "insufficient_evidence", "invalid_run"]);
+  assert.match(resultsSchema.properties.run_kind.description, /screening, baseline, and aa must share one model id/);
+  assert.match(resultsSchema.properties.run_kind.description, /baseline_pool_model_id/);
+  assert.equal(example.schema_version, "2.1.0");
+  assert.equal(Object.hasOwn(example, "version"), false);
+  assert.equal(Object.hasOwn(example, "arms"), false);
+  assert.equal(Object.hasOwn(example, "suite_id"), false);
+  assert.equal(Object.hasOwn(example, "run_summary"), false);
+  assert.equal(example.baseline_pool_model_id, "tau-retail-baseline-pool");
+  assert.equal(example.run_kind, "screening");
+  assert.equal(example.verdicts.overall.model_ids.baseline, example.baseline_pool_model_id);
+  assert.equal(example.verdicts.overall.model_ids.candidate, example.baseline_pool_model_id);
+  const byId = Object.fromEntries(example.verdicts.diagnostics.map((row) => [row.scenario_id, row.family_id]));
+  assert.equal(byId["example.broken.v1"], "example.broken");
+  assert.equal(byId["example.clean.v1"], "example.clean");
+  assert.equal(Object.hasOwn(byId["example.broken.v1"] ? example.verdicts.diagnostics.find((row) => row.scenario_id === "example.broken.v1") : {}, "baseline_pass_rate"), false);
+  const view = parseResults(example);
+  const shown = JSON.stringify({
+    headline: view.headline,
+    why: view.why,
+    note: view.summaryNote,
+    rates: view.diagnostics.map((row) => [row.baselineText, row.candidateText, row.note, row.differenceText]),
+    miss: [view.arms.baseline.rateText, view.arms.candidate.rateText],
+    interval: view.interval.text,
+  });
+  assert.equal(publicText("exactly 1/20"), "exactly 1 of 20");
+  assert.doesNotMatch(shown, /\d+\/20\b/);
+  rejectCopy(JSON.stringify(summarySchema), "run summary schema");
+  rejectCopy(JSON.stringify(summary), "run summary example");
+});
+
+test("run_summary example is a separate schema 1.0.0 file", () => {
+  assert.equal(summarySchema.properties.schema_version.const, "1.0.0");
+  assert.equal(summarySchema.required.includes("schema_version"), true);
+  assert.equal(Object.hasOwn(summarySchema.properties, "rollout_duration_p95_s"), false);
+  assert.equal(summary.schema_version, "1.0.0");
+  assert.equal(summary.stopped, null);
   for (const name of [
     "planned_rollouts",
     "completed_rollouts",
     "infra_misses",
-    "stopped",
     "total_cost_usd",
     "total_cached_input_tokens",
     "rollout_duration_p50_s",
     "rollout_duration_max_s",
   ]) {
-    assert.ok(summary[name], name);
+    assert.equal(typeof summary[name], "number", name);
   }
-  assert.deepEqual(summary.stopped.oneOf, [{ type: "null" }, { const: "monthly_cap" }]);
-  assert.equal(Object.hasOwn(summary, "rollout_duration_p95_s"), false);
-  assert.match(resultsSchema.description, /not 3\.0\.0/);
-  assert.equal(example.schema_version, "2.1.0");
-  assert.equal(example.version, "2.1.0");
-  assert.equal(Object.hasOwn(example, "suite_id"), false);
-  assert.equal(example.scenarios.map((row) => row.id).join(","), "example.clean.v1,example.broken.v1");
-  assert.equal(example.diagnostics.map((row) => row.scenario_id).join(","), "example.clean.v1,example.broken.v1");
-  assert.equal(typeof example.arms.baseline.model_id, "string");
-  assert.equal(typeof example.arms.candidate.model_id, "string");
-  assert.notEqual(example.arms.baseline.model_id, example.arms.candidate.model_id);
-  assert.equal(example.run_summary.stopped, null);
-  rejectCopy(JSON.stringify(example), "example results");
-  rejectCopy(JSON.stringify(resultsSchema), "results schema");
+});
+
+test("new results copy keeps the site rules", () => {
+  const resultsPage = readFileSync(new URL("../results/index.html", import.meta.url), "utf8");
+  const intro = resultsPage.slice(resultsPage.indexOf('id="results"'), resultsPage.indexOf('id="demo"'));
+  const changelog = readFileSync(new URL("../docs/changelog/index.html", import.meta.url), "utf8");
+  const section = changelog.slice(changelog.indexOf('id="example-results"'), changelog.indexOf('id="performance-day"'));
+  const readme = readFileSync(new URL("../README.md", import.meta.url), "utf8");
+  rejectCopy(intro, "results page");
+  rejectCopy(section, "changelog");
+  rejectCopy(readme, "readme");
 });

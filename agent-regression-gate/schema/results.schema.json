@@ -1,312 +1,855 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "results.schema.json",
-  "title": "CI Agent Regression Harness results",
-  "description": "Suite-level verdict file. Scenario entries are diagnostics and are not pass/block decisions. Version 1 is the original file. Version 2.0.0 adds an optional one-sentence caption on each scenario and arm, and an optional model_id on each arm. Schema 2.1.0 (schema_version \"2.1.0\", not 3.0.0) records run_kind, baseline_pool_model_id, min_valid_fraction_per_scenario, equal rollouts_per_scenario counts, diagnostics, and verdicts.overall. On 2.1.0, verdicts.overall.likely_regression and verdicts.overall.model_ids are required. Each arm may also record model_id. suite_id is optional. An optional run_summary may record planned_rollouts, completed_rollouts, infra_misses, stopped (null or monthly_cap), total_cost_usd, total_cached_input_tokens, rollout_duration_p50_s, and rollout_duration_max_s. delta and difference_ci.level are read from verdicts.overall. Alpha and the miss cap stay in suite.yaml. There is no gate block. Fraction values are strings such as \"0.6\" and \"0.05\". Decimals such as 0.05 and amounts such as $1.25 are valid caption text. A model id does not change the suite verdict. Extra fields are allowed so a real results.json can be dropped in at data/results.preliminary.json.",
-  "type": "object",
-  "additionalProperties": true,
-  "required": ["version", "status", "level", "likely_regression", "arms"],
+  "$defs": {
+    "AASummary": {
+      "additionalProperties": false,
+      "description": "A/A (same agent, twice) summary. Absent, or ``coming_soon``, until it exists.",
+      "properties": {
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "preliminary",
+                "final",
+                "coming_soon"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "false_block_rate": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "False Block Rate"
+        },
+        "false_block_ci": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfidenceInterval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "pairs": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pairs"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Fraction of resamples whose 90% CI covers 0. Week 4 A/A check.",
+          "title": "Coverage"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "One sentence for the A/A block, for a non-technical reader.",
+          "title": "Caption"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "title": "AASummary",
+      "type": "object"
+    },
+    "ArmEnvironmentMisses": {
+      "additionalProperties": false,
+      "description": "Environment-miss accounting for one arm, across the document.\n\n``rate`` is ``misses / scheduled``, an exact fraction string. The\ndenominator is scheduled rollouts, not recorded outcomes.",
+      "properties": {
+        "scheduled": {
+          "minimum": 0,
+          "title": "Scheduled",
+          "type": "integer"
+        },
+        "misses": {
+          "minimum": 0,
+          "title": "Misses",
+          "type": "integer"
+        },
+        "rate": {
+          "description": "Exact fraction string, such as misses/scheduled. Not a JSON number.",
+          "examples": [
+            "0/20",
+            "1/20"
+          ],
+          "title": "Rate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scheduled",
+        "misses",
+        "rate"
+      ],
+      "title": "ArmEnvironmentMisses",
+      "type": "object"
+    },
+    "CaptionBlock": {
+      "additionalProperties": false,
+      "description": "One sentence a non-technical reader can show next to a block.",
+      "properties": {
+        "caption": {
+          "minLength": 1,
+          "title": "Caption",
+          "type": "string"
+        }
+      },
+      "required": [
+        "caption"
+      ],
+      "title": "CaptionBlock",
+      "type": "object"
+    },
+    "CassetteKeys": {
+      "additionalProperties": false,
+      "description": "Missing cassette keys for one scenario, one list per arm (C4).",
+      "properties": {
+        "baseline": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Baseline",
+          "type": "array"
+        },
+        "candidate": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": "Candidate",
+          "type": "array"
+        }
+      },
+      "required": [
+        "baseline",
+        "candidate"
+      ],
+      "title": "CassetteKeys",
+      "type": "object"
+    },
+    "ConfidenceInterval": {
+      "additionalProperties": false,
+      "description": "Interval on a diagnostic or A/A number. The suite gate does not use this.\n\nDiagnostics and ``aa.false_block_ci`` may omit ``level``. The omitted\nvalue is ``1 - 2*alpha`` from ``suite.yaml``. There is no hardcoded 0.90.\nThe suite-level verdict uses ``GateConfidenceInterval``, which requires\nthe level and accepts only that suite value.",
+      "properties": {
+        "lower": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Lower",
+          "type": "number"
+        },
+        "upper": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Upper",
+          "type": "number"
+        },
+        "level": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Confidence level. Omitted values use 1 - 2*alpha from suite.yaml.",
+          "title": "Level"
+        }
+      },
+      "required": [
+        "lower",
+        "upper"
+      ],
+      "title": "ConfidenceInterval",
+      "type": "object"
+    },
+    "EnvironmentMisses": {
+      "additionalProperties": false,
+      "description": "Per-arm miss counts and rates. The arms are not pooled.",
+      "properties": {
+        "baseline": {
+          "$ref": "#/$defs/ArmEnvironmentMisses"
+        },
+        "candidate": {
+          "$ref": "#/$defs/ArmEnvironmentMisses"
+        }
+      },
+      "required": [
+        "baseline",
+        "candidate"
+      ],
+      "title": "EnvironmentMisses",
+      "type": "object"
+    },
+    "GateConfidenceInterval": {
+      "additionalProperties": false,
+      "description": "The suite-level interval on the pass-rate difference.\n\n``level`` is required and must equal ``1 - 2*alpha`` from ``suite.yaml``\n(FR-24: one-sided alpha). Alpha 0.05 is 0.90, not 0.95. Omitting it, or\nwriting a different level, fails validation. There is no default.",
+      "properties": {
+        "lower": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Lower",
+          "type": "number"
+        },
+        "upper": {
+          "maximum": 1,
+          "minimum": -1,
+          "title": "Upper",
+          "type": "number"
+        },
+        "level": {
+          "description": "Must equal 1 - 2*alpha from suite.yaml (the recorded ci_level). No default.",
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Level",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lower",
+        "upper",
+        "level"
+      ],
+      "title": "GateConfidenceInterval",
+      "type": "object"
+    },
+    "MDEBlock": {
+      "additionalProperties": false,
+      "description": "Minimum detectable effect at each rollout count. On the pass rate.",
+      "properties": {
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "preliminary",
+                "final"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "One sentence for the power table, for a non-technical reader.",
+          "title": "Caption"
+        },
+        "undetectable": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CaptionBlock"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "What a drop smaller than this table comes back as. Display text only."
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/MDERow"
+          },
+          "minItems": 1,
+          "title": "Rows",
+          "type": "array"
+        }
+      },
+      "required": [
+        "rows"
+      ],
+      "title": "MDEBlock",
+      "type": "object"
+    },
+    "MDERow": {
+      "additionalProperties": false,
+      "description": "One row of the power table.\n\n``rollouts`` here is a hypothetical per-scenario count on the x-axis of\nthat table. It is not ``rollouts_per_scenario`` and not ``total_rollouts``.",
+      "properties": {
+        "rollouts": {
+          "description": "Hypothetical rollouts per scenario for this power-table row. Not the run's rollouts_per_scenario and not total_rollouts.",
+          "minimum": 1,
+          "title": "Rollouts",
+          "type": "integer"
+        },
+        "minimum_detectable_effect": {
+          "exclusiveMinimum": 0,
+          "maximum": 1,
+          "title": "Minimum Detectable Effect",
+          "type": "number"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "rollouts",
+        "minimum_detectable_effect"
+      ],
+      "title": "MDERow",
+      "type": "object"
+    },
+    "OverallVerdict": {
+      "additionalProperties": false,
+      "description": "The only gate verdict. One decision for the suite.",
+      "properties": {
+        "verdict": {
+          "enum": [
+            "pass",
+            "block",
+            "insufficient_evidence",
+            "invalid_run"
+          ],
+          "title": "Verdict",
+          "type": "string"
+        },
+        "difference": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": -1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Difference"
+        },
+        "difference_ci": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GateConfidenceInterval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "delta": {
+          "anyOf": [
+            {
+              "exclusiveMaximum": 1,
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Delta"
+        },
+        "likely_regression": {
+          "description": "True only when the verdict is insufficient_evidence and the point estimate is strictly below -delta (FR-25, C7). Required, no default.",
+          "title": "Likely Regression",
+          "type": "boolean"
+        },
+        "model_ids": {
+          "$ref": "#/$defs/VerdictModelIds",
+          "description": "Model id each arm used. Paths: verdicts.overall.model_ids.baseline and verdicts.overall.model_ids.candidate. Each arm has exactly one."
+        },
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "preliminary",
+                "final"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "verdict",
+        "likely_regression",
+        "model_ids"
+      ],
+      "title": "OverallVerdict",
+      "type": "object"
+    },
+    "ScenarioDiagnostic": {
+      "additionalProperties": false,
+      "description": "Pass rates and the difference for one scenario. Not a gate verdict.\n\nThe gate is the single suite-level decision on ``verdicts.overall``.",
+      "properties": {
+        "scenario_id": {
+          "minLength": 1,
+          "title": "Scenario Id",
+          "type": "string"
+        },
+        "family_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Family Id"
+        },
+        "scheduled_rollouts": {
+          "$ref": "#/$defs/VersionRollouts",
+          "description": "Scheduled rollouts of each arm for this scenario. The miss-rate denominator, and the input to the per-scenario floor."
+        },
+        "miss_counts": {
+          "$ref": "#/$defs/VersionRollouts",
+          "description": "env_miss, infra-caused timeouts, and scheduled rollouts with no recorded outcome, for each arm of this scenario."
+        },
+        "missing_cassette_keys": {
+          "$ref": "#/$defs/CassetteKeys",
+          "description": "Cassette keys that missed on this scenario (C4), in rollout order, one list per arm. Infra timeouts and unrecorded rollouts are misses without a cassette key, so a list may be shorter than miss_counts. It cannot be longer."
+        },
+        "baseline_pass_rate": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Baseline Pass Rate"
+        },
+        "candidate_pass_rate": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Pass Rate"
+        },
+        "difference": {
+          "anyOf": [
+            {
+              "maximum": 1,
+              "minimum": -1,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Difference"
+        },
+        "difference_ci": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ConfidenceInterval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "required": [
+        "scenario_id",
+        "scheduled_rollouts",
+        "miss_counts",
+        "missing_cassette_keys"
+      ],
+      "title": "ScenarioDiagnostic",
+      "type": "object"
+    },
+    "VerdictLabelCaptions": {
+      "additionalProperties": false,
+      "description": "Plain-language sentence for each suite verdict label.\n\nThe landing page can show all four even when only one label is selected.\n``pass`` is a Python keyword, so the attribute is ``pass_``.",
+      "properties": {
+        "pass": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CaptionBlock"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "block": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CaptionBlock"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "insufficient_evidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CaptionBlock"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "invalid_run": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CaptionBlock"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "VerdictLabelCaptions",
+      "type": "object"
+    },
+    "VerdictModelIds": {
+      "additionalProperties": false,
+      "description": "The one model id each arm used. Recorded on the suite verdict.",
+      "properties": {
+        "baseline": {
+          "minLength": 1,
+          "title": "Baseline",
+          "type": "string"
+        },
+        "candidate": {
+          "minLength": 1,
+          "title": "Candidate",
+          "type": "string"
+        }
+      },
+      "required": [
+        "baseline",
+        "candidate"
+      ],
+      "title": "VerdictModelIds",
+      "type": "object"
+    },
+    "VerdictsBlock": {
+      "additionalProperties": false,
+      "description": "Suite gate verdict plus per-scenario diagnostics.\n\n``diagnostics`` do not carry pass / block. They are not independent gates.\n``caption`` and ``verdict_captions`` are display text. The gate ignores them.",
+      "properties": {
+        "status": {
+          "anyOf": [
+            {
+              "enum": [
+                "preliminary",
+                "final"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "One sentence for the suite verdict, for a non-technical reader.",
+          "title": "Caption"
+        },
+        "verdict_captions": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerdictLabelCaptions"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "overall": {
+          "$ref": "#/$defs/OverallVerdict"
+        },
+        "diagnostics": {
+          "items": {
+            "$ref": "#/$defs/ScenarioDiagnostic"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        }
+      },
+      "required": [
+        "overall",
+        "diagnostics"
+      ],
+      "title": "VerdictsBlock",
+      "type": "object"
+    },
+    "VersionRollouts": {
+      "additionalProperties": false,
+      "description": "Baseline and candidate rollout counts for one explicit scope.",
+      "properties": {
+        "baseline": {
+          "minimum": 0,
+          "title": "Baseline",
+          "type": "integer"
+        },
+        "candidate": {
+          "minimum": 0,
+          "title": "Candidate",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "baseline",
+        "candidate"
+      ],
+      "title": "VersionRollouts",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One ``results.json`` (or YAML) file.",
   "properties": {
-    "version": {
-      "description": "1, or a 2.x.y schema version such as 2.0.0 or 2.1.0. Other major versions are not supported. Omitted only when schema_version is a 2.x.y string.",
-      "oneOf": [
-        { "const": 1 },
-        { "type": "string", "pattern": "^2\\.\\d+\\.\\d+$" }
-      ]
-    },
     "schema_version": {
-      "description": "Harness schema tag. A 2.1.0 file sets this to \"2.1.0\". When version is also set, the two match. Not used on version 1.",
-      "type": "string",
-      "pattern": "^2\\.\\d+\\.\\d+$"
+      "const": "2.1.0",
+      "title": "Schema Version",
+      "type": "string"
     },
-    "run_kind": { "enum": ["screening", "baseline", "aa", "gate"] },
-    "baseline_pool_model_id": { "type": "string" },
-    "min_valid_fraction_per_scenario": {
-      "description": "Exact fraction string, for example \"0.6\".",
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "preliminary",
+        "final"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "screening",
+        "baseline_pool",
+        "replay"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "run_kind": {
+      "description": "Which model-id rule this run uses. screening, baseline, and aa must share one model id across both arms. gate may use a different candidate id; the baseline arm must be baseline_pool_model_id. source is where the numbers came from and can differ: a replay of a gate run is source replay and run_kind gate.",
+      "enum": [
+        "screening",
+        "baseline",
+        "aa",
+        "gate"
+      ],
+      "title": "Run Kind",
+      "type": "string"
+    },
+    "note": {
+      "title": "Note",
+      "type": "string"
+    },
+    "baseline_id": {
+      "minLength": 1,
+      "title": "Baseline Id",
+      "type": "string"
+    },
+    "baseline_pool_model_id": {
+      "description": "Pinned baseline-pool model id, copied from suite.yaml. Gate runs require verdicts.overall.model_ids.baseline to equal this.",
+      "minLength": 1,
+      "title": "Baseline Pool Model Id",
       "type": "string"
     },
     "rollouts_per_scenario": {
-      "description": "baseline and candidate are equal non-negative integers.",
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["baseline", "candidate"],
-      "properties": {
-        "baseline": { "type": "integer", "minimum": 0 },
-        "candidate": { "type": "integer", "minimum": 0 }
-      }
+      "$ref": "#/$defs/VersionRollouts",
+      "description": "How many rollouts of each version one scenario uses. This is the suite tier setting, not the sum across the document."
     },
-    "status": { "enum": ["preliminary", "final"] },
-    "level": { "const": 0.9 },
-    "likely_regression": { "type": ["boolean", "null"] },
-    "invalid_run": { "type": "boolean" },
-    "suite": { "type": "string" },
-    "suite_id": {
-      "description": "Optional suite id. Schema 2.1.0 does not require it.",
+    "total_rollouts": {
+      "$ref": "#/$defs/VersionRollouts",
+      "description": "Scheduled rollouts of each version in this document, summed across scenarios. Not the per-scenario setting, and not the count of recorded outcomes."
+    },
+    "min_valid_fraction_per_scenario": {
+      "description": "Copied from suite.yaml min_valid_fraction_per_scenario. The exact fraction string, such as \"0.6\". Not a float, and not rewritten to \"3/5\" unless the suite file itself wrote 3/5.",
+      "examples": [
+        "0.6"
+      ],
+      "title": "Min Valid Fraction Per Scenario",
       "type": "string"
     },
-    "run_summary": { "$ref": "#/$defs/runSummary" },
+    "environment_misses": {
+      "$ref": "#/$defs/EnvironmentMisses"
+    },
+    "cost_usd": {
+      "minimum": 0,
+      "title": "Cost Usd",
+      "type": "number"
+    },
     "verdicts": {
-      "description": "Suite detail. On schema 2.1.0, overall.likely_regression and overall.model_ids are required. model_ids are preferred over arms.*.model_id. delta and difference_ci are fraction strings plus a CI level. They do not change Pass, Block, Insufficient evidence, or Invalid run.",
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "overall": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "delta": { "type": "string" },
-            "difference_ci": { "$ref": "#/$defs/differenceCi" },
-            "likely_regression": { "type": "boolean" },
-            "model_ids": {
-              "type": "object",
-              "additionalProperties": false,
-              "required": ["baseline", "candidate"],
-              "properties": {
-                "baseline": {
-                  "description": "Baseline model id. The exact version is set in suite config.",
-                  "type": "string"
-                },
-                "candidate": {
-                  "description": "Candidate model id, for example a pinned Gemini Flash-Lite model id (exact version set in suite config).",
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
+      "$ref": "#/$defs/VerdictsBlock"
     },
-    "diagnostics": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/diagnostic" }
-    },
-    "notes": {
-      "type": "object",
-      "additionalProperties": { "type": "string" },
-      "properties": {
-        "summary": { "type": "string" },
-        "mde": { "type": "string" },
-        "aa": { "type": "string" }
-      }
-    },
-    "arms": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["baseline", "candidate"],
-      "properties": {
-        "baseline": { "$ref": "#/$defs/arm" },
-        "candidate": { "$ref": "#/$defs/arm" }
-      }
-    },
-    "scenarios": {
-      "type": "array",
-      "items": { "$ref": "#/$defs/scenario" }
-    },
-    "charts": {
-      "type": "object",
-      "properties": {
-        "mde": { "$ref": "#/$defs/chart" },
-        "aa": { "$ref": "#/$defs/chart" }
-      }
-    },
-    "timing": {
-      "description": "Optional efficiency field. Current results files omit it. data/timing.sample.json uses this shape, and the reader tolerates a missing timing field. Family rows are wall-clock only and are not verdicts.",
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "gate_wall_clock_s": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "live": { "type": "number" },
-            "replay": { "type": "number" }
-          }
+    "aa": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/AASummary"
         },
-        "rollout_s": {
-          "type": "object",
-          "additionalProperties": true,
-          "properties": {
-            "p50": { "type": "number" },
-            "max": { "type": "number" }
-          }
-        },
-        "retries_429": { "type": "number" },
-        "per_family_wall_clock_s": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "additionalProperties": true,
-            "properties": {
-              "family_id": { "type": "string" },
-              "seconds": { "type": "number" }
-            }
-          }
+        {
+          "type": "null"
         }
-      }
+      ],
+      "default": null
+    },
+    "mde": {
+      "$ref": "#/$defs/MDEBlock"
     }
   },
-  "allOf": [
-    {
-      "if": {
-        "anyOf": [
-          { "required": ["schema_version"], "properties": { "schema_version": { "const": "2.1.0" } } },
-          { "required": ["version"], "properties": { "version": { "const": "2.1.0" } } }
-        ]
-      },
-      "then": {
-        "required": ["verdicts"],
-        "properties": {
-          "verdicts": {
-            "required": ["overall"],
-            "properties": {
-              "overall": {
-                "required": ["likely_regression", "model_ids"]
-              }
-            }
-          }
-        }
-      }
-    }
+  "required": [
+    "schema_version",
+    "generated_at",
+    "status",
+    "source",
+    "run_kind",
+    "note",
+    "baseline_id",
+    "baseline_pool_model_id",
+    "rollouts_per_scenario",
+    "total_rollouts",
+    "min_valid_fraction_per_scenario",
+    "environment_misses",
+    "cost_usd",
+    "verdicts",
+    "mde"
   ],
-  "$defs": {
-    "runSummary": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "planned_rollouts": { "type": "integer", "minimum": 0 },
-        "completed_rollouts": { "type": "integer", "minimum": 0 },
-        "infra_misses": { "type": "integer", "minimum": 0 },
-        "stopped": {
-          "description": "null when the run was not stopped, or monthly_cap when the spend cap stopped it.",
-          "oneOf": [{ "type": "null" }, { "const": "monthly_cap" }]
-        },
-        "total_cost_usd": { "type": "number", "minimum": 0 },
-        "total_cached_input_tokens": { "type": "integer", "minimum": 0 },
-        "rollout_duration_p50_s": { "type": "number", "minimum": 0 },
-        "rollout_duration_max_s": { "type": "number", "minimum": 0 }
-      }
-    },
-    "differenceCi": {
-      "type": "object",
-      "additionalProperties": true,
-      "required": ["lower", "upper", "level"],
-      "properties": {
-        "lower": { "type": "string" },
-        "upper": { "type": "string" },
-        "level": {
-          "description": "CI level. 0.9, or the exact string \"0.9\".",
-          "oneOf": [{ "const": 0.9 }, { "const": "0.9" }, { "const": "9/10" }]
-        }
-      }
-    },
-    "diagnostic": {
-      "type": "object",
-      "additionalProperties": true,
-      "required": [
-        "scenario_id",
-        "family_id",
-        "scheduled_rollouts",
-        "miss_counts",
-        "missing_cassette_keys",
-        "baseline_pass_rate",
-        "candidate_pass_rate",
-        "difference",
-        "difference_ci"
-      ],
-      "properties": {
-        "scenario_id": { "type": "string" },
-        "family_id": { "type": "string" },
-        "scheduled_rollouts": { "$ref": "#/$defs/countPair" },
-        "miss_counts": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["baseline", "candidate"],
-          "properties": {
-            "baseline": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
-            "candidate": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } }
-          }
-        },
-        "missing_cassette_keys": {
-          "type": "object",
-          "additionalProperties": false,
-          "required": ["baseline", "candidate"],
-          "properties": {
-            "baseline": { "type": "array", "items": { "type": "string" } },
-            "candidate": { "type": "array", "items": { "type": "string" } }
-          }
-        },
-        "baseline_pass_rate": { "type": "string" },
-        "candidate_pass_rate": { "type": "string" },
-        "difference": { "type": "string" },
-        "difference_ci": { "$ref": "#/$defs/differenceCi" }
-      }
-    },
-    "countPair": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["baseline", "candidate"],
-      "properties": {
-        "baseline": { "type": "integer", "minimum": 0 },
-        "candidate": { "type": "integer", "minimum": 0 }
-      }
-    },
-    "arm": {
-      "type": "object",
-      "additionalProperties": true,
-      "required": ["scheduled_rollouts", "environment_misses", "miss_counts"],
-      "properties": {
-        "scheduled_rollouts": { "type": "integer", "minimum": 0 },
-        "environment_misses": { "type": "integer", "minimum": 0 },
-        "miss_counts": {
-          "type": "object",
-          "additionalProperties": { "type": "integer", "minimum": 0 }
-        },
-        "pass_rate": { "type": "string" },
-        "caption": {
-          "description": "Optional one-sentence caption. Digits, decimals such as 0.05, and amounts such as $1.25 are valid text.",
-          "type": "string"
-        },
-        "model_id": {
-          "description": "Optional model id recorded for this arm. Shown when present. It does not change the suite verdict.",
-          "type": "string"
-        }
-      }
-    },
-    "scenario": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "baseline_rate": { "type": "string" },
-        "candidate_rate": { "type": "string" },
-        "caption": {
-          "description": "Optional one-sentence caption. Digits, decimals such as 0.05, and amounts such as $1.25 are valid text.",
-          "type": "string"
-        }
-      }
-    },
-    "chart": {
-      "type": "object",
-      "additionalProperties": true,
-      "properties": {
-        "status": { "enum": ["preliminary", "final", "coming_soon"] },
-        "title": { "type": "string" },
-        "notes": { "type": "string" },
-        "x_label": { "type": "string" },
-        "y_label": { "type": "string" },
-        "points": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "required": ["budget", "drop"],
-            "properties": {
-              "budget": { "type": "integer", "minimum": 0 },
-              "drop": { "type": "string" }
-            }
-          }
-        }
-      }
-    }
-  }
+  "title": "ResultsDocument",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ci-agent-regression-harness.local/schema/results/2.1.0.json"
 }

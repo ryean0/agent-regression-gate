@@ -1,20 +1,547 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "step.schema.json",
-  "title": "Step",
-  "description": "One agent step from the harness. thinking_tokens and cached_tokens are optional and are not required. Other Step properties are allowed so a real step record can be dropped in. This copy sits beside results schema 2.1.0. It is not schema 3.0.0.",
-  "type": "object",
-  "additionalProperties": true,
+  "$defs": {
+    "Message": {
+      "additionalProperties": false,
+      "description": "One chat message stored on a step.",
+      "properties": {
+        "role": {
+          "enum": [
+            "system",
+            "user",
+            "assistant",
+            "tool"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "tool_call_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tool Call Id"
+        }
+      },
+      "required": [
+        "role",
+        "content"
+      ],
+      "title": "Message",
+      "type": "object"
+    },
+    "StateDiffEntry": {
+      "additionalProperties": false,
+      "description": "One field that changed in the simulator between the previous step and this one.",
+      "properties": {
+        "table": {
+          "enum": [
+            "orders",
+            "users",
+            "products"
+          ],
+          "title": "Table",
+          "type": "string"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "before": {
+          "default": null,
+          "title": "Before"
+        },
+        "after": {
+          "default": null,
+          "title": "After"
+        }
+      },
+      "required": [
+        "table",
+        "key",
+        "field"
+      ],
+      "title": "StateDiffEntry",
+      "type": "object"
+    },
+    "ToolCallRecord": {
+      "additionalProperties": false,
+      "description": "A tool call the agent requested on this step.",
+      "properties": {
+        "tool_call_id": {
+          "title": "Tool Call Id",
+          "type": "string"
+        },
+        "tool_name": {
+          "title": "Tool Name",
+          "type": "string"
+        },
+        "arguments": {
+          "additionalProperties": true,
+          "title": "Arguments",
+          "type": "object"
+        }
+      },
+      "required": [
+        "tool_call_id",
+        "tool_name"
+      ],
+      "title": "ToolCallRecord",
+      "type": "object"
+    },
+    "ToolResultRecord": {
+      "additionalProperties": false,
+      "description": "The environment's reply to one tool call.\n\n``result_class`` is what the trajectory hash keeps. ``content`` is kept for\nreplay and debugging; a later cassette normalizer may redact it first.",
+      "properties": {
+        "tool_call_id": {
+          "title": "Tool Call Id",
+          "type": "string"
+        },
+        "tool_name": {
+          "title": "Tool Name",
+          "type": "string"
+        },
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "result_class": {
+          "enum": [
+            "ok",
+            "error",
+            "empty",
+            "env_miss"
+          ],
+          "title": "Result Class",
+          "type": "string"
+        },
+        "error_class": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Class"
+        }
+      },
+      "required": [
+        "tool_call_id",
+        "tool_name",
+        "content",
+        "result_class"
+      ],
+      "title": "ToolResultRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One recorded operation. Suitable for JSONL capture, replay, and hashing.",
   "properties": {
-    "thinking_tokens": {
-      "description": "Optional count of thinking tokens on this step. Omit it when the provider does not report them.",
-      "type": "integer",
-      "minimum": 0
+    "schema_version": {
+      "const": "1.0.0",
+      "default": "1.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "step_id": {
+      "title": "Step Id",
+      "type": "string"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "scenario_id": {
+      "title": "Scenario Id",
+      "type": "string"
+    },
+    "family_id": {
+      "title": "Family Id",
+      "type": "string"
+    },
+    "version_id": {
+      "title": "Version Id",
+      "type": "string"
+    },
+    "rollout": {
+      "minimum": 0,
+      "title": "Rollout",
+      "type": "integer"
+    },
+    "parent_step_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Parent Step Id"
+    },
+    "sequence_index": {
+      "minimum": 0,
+      "title": "Sequence Index",
+      "type": "integer"
+    },
+    "operation_type": {
+      "enum": [
+        "model_call",
+        "tool_call",
+        "retrieval",
+        "handoff",
+        "user_message",
+        "state_snapshot"
+      ],
+      "title": "Operation Type",
+      "type": "string"
+    },
+    "messages": {
+      "items": {
+        "$ref": "#/$defs/Message"
+      },
+      "title": "Messages",
+      "type": "array"
+    },
+    "tool_calls": {
+      "items": {
+        "$ref": "#/$defs/ToolCallRecord"
+      },
+      "title": "Tool Calls",
+      "type": "array"
+    },
+    "tool_results": {
+      "items": {
+        "$ref": "#/$defs/ToolResultRecord"
+      },
+      "title": "Tool Results",
+      "type": "array"
+    },
+    "tool_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tool Name"
+    },
+    "tool_schema_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tool Schema Hash"
+    },
+    "arguments_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Arguments Hash"
+    },
+    "result_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Result Hash"
+    },
+    "result_class": {
+      "anyOf": [
+        {
+          "enum": [
+            "ok",
+            "error",
+            "empty",
+            "env_miss"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Result Class"
+    },
+    "model_provider": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model Provider"
+    },
+    "model_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model Name"
+    },
+    "model_snapshot_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model Snapshot Id"
+    },
+    "prompt_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Prompt Hash"
+    },
+    "state_diff": {
+      "items": {
+        "$ref": "#/$defs/StateDiffEntry"
+      },
+      "title": "State Diff",
+      "type": "array"
+    },
+    "state_hash_before": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "State Hash Before"
+    },
+    "state_hash_after": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "State Hash After"
+    },
+    "status": {
+      "enum": [
+        "ok",
+        "error",
+        "env_miss",
+        "redacted"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "error_class": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error Class"
+    },
+    "tokens_in": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tokens In"
+    },
+    "tokens_out": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Tokens Out"
     },
     "cached_tokens": {
-      "description": "Optional count of cached tokens on this step. Omit it when the provider does not report them.",
-      "type": "integer",
-      "minimum": 0
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Cached input tokens included in tokens_in. Summed across retries.",
+      "title": "Cached Tokens"
+    },
+    "thinking_tokens": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Thoughts billed at the output rate. Not included in tokens_out on a live response. An older recording that folded thoughts into the output count is priced from that stored count.",
+      "title": "Thinking Tokens"
+    },
+    "cost_usd": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Cost Usd"
+    },
+    "latency_ms": {
+      "anyOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Latency Ms"
+    },
+    "retries": {
+      "default": 0,
+      "minimum": 0,
+      "title": "Retries",
+      "type": "integer"
+    },
+    "started_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Started At"
+    },
+    "ended_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ended At"
+    },
+    "raw_span_ref": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Raw Span Ref"
+    },
+    "redacted": {
+      "default": false,
+      "title": "Redacted",
+      "type": "boolean"
     }
-  }
+  },
+  "required": [
+    "step_id",
+    "run_id",
+    "scenario_id",
+    "family_id",
+    "version_id",
+    "rollout",
+    "sequence_index",
+    "operation_type",
+    "status"
+  ],
+  "title": "Step",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ci-agent-regression-harness.local/schema/step/1.0.0.json"
 }

@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "run_summary.schema.json",
+  "title": "Run summary",
+  "description": "Separate file written by harness run. Not a field of results.json. schema_version is 1.0.0.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version"],
+  "properties": {
+    "schema_version": { "const": "1.0.0" },
+    "planned_rollouts": { "type": "integer", "minimum": 0 },
+    "completed_rollouts": { "type": "integer", "minimum": 0 },
+    "infra_misses": { "type": "integer", "minimum": 0 },
+    "stopped": {
+      "oneOf": [{ "type": "null" }, { "const": "monthly_cap" }]
+    },
+    "total_cost_usd": { "type": "number", "minimum": 0 },
+    "total_cached_input_tokens": { "type": "integer", "minimum": 0 },
+    "rollout_duration_p50_s": { "type": "number", "minimum": 0 },
+    "rollout_duration_max_s": { "type": "number", "minimum": 0 }
+  }
+}

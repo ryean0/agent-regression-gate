@@ -4,7 +4,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { TAGLINE } from "../agent-regression-gate/js/brand.js";
-import { RESULTS_PATH, parseResultsV2 } from "../agent-regression-gate/js/results.js";
+import { RESULTS_PATH, RUN_SUMMARY_PATH, parseResultsV2, parseRunSummary } from "../agent-regression-gate/js/results.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const site = path.join(root, "agent-regression-gate");
@@ -220,23 +220,25 @@ resolveRef(path.join(site, "index.html"), attr(home, /<link rel="stylesheet" hre
 
 assert.equal(RESULTS_PATH, "data/results.preliminary.json");
 const shipped = JSON.parse(fs.readFileSync(path.join(site, RESULTS_PATH), "utf8"));
-assert.equal(shipped.version, "2.1.0");
 assert.equal(shipped.schema_version, "2.1.0");
+assert.equal(shipped.version, undefined);
 assert.ok(shipped.status === "preliminary" || shipped.status === "final");
 const shippedView = parseResultsV2(shipped);
 assert.equal(shippedView.version, "2.1.0");
 assert.equal(shippedView.schemaVersion, "2.1.0");
-assert.equal(shippedView.headline, "Pass");
+assert.equal(shippedView.headline, "Insufficient evidence");
 assert.equal(shippedView.runKind, "screening");
 assert.equal(shippedView.interval.fromFile, true);
-assert.equal(shippedView.interval.delta, "0.05");
-assert.equal(shippedView.interval.ciLevel, "0.9");
+assert.equal(shippedView.interval.delta, 0.05);
+assert.equal(shippedView.interval.ciLevel, 0.9);
 assert.equal(shippedView.modelIdSources.baseline, "overall");
 assert.equal(shippedView.modelIdSources.candidate, "overall");
-assert.equal(typeof shippedView.arms.baseline.modelId, "string");
-assert.equal(shippedView.arms.baseline.modelId.length > 0, true);
-assert.equal(typeof shippedView.arms.candidate.modelId, "string");
-assert.equal(shippedView.arms.candidate.modelId.length > 0, true);
+assert.equal(shippedView.modelIds.baseline, shipped.baseline_pool_model_id);
+assert.equal(shippedView.modelIds.candidate, shipped.verdicts.overall.model_ids.candidate);
+assert.equal(shipped.arms, undefined);
+const summary = JSON.parse(fs.readFileSync(path.join(site, RUN_SUMMARY_PATH), "utf8"));
+assert.equal(summary.schema_version, "1.0.0");
+assert.equal(parseRunSummary(summary).stopped, null);
 
 const mainSource = fs.readFileSync(path.join(site, "js/main.js"), "utf8");
 assert.match(mainSource, /parseResultsV2/);

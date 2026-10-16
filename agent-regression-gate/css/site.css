@@ -231,6 +231,7 @@ h1 .line { display: block; }
 .statline dd, .sheet strong { margin: 0; font-family: var(--mono); font-weight: 500; font-size: 0.84rem; letter-spacing: 0; }
 .statline dd { text-align: right; }
 .sheet strong, .sheet span { min-width: 0; overflow-wrap: anywhere; }
+.sheet strong, .diag td { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem; }
 .sheet-head { color: var(--faint); font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
 .why { max-width: 46rem; color: var(--muted); }
 .diag { width: 100%; border-collapse: collapse; margin-top: 0.7rem; }

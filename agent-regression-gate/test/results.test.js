@@ -2,13 +2,96 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { INTERVAL_FALLBACK, parseResults, parseResultsV2, summaryRows } from "../js/results.js";
+import { INTERVAL_FALLBACK, RUN_SUMMARY_PATH, parseResults, parseResultsV2, parseRunSummary, summaryRows } from "../js/results.js";
 
-const bundled = JSON.parse(
+const shipped = JSON.parse(
   readFileSync(new URL("../data/results.preliminary.json", import.meta.url), "utf8"),
 );
+const bundled = JSON.parse(
+  readFileSync(new URL("./fixtures/results.legacy-2.1.0.json", import.meta.url), "utf8"),
+);
+const runSummary = JSON.parse(
+  readFileSync(new URL(`../${RUN_SUMMARY_PATH}`, import.meta.url), "utf8"),
+);
 
-test("the bundled preliminary file parses and banners", () => {
+test("the shipped harness preliminary file parses as insufficient evidence", () => {
+  const view = parseResults(shipped);
+  assert.equal(parseResultsV2(shipped).headline, view.headline);
+  assert.equal(view.version, "2.1.0");
+  assert.equal(view.schemaVersion, "2.1.0");
+  assert.equal(view.shape, "harness");
+  assert.equal(view.headline, "Insufficient evidence");
+  assert.equal(view.verdict, "insufficient_evidence");
+  assert.equal(view.likelyRegression, false);
+  assert.equal(view.status, "preliminary");
+  assert.equal(view.runKind, "screening");
+  assert.equal(view.baselinePoolModelId, "tau-retail-baseline-pool");
+  assert.equal(view.modelIds.baseline, "tau-retail-baseline-pool");
+  assert.equal(view.modelIds.candidate, "tau-retail-baseline-pool");
+  assert.equal(view.modelIdSources.baseline, "overall");
+  assert.equal(view.modelIdSources.candidate, "overall");
+  assert.equal(view.arms.baseline.modelId, view.modelIds.baseline);
+  assert.equal(view.interval.fromFile, true);
+  assert.equal(view.interval.delta, 0.05);
+  assert.equal(view.interval.ciLevel, 0.9);
+  assert.equal(view.interval.text, "δ = 5 pp · 90% CI");
+  assert.doesNotMatch(view.interval.text, /\d+\/20\b/);
+  assert.equal(view.runSummary, null);
+  assert.equal(view.costUsd, 1.25);
+  assert.equal(view.arms.baseline.rateText, "0 of 20");
+  assert.equal(view.arms.candidate.rateText, "1 of 20");
+  assert.equal(view.arms.candidate.overMissLimit, false);
+  assert.equal(view.arms.candidate.environmentMisses, 1);
+  const broken = view.diagnostics.find((row) => row.scenarioId === "example.broken.v1");
+  const clean = view.diagnostics.find((row) => row.scenarioId === "example.clean.v1");
+  assert.equal(broken.familyId, "example.broken");
+  assert.equal(broken.baselineText, "Not in this file");
+  assert.equal(broken.candidateText, "Not in this file");
+  assert.equal(broken.missCounts.candidate, 1);
+  assert.deepEqual(broken.missingCassetteKeys.candidate, ["example.broken.v1/get_order_details"]);
+  assert.doesNotMatch(broken.note, /\d+\/20\b/);
+  assert.match(broken.note, /1 of 20/);
+  assert.equal(clean.familyId, "example.clean");
+  assert.equal(clean.baselineText, "90%");
+  assert.equal(clean.candidateText, "90%");
+  assert.equal(clean.differenceText, "0 pp");
+  assert.equal(view.charts.mde.status, "preliminary");
+  assert.equal(view.charts.mde.points.length, 3);
+  assert.equal(view.charts.mde.points[0].dropText, "25%");
+  assert.equal(view.charts.aa.status, "coming_soon");
+  assert.equal(view.charts.aa.points.length, 0);
+  const summary = parseRunSummary(runSummary);
+  assert.equal(summary.plannedRollouts, 40);
+  assert.equal(summary.stopped, null);
+  assert.equal(summary.totalCostUsd, 1.25);
+  assert.equal(summary.rolloutDurationP50S, 12);
+  assert.equal(summary.rolloutDurationMaxS, 40);
+  const rows = summaryRows(summary);
+  assert.equal(rows.filter((row) => row.example).length, 7);
+  assert.equal(rows.find((row) => row.label === "Stopped").text, "None");
+  assert.equal(rows.find((row) => row.label === "Stopped").example, false);
+  assert.equal(rows.some((row) => /p95/i.test(row.label)), false);
+});
+
+test("harness run_kind rules refuse a model id mismatch", () => {
+  const shared = structuredClone(shipped);
+  shared.verdicts.overall.model_ids.baseline = "other-pool";
+  shared.verdicts.overall.model_ids.candidate = "other-pool";
+  assert.equal(parseResults(shared).modelIds.baseline, "other-pool");
+
+  const split = structuredClone(shipped);
+  split.verdicts.overall.model_ids.candidate = "other-candidate";
+  assert.throws(() => parseResults(split), /shared model id/);
+
+  const gate = structuredClone(shipped);
+  gate.run_kind = "gate";
+  gate.verdicts.overall.model_ids.candidate = "other-candidate";
+  assert.equal(parseResults(gate).runKind, "gate");
+  gate.verdicts.overall.model_ids.baseline = "not-the-pool";
+  assert.throws(() => parseResults(gate), /baseline_pool_model_id/);
+});
+
+test("a legacy 2.1.0 arms file parses and banners", () => {
   const view = parseResults(bundled);
   assert.equal(view.version, "2.1.0");
   assert.equal(view.schemaVersion, "2.1.0");
@@ -186,7 +269,7 @@ test("a version 1 file still shows a model id when one is recorded", () => {
   assert.equal(view.headline, "Pass");
 });
 
-test("the page's shipped data file parses via the 2.1.0 path", () => {
+test("a legacy arms file still parses via the 2.1.0 path", () => {
   assert.equal(bundled.version, "2.1.0");
   assert.equal(bundled.schema_version, "2.1.0");
   const viaV2 = parseResultsV2(bundled);

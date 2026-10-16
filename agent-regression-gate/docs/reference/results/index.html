@@ -96,19 +96,21 @@
     }
   }
 }</code></pre></div></section>
-<section class="docs-sec" id="v21" aria-labelledby="v21-title"><h2 id="v21-title">Schema 2.1.0</h2><p>Schema 2.1.0 is the file this page reads, along with schema 1 and 2.0.0. It adds <code>schema_version</code>, <code>verdicts.overall.model_ids</code> for the baseline and the candidate, and optional gate settings: <code>delta</code>, <code>alpha</code>, <code>min_valid</code>, <code>ci_level</code>, and <code>miss_cap</code>. Overall model ids are preferred over the per-arm <code>model_id</code> when they are present. Gate settings are display-only. When they are missing the page shows δ = 5 pp / 90%. They do not change the suite status.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">results.json · 2.1.0</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
-  &quot;version&quot;: &quot;2.1.0&quot;,
+<section class="docs-sec" id="v21" aria-labelledby="v21-title"><h2 id="v21-title">Schema 2.1.0</h2><p>Schema 2.1.0 is the file this page reads, along with schema 1 and 2.0.0. It sets <code>schema_version</code> to <code>2.1.0</code>. Model ids are recorded at <code>verdicts.overall.model_ids</code> for the baseline and the candidate, and at <code>baseline_pool_model_id</code>. <code>run_kind</code> selects the model-id rule. Screening, baseline, and aa share one model id across both arms. A gate run may use a different candidate id, and its baseline id must equal <code>baseline_pool_model_id</code>. There is no per-arm <code>model_id</code> on 2.1.0. <code>delta</code> and the confidence level are numbers on <code>verdicts.overall</code>. When they are missing the page shows δ = 5 pp / 90%. They do not change the suite status.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">results.json · 2.1.0</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
   &quot;schema_version&quot;: &quot;2.1.0&quot;,
+  &quot;run_kind&quot;: &quot;screening&quot;,
+  &quot;baseline_pool_model_id&quot;: &quot;tau-retail-baseline-pool&quot;,
   &quot;verdicts&quot;: {
     &quot;overall&quot;: {
+      &quot;verdict&quot;: &quot;insufficient_evidence&quot;,
+      &quot;likely_regression&quot;: false,
       &quot;model_ids&quot;: {
-        &quot;baseline&quot;: &quot;baseline model id (exact version set in suite config)&quot;,
-        &quot;candidate&quot;: &quot;a pinned Gemini Flash-Lite model id (exact version set in suite config)&quot;
+        &quot;baseline&quot;: &quot;tau-retail-baseline-pool&quot;,
+        &quot;candidate&quot;: &quot;tau-retail-baseline-pool&quot;
       }
     }
-  },
-  &quot;gate&quot;: { &quot;delta&quot;: &quot;0.05&quot;, &quot;ci_level&quot;: &quot;0.9&quot;, &quot;miss_cap&quot;: &quot;0.05&quot; }
-}</code></pre></div><p>Each arm may record <code>model_id</code>. <code>suite_id</code> is optional and is not required on 2.1.0. An optional <code>run_summary</code> may include <code>planned_rollouts</code>, <code>completed_rollouts</code>, <code>infra_misses</code>, <code>stopped</code> (null or <code>monthly_cap</code>), <code>total_cost_usd</code>, <code>total_cached_input_tokens</code>, <code>rollout_duration_p50_s</code>, and <code>rollout_duration_max_s</code>. The bundled diagnostics are <code>example.clean.v1</code> and <code>example.broken.v1</code>. This is still schema 2.1.0.</p><p>Still in progress, and not part of this 2.1.0 reader: a per-family estimate and interval, cost per verdict, and the MDE on the check. A family row has no verdict. The gate stays on the pooled result. Those fields are Next, in Wk4.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">Wk4 fields · in progress</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
+  }
+}</code></pre></div><p>The suite verdict is <code>verdicts.overall.verdict</code>: pass, block, insufficient_evidence, or invalid_run. <code>likely_regression</code> is a boolean on that verdict, not a fifth status. Diagnostics live on <code>verdicts.diagnostics</code>. The bundled rows include <code>example.clean.v1</code> (family <code>example.clean</code>) and <code>example.broken.v1</code> (family <code>example.broken</code>). A run summary is a separate file, <code>run_summary.json</code>, with <code>schema_version</code> <code>1.0.0</code>. It is not a field of results.json. The results panel reads example summary data from <code>data/run_summary.example.json</code>. This is still schema 2.1.0.</p><p>Still in progress, and not part of this 2.1.0 reader: a per-family estimate and interval, cost per verdict, and the MDE on the check. A family row has no verdict. The gate stays on the pooled result. Those fields are Next, in Wk4.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">Wk4 fields · in progress</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
   &quot;families&quot;: [
     { &quot;id&quot;: &quot;refund&quot;, &quot;estimate_pp&quot;: -1.5, &quot;interval_pp&quot;: [-4.0, 1.0] }
   ],

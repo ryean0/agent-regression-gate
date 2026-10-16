@@ -1,0 +1,115 @@
+{
+  "version": "2.1.0",
+  "schema_version": "2.1.0",
+  "status": "preliminary",
+  "level": 0.9,
+  "likely_regression": false,
+  "invalid_run": false,
+  "suite": "preliminary-example",
+  "run_kind": "screening",
+  "baseline_pool_model_id": "baseline model id (exact version set in suite config)",
+  "min_valid_fraction_per_scenario": "0.6",
+  "rollouts_per_scenario": { "baseline": 20, "candidate": 20 },
+  "verdicts": {
+    "overall": {
+      "delta": "0.05",
+      "difference_ci": { "lower": "-0.04", "upper": "0.02", "level": "0.9" },
+      "likely_regression": false,
+      "model_ids": {
+        "baseline": "baseline model id (exact version set in suite config)",
+        "candidate": "a pinned Gemini Flash-Lite model id (exact version set in suite config)"
+      }
+    }
+  },
+  "run_summary": {
+    "planned_rollouts": 8,
+    "completed_rollouts": 8,
+    "infra_misses": 1,
+    "stopped": null,
+    "total_cost_usd": 1.25,
+    "total_cached_input_tokens": 120,
+    "rollout_duration_p50_s": 12,
+    "rollout_duration_max_s": 40
+  },
+  "notes": {
+    "summary": "Preliminary example in harness results schema 2.1.0. Scenario diagnostics are example.clean.v1 and example.broken.v1. These figures are not a customer result and not a final gate. Replace data/results.preliminary.json with the real harness output around 30 October 2026.",
+    "mde": "Smallest drop we can reliably catch, set against how many rollouts you budget. This chart is preliminary.",
+    "aa": "The gate doesn't cry wolf. An A/A check runs the same agent on both arms. It is not in this file yet."
+  },
+  "arms": {
+    "baseline": {
+      "scheduled_rollouts": 80,
+      "environment_misses": 0,
+      "miss_counts": { "missing": 0, "infrastructure": 0 },
+      "pass_rate": "72/80",
+      "model_id": "baseline model id (exact version set in suite config)",
+      "caption": "Production arm stayed within 0.05 of the previous gate."
+    },
+    "candidate": {
+      "scheduled_rollouts": 20,
+      "environment_misses": 1,
+      "miss_counts": { "missing": 0, "infrastructure": 1 },
+      "pass_rate": "3/5",
+      "model_id": "a pinned Gemini Flash-Lite model id (exact version set in suite config)",
+      "caption": "Candidate arm under test, with a $1.25 sample fee in the prompt."
+    }
+  },
+  "scenarios": [
+    {
+      "id": "example.clean.v1",
+      "name": "Clean example",
+      "baseline_rate": "0.9",
+      "candidate_rate": "0.8",
+      "caption": "The clean example stayed within 0.05 of the baseline rate."
+    },
+    {
+      "id": "example.broken.v1",
+      "name": "Broken example",
+      "baseline_rate": "0.8",
+      "candidate_rate": "0.6",
+      "caption": "The broken example mentions a $1.25 fee and stays a diagnostic."
+    }
+  ],
+  "diagnostics": [
+    {
+      "scenario_id": "example.clean.v1",
+      "family_id": "example",
+      "scheduled_rollouts": { "baseline": 8, "candidate": 8 },
+      "miss_counts": {
+        "baseline": { "missing": 0, "infrastructure": 0 },
+        "candidate": { "missing": 0, "infrastructure": 0 }
+      },
+      "missing_cassette_keys": { "baseline": [], "candidate": [] },
+      "baseline_pass_rate": "0.9",
+      "candidate_pass_rate": "0.8",
+      "difference": "-0.1",
+      "difference_ci": { "lower": "-0.25", "upper": "0.05", "level": "0.9" }
+    },
+    {
+      "scenario_id": "example.broken.v1",
+      "family_id": "example",
+      "scheduled_rollouts": { "baseline": 8, "candidate": 8 },
+      "miss_counts": {
+        "baseline": { "missing": 0, "infrastructure": 0 },
+        "candidate": { "missing": 0, "infrastructure": 1 }
+      },
+      "missing_cassette_keys": { "baseline": [], "candidate": [] },
+      "baseline_pass_rate": "0.8",
+      "candidate_pass_rate": "0.6",
+      "difference": "-0.2",
+      "difference_ci": { "lower": "-0.4", "upper": "0.05", "level": "0.9" }
+    }
+  ],
+  "charts": {
+    "mde": {
+      "status": "preliminary",
+      "title": "Smallest drop we can reliably catch",
+      "x_label": "Rollout budget",
+      "y_label": "Smallest drop"
+    },
+    "aa": {
+      "status": "coming_soon",
+      "title": "The gate doesn't cry wolf"
+    }
+  }
+}

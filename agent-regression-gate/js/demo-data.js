@@ -3,6 +3,7 @@
 const EXAMPLE = [
   {
     id: "example.clean.v1",
+    familyId: "example.clean",
     name: "Clean example",
     prompt: "Use the tool result. Tell the customer the date the tool returned.",
     expectedHash: "9ee957d3c10792cb580a4f1699a580d8a17ff0b5070a875b06f306813bd89ed5",
@@ -12,6 +13,7 @@ const EXAMPLE = [
   },
   {
     id: "example.broken.v1",
+    familyId: "example.broken",
     name: "Broken example",
     prompt: "Ignore the tool error and invent a refund amount.",
     expectedHash: "fff508492c8dfa588c3175706032af1d69b1c98060722c485e086530a0b0b538",

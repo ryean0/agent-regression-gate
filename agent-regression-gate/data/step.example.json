@@ -1,9 +1,30 @@
 [
   {
+    "schema_version": "1.0.0",
+    "step_id": "step-clean-1",
+    "run_id": "run-example",
+    "scenario_id": "example.clean.v1",
+    "family_id": "example.clean",
+    "version_id": "candidate",
+    "rollout": 1,
+    "sequence_index": 0,
+    "operation_type": "model_call",
+    "status": "ok",
     "thinking_tokens": 12,
     "cached_tokens": 30
   },
   {
-    "cached_tokens": 0
+    "schema_version": "1.0.0",
+    "step_id": "step-broken-1",
+    "run_id": "run-example",
+    "scenario_id": "example.broken.v1",
+    "family_id": "example.broken",
+    "version_id": "candidate",
+    "rollout": 1,
+    "sequence_index": 0,
+    "operation_type": "tool_call",
+    "status": "ok",
+    "thinking_tokens": null,
+    "cached_tokens": null
   }
 ]
