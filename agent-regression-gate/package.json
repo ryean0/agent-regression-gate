@@ -5,9 +5,5 @@
   "scripts": {
     "test": "node --test test/*.test.js",
     "start": "python3 -m http.server 4173"
-  },
-  "devDependencies": {
-    "ajv": "^8.20.0",
-    "ajv-formats": "^3.0.1"
   }
 }

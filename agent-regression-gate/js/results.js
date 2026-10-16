@@ -187,8 +187,9 @@ function schemaVersionOf(doc) {
 }
 
 function readSuiteId(doc) {
-  if (doc.suite_id == null || doc.suite_id === "") return "";
+  if (doc.suite_id == null) return "";
   if (typeof doc.suite_id !== "string") throw new Error("suite_id must be a string");
+  if (doc.suite_id.length < 1) throw new Error("suite_id must not be empty");
   return doc.suite_id.trim();
 }
 

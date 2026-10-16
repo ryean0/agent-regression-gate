@@ -92,7 +92,7 @@ test("harness run_kind rules refuse a model id mismatch", () => {
   assert.throws(() => parseResults(gate), /baseline_pool_model_id/);
 });
 
-test("a legacy 2.1.0 arms file parses and banners", () => {
+test("an invalid legacy file parses and banners", () => {
   const view = parseResults(bundled);
   assert.equal(view.version, "2.1.0");
   assert.equal(view.schemaVersion, "2.1.0");
@@ -270,7 +270,7 @@ test("a version 1 file still shows a model id when one is recorded", () => {
   assert.equal(view.headline, "Pass");
 });
 
-test("a legacy arms file still parses via the 2.1.0 path", () => {
+test("an invalid legacy file still parses", () => {
   assert.equal(bundled.version, "2.1.0");
   assert.equal(bundled.schema_version, "2.1.0");
   const viaV2 = parseResultsV2(bundled);
@@ -529,6 +529,8 @@ test("suite_id is optional on schema 2.1.0 and a non-string is rejected", () => 
   doc.suite_id = "example";
   assert.equal(parseResults(doc).suiteId, "example");
   assert.equal(parseResults(doc).version, "2.1.0");
+  doc.suite_id = "";
+  assert.throws(() => parseResults(doc), /suite_id must not be empty/);
   doc.suite_id = 3;
   assert.throws(() => parseResults(doc), /suite_id must be a string/);
 });

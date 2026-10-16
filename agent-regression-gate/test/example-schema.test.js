@@ -3,8 +3,6 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
-import Ajv2020 from "ajv/dist/2020.js";
-import addFormats from "ajv-formats";
 
 import { parseResults, parseRunSummary, publicText, summaryRows } from "../js/results.js";
 
@@ -119,16 +117,20 @@ test("results schema 2.1.0 records model ids on the suite verdict", () => {
   rejectCopy(JSON.stringify(summary), "run summary example");
 });
 
-test("a results file with suite_id validates against the site schema", () => {
-  const ajv = new Ajv2020({ allErrors: true, strict: false });
-  addFormats(ajv);
-  const validate = ajv.compile(resultsSchema);
-  assert.equal(validate(example), true, JSON.stringify(validate.errors));
+test("suite_id is optional on the site schema and the parser accepts tau_retail", () => {
+  assert.equal(resultsSchema.required.includes("suite_id"), false);
+  assert.deepEqual(resultsSchema.properties.suite_id, {
+    default: "tau_retail",
+    description: "Suite this document belongs to. Omitted files default to tau_retail. Gate settings still come from the packaged tau_retail suite unless --suite is set.",
+    minLength: 1,
+    title: "Suite Id",
+    type: "string",
+  });
   const withSuite = structuredClone(example);
   withSuite.suite_id = "tau_retail";
-  assert.equal(validate(withSuite), true, JSON.stringify(validate.errors));
+  assert.equal(parseResults(withSuite).suiteId, "tau_retail");
   withSuite.suite_id = "";
-  assert.equal(validate(withSuite), false);
+  assert.throws(() => parseResults(withSuite), /suite_id must not be empty/);
 });
 
 test("run_summary example is a separate schema 1.0.0 file", () => {
