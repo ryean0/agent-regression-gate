@@ -21,8 +21,18 @@
       }
     }
   },
+  "run_summary": {
+    "planned_rollouts": 8,
+    "completed_rollouts": 8,
+    "infra_misses": 1,
+    "stopped": null,
+    "total_cost_usd": 1.25,
+    "total_cached_input_tokens": 120,
+    "rollout_duration_p50_s": 12,
+    "rollout_duration_max_s": 40
+  },
   "notes": {
-    "summary": "Preliminary example in harness results schema 2.1.0, bundled so the results panel has a file to read. These figures are not a customer result and not a final gate. Replace data/results.preliminary.json with the real harness output around 30 October 2026.",
+    "summary": "Preliminary example in harness results schema 2.1.0. Scenario diagnostics are example.clean.v1 and example.broken.v1. These figures are not a customer result and not a final gate. Replace data/results.preliminary.json with the real harness output around 30 October 2026.",
     "mde": "Smallest drop we can reliably catch, set against how many rollouts you budget. This chart is preliminary.",
     "aa": "The gate doesn't cry wolf. An A/A check runs the same agent on both arms. It is not in this file yet."
   },
@@ -46,88 +56,46 @@
   },
   "scenarios": [
     {
-      "id": "reset-locked-account",
-      "name": "Reset a locked account",
-      "baseline_rate": "18/20",
-      "candidate_rate": "0.6",
-      "caption": "Locked-account resets stayed within 0.05 of the baseline rate."
-    },
-    {
-      "id": "refund-duplicate-charge",
-      "name": "Refund a duplicate charge",
-      "baseline_rate": "17/20",
-      "candidate_rate": "4/5",
-      "caption": "Duplicate-charge refunds mention a $1.25 fee and stay a diagnostic."
-    },
-    {
-      "id": "explain-shipping-delay",
-      "name": "Explain a shipping delay",
-      "baseline_rate": "19/20",
+      "id": "example.clean.v1",
+      "name": "Clean example",
+      "baseline_rate": "0.9",
       "candidate_rate": "0.8",
-      "caption": "Shipping-delay explanations are a diagnostic, not a separate gate."
+      "caption": "The clean example stayed within 0.05 of the baseline rate."
     },
     {
-      "id": "escalate-safety-complaint",
-      "name": "Escalate a safety complaint",
-      "baseline_rate": "16/20",
-      "candidate_rate": "3/5",
-      "caption": "Safety escalations stay a diagnostic row beside the suite label."
+      "id": "example.broken.v1",
+      "name": "Broken example",
+      "baseline_rate": "0.8",
+      "candidate_rate": "0.6",
+      "caption": "The broken example mentions a $1.25 fee and stays a diagnostic."
     }
   ],
   "diagnostics": [
     {
-      "scenario_id": "reset-locked-account",
-      "family_id": "support",
-      "scheduled_rollouts": { "baseline": 20, "candidate": 20 },
+      "scenario_id": "example.clean.v1",
+      "family_id": "example",
+      "scheduled_rollouts": { "baseline": 8, "candidate": 8 },
       "miss_counts": {
         "baseline": { "missing": 0, "infrastructure": 0 },
         "candidate": { "missing": 0, "infrastructure": 0 }
       },
       "missing_cassette_keys": { "baseline": [], "candidate": [] },
-      "baseline_pass_rate": "18/20",
-      "candidate_pass_rate": "0.6",
-      "difference": "-0.3",
-      "difference_ci": { "lower": "-0.5", "upper": "0.1", "level": "0.9" }
-    },
-    {
-      "scenario_id": "refund-duplicate-charge",
-      "family_id": "support",
-      "scheduled_rollouts": { "baseline": 20, "candidate": 20 },
-      "miss_counts": {
-        "baseline": { "missing": 0, "infrastructure": 0 },
-        "candidate": { "missing": 0, "infrastructure": 0 }
-      },
-      "missing_cassette_keys": { "baseline": [], "candidate": [] },
-      "baseline_pass_rate": "17/20",
-      "candidate_pass_rate": "4/5",
-      "difference": "-0.05",
-      "difference_ci": { "lower": "-0.2", "upper": "0.1", "level": "0.9" }
-    },
-    {
-      "scenario_id": "explain-shipping-delay",
-      "family_id": "support",
-      "scheduled_rollouts": { "baseline": 20, "candidate": 20 },
-      "miss_counts": {
-        "baseline": { "missing": 0, "infrastructure": 0 },
-        "candidate": { "missing": 0, "infrastructure": 0 }
-      },
-      "missing_cassette_keys": { "baseline": [], "candidate": [] },
-      "baseline_pass_rate": "19/20",
+      "baseline_pass_rate": "0.9",
       "candidate_pass_rate": "0.8",
-      "difference": "-0.15",
-      "difference_ci": { "lower": "-0.3", "upper": "0.05", "level": "0.9" }
+      "difference": "-0.1",
+      "difference_ci": { "lower": "-0.25", "upper": "0.05", "level": "0.9" }
     },
     {
-      "scenario_id": "escalate-safety-complaint",
-      "family_id": "support",
-      "scheduled_rollouts": { "baseline": 20, "candidate": 20 },
+      "scenario_id": "example.broken.v1",
+      "family_id": "example",
+      "scheduled_rollouts": { "baseline": 8, "candidate": 8 },
       "miss_counts": {
         "baseline": { "missing": 0, "infrastructure": 0 },
         "candidate": { "missing": 0, "infrastructure": 1 }
       },
       "missing_cassette_keys": { "baseline": [], "candidate": [] },
-      "baseline_pass_rate": "16/20",
-      "candidate_pass_rate": "3/5",
+      "baseline_pass_rate": "0.8",
+      "candidate_pass_rate": "0.6",
       "difference": "-0.2",
       "difference_ci": { "lower": "-0.4", "upper": "0.05", "level": "0.9" }
     }

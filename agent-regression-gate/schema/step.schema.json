@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "step.schema.json",
+  "title": "Step",
+  "description": "One agent step from the harness. thinking_tokens and cached_tokens are optional and are not required. Other Step properties are allowed so a real step record can be dropped in. This copy sits beside results schema 2.1.0. It is not schema 3.0.0.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "thinking_tokens": {
+      "description": "Optional count of thinking tokens on this step. Omit it when the provider does not report them.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "cached_tokens": {
+      "description": "Optional count of cached tokens on this step. Omit it when the provider does not report them.",
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

@@ -10,7 +10,7 @@ import {
   presentationForMotion,
   reduceFlow,
 } from "./method.js";
-import { RESULTS_PATH, parseResults, parseResultsV2 } from "./results.js";
+import { RESULTS_PATH, parseResults, parseResultsV2, summaryRows } from "./results.js";
 import { TIMING_SAMPLE_PATH, readTiming, renderTimingHtml } from "./timing.js";
 import { bindFilm, bindStory, renderFilmHtml, renderStoryHtml } from "./story.js";
 import { METHOD_NOTES, armMissExceeds, formatPercent, formatPoints, formatSignedNumber, scoreRun } from "./verdict.js";
@@ -455,7 +455,8 @@ function renderResults(view) {
     el("p", {
       class: "fine",
       "data-interval": view.interval.fromFile ? "file" : "fallback",
-    }, [view.runKind, view.interval.text].filter(Boolean).join(" · ")),
+    }, [view.runKind, view.suiteId, view.interval.text].filter(Boolean).join(" · ")),
+    renderRunSummary(view.runSummary),
     el("div", { class: "sheet sheet-head" }, [
       el("span", {}, "Recorded"),
       armHead("Baseline", view.arms.baseline.caption),
@@ -486,6 +487,19 @@ function renderResults(view) {
       ". level 0.9.",
     ]),
   ]));
+}
+
+function renderRunSummary(summary) {
+  const rows = summaryRows(summary);
+  if (rows.length === 0) return null;
+  return el("section", { class: "run-summary", "aria-label": "Run summary" }, [
+    el("h3", { class: "block-title" }, "Run summary"),
+    ...rows.map((row) => el("p", {}, [
+      el("span", {}, row.label),
+      el("strong", {}, row.text),
+      row.example ? el("span", { class: "example-tag" }, "Example") : null,
+    ])),
+  ]);
 }
 
 function armHead(label, caption) {

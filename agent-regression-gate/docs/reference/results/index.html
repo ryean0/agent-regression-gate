@@ -108,7 +108,7 @@
     }
   },
   &quot;gate&quot;: { &quot;delta&quot;: &quot;0.05&quot;, &quot;ci_level&quot;: &quot;0.9&quot;, &quot;miss_cap&quot;: &quot;0.05&quot; }
-}</code></pre></div><p>Still in progress, and not part of this 2.1.0 reader: a per-family estimate and interval, cost per verdict, and the MDE on the check. A family row has no verdict. The gate stays on the pooled result. Those fields are Next, in Wk4.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">Wk4 fields · in progress</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
+}</code></pre></div><p>Each arm may record <code>model_id</code>. <code>suite_id</code> is optional and is not required on 2.1.0. An optional <code>run_summary</code> may include <code>planned_rollouts</code>, <code>completed_rollouts</code>, <code>infra_misses</code>, <code>stopped</code> (null or <code>monthly_cap</code>), <code>total_cost_usd</code>, <code>total_cached_input_tokens</code>, <code>rollout_duration_p50_s</code>, and <code>rollout_duration_max_s</code>. The bundled diagnostics are <code>example.clean.v1</code> and <code>example.broken.v1</code>. This is still schema 2.1.0.</p><p>Still in progress, and not part of this 2.1.0 reader: a per-family estimate and interval, cost per verdict, and the MDE on the check. A family row has no verdict. The gate stays on the pooled result. Those fields are Next, in Wk4.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">Wk4 fields · in progress</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>{
   &quot;families&quot;: [
     { &quot;id&quot;: &quot;refund&quot;, &quot;estimate_pp&quot;: -1.5, &quot;interval_pp&quot;: [-4.0, 1.0] }
   ],

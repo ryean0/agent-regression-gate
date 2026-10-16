@@ -21,13 +21,17 @@
  * such as $1.25 is ordinary caption text. A model id is shown when present and
  * does not change the suite label.
  *
- * Schema 2.1.0 is schema_version "2.1.0". It records run_kind,
- * baseline_pool_model_id, min_valid_fraction_per_scenario, equal
+ * Schema 2.1.0 is schema_version "2.1.0". It is not schema 3.0.0. It records
+ * run_kind, baseline_pool_model_id, min_valid_fraction_per_scenario, equal
  * rollouts_per_scenario counts, and diagnostics. verdicts.overall carries
  * delta, difference_ci, a required likely_regression boolean, and required
- * model_ids. Those ids are preferred over the per-arm model_id. Alpha and the
- * miss cap stay in suite.yaml. There is no gate block in results.json. When
- * delta and the CI level are missing, the page shows δ = 5 pp / 90%.
+ * model_ids. Those ids are preferred over the per-arm model_id. Each arm may
+ * still record model_id. suite_id is optional. An optional run_summary may
+ * record planned_rollouts, completed_rollouts, infra_misses, stopped
+ * (null or "monthly_cap"), total_cost_usd, total_cached_input_tokens,
+ * rollout_duration_p50_s, and rollout_duration_max_s. Alpha and the miss cap
+ * stay in suite.yaml. There is no gate block in results.json. When delta and
+ * the CI level are missing, the page shows δ = 5 pp / 90%.
  */
 
 import { exceedsRate, formatRatio, parseRational, parseSignedRational } from "./rational.js";
@@ -100,6 +104,8 @@ function buildView(doc, version) {
     banner: bannerFor(status),
     summaryNote: noteText(doc.notes, "summary"),
     suite: typeof doc.suite === "string" ? doc.suite : "",
+    suiteId: readSuiteId(doc),
+    runSummary: readRunSummary(doc),
     runKind: readRunKind(doc),
     baselinePoolModelId: readPoolModelId(doc),
     minValidFraction: readMinValidFraction(doc),
@@ -152,6 +158,82 @@ function supportedVersion(doc) {
 
 function schemaVersionOf(doc) {
   return typeof doc.schema_version === "string" ? doc.schema_version : null;
+}
+
+function readSuiteId(doc) {
+  if (doc.suite_id == null || doc.suite_id === "") return "";
+  if (typeof doc.suite_id !== "string") throw new Error("suite_id must be a string");
+  return doc.suite_id.trim();
+}
+
+function readRunSummary(doc) {
+  if (doc.run_summary == null) return null;
+  const raw = doc.run_summary;
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("run_summary must be an object");
+  }
+  return {
+    plannedRollouts: readOptionalCount(raw.planned_rollouts, "run_summary.planned_rollouts"),
+    completedRollouts: readOptionalCount(raw.completed_rollouts, "run_summary.completed_rollouts"),
+    infraMisses: readOptionalCount(raw.infra_misses, "run_summary.infra_misses"),
+    stopped: readStopped(raw.stopped),
+    totalCostUsd: readOptionalNumber(raw.total_cost_usd, "run_summary.total_cost_usd"),
+    totalCachedInputTokens: readOptionalCount(raw.total_cached_input_tokens, "run_summary.total_cached_input_tokens"),
+    rolloutDurationP50S: readOptionalNumber(raw.rollout_duration_p50_s, "run_summary.rollout_duration_p50_s"),
+    rolloutDurationMaxS: readOptionalNumber(raw.rollout_duration_max_s, "run_summary.rollout_duration_max_s"),
+  };
+}
+
+function readStopped(value) {
+  if (value == null) return null;
+  if (value === "monthly_cap") return "monthly_cap";
+  throw new Error("run_summary.stopped must be null or \"monthly_cap\"");
+}
+
+function readOptionalCount(value, label) {
+  if (value == null) return null;
+  return requireCount(value, label);
+}
+
+function readOptionalNumber(value, label) {
+  if (value == null) return null;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    throw new Error(`${label} must be a non-negative number`);
+  }
+  return value;
+}
+
+/** Rows for the results panel. Numbers are marked so the page can tag them Example. */
+export function summaryRows(summary) {
+  if (!summary) return [];
+  return [
+    summaryRow("Planned rollouts", summary.plannedRollouts, "count"),
+    summaryRow("Completed rollouts", summary.completedRollouts, "count"),
+    summaryRow("Infrastructure misses", summary.infraMisses, "count"),
+    summaryRow("Stopped", summary.stopped, "stop"),
+    summaryRow("Total cost", summary.totalCostUsd, "usd"),
+    summaryRow("Cached input tokens", summary.totalCachedInputTokens, "count"),
+    summaryRow("Rollout duration p50", summary.rolloutDurationP50S, "seconds"),
+    summaryRow("Rollout duration max", summary.rolloutDurationMaxS, "seconds"),
+  ];
+}
+
+function summaryRow(label, value, kind) {
+  const missing = kind !== "stop" && value == null;
+  return {
+    label,
+    text: formatSummaryValue(value, kind),
+    example: !missing && kind !== "stop",
+  };
+}
+
+function formatSummaryValue(value, kind) {
+  if (kind === "stop") return value == null ? "None" : value;
+  if (value == null) return "Not in this file";
+  const text = Number.isInteger(value) ? String(value) : String(Math.round(value * 1000) / 1000);
+  if (kind === "usd") return `$${text}`;
+  if (kind === "seconds") return `${text} s`;
+  return text;
 }
 
 function isSchema210(doc, version) {

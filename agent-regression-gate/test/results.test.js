@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { INTERVAL_FALLBACK, parseResults, parseResultsV2 } from "../js/results.js";
+import { INTERVAL_FALLBACK, parseResults, parseResultsV2, summaryRows } from "../js/results.js";
 
 const bundled = JSON.parse(
   readFileSync(new URL("../data/results.preliminary.json", import.meta.url), "utf8"),
@@ -32,20 +32,39 @@ test("the bundled preliminary file parses and banners", () => {
   assert.equal(view.interval.delta, "0.05");
   assert.equal(view.interval.ciLevel, "0.9");
   assert.equal(view.interval.text, "δ = 5 pp · 90% CI");
-  assert.equal(view.diagnostics.length, 4);
-  assert.equal(view.diagnostics[0].scenarioId, "reset-locked-account");
-  assert.equal(view.diagnostics[0].familyId, "support");
+  assert.equal(view.suiteId, "");
+  assert.equal(view.diagnostics.length, 2);
+  assert.equal(view.diagnostics[0].scenarioId, "example.clean.v1");
+  assert.equal(view.diagnostics[1].scenarioId, "example.broken.v1");
+  assert.equal(view.diagnostics[0].familyId, "example");
   assert.equal(view.diagnostics[0].baselineText, "9/10");
-  assert.equal(view.diagnostics[0].candidateText, "3/5");
-  assert.equal(view.diagnostics[0].differenceText, "-3/10");
+  assert.equal(view.diagnostics[0].candidateText, "4/5");
+  assert.equal(view.diagnostics[0].differenceText, "-1/10");
   assert.equal(view.diagnostics[0].missingCassetteKeys.baseline.length, 0);
   assert.equal("verdict" in view.diagnostics[0], false);
   assert.equal(view.likelyRegression, false);
   assert.equal(view.arms.candidate.passRateText, "3/5");
   assert.equal(view.arms.candidate.environmentMisses, 1);
   assert.equal(view.arms.candidate.overMissLimit, false);
-  assert.equal(view.scenarios[0].candidateText, "3/5");
-  assert.equal(view.scenarios[2].candidateText, "4/5");
+  assert.equal(bundled.arms.baseline.model_id, view.modelIds.baseline);
+  assert.equal(bundled.arms.candidate.model_id, view.modelIds.candidate);
+  assert.equal(view.scenarios[0].id, "example.clean.v1");
+  assert.equal(view.scenarios[0].candidateText, "4/5");
+  assert.equal(view.scenarios[1].id, "example.broken.v1");
+  assert.equal(view.scenarios[1].candidateText, "3/5");
+  assert.equal(view.runSummary.plannedRollouts, 8);
+  assert.equal(view.runSummary.completedRollouts, 8);
+  assert.equal(view.runSummary.infraMisses, 1);
+  assert.equal(view.runSummary.stopped, null);
+  assert.equal(view.runSummary.totalCostUsd, 1.25);
+  assert.equal(view.runSummary.totalCachedInputTokens, 120);
+  assert.equal(view.runSummary.rolloutDurationP50S, 12);
+  assert.equal(view.runSummary.rolloutDurationMaxS, 40);
+  const rows = summaryRows(view.runSummary);
+  assert.equal(rows.filter((row) => row.example).length, 7);
+  assert.equal(rows.find((row) => row.label === "Stopped").example, false);
+  assert.equal(rows.find((row) => row.label === "Stopped").text, "None");
+  assert.equal(rows.some((row) => /p95/i.test(row.label)), false);
   assert.equal(view.charts.mde.status, "preliminary");
   assert.equal(view.charts.mde.title, "Smallest drop we can reliably catch");
   assert.match(view.charts.mde.caption, /Smallest drop/);
@@ -417,6 +436,29 @@ test("2.1.0 fraction strings are exact and rollouts_per_scenario counts must mat
   const kind = structuredClone(bundled);
   kind.run_kind = "explore";
   assert.throws(() => parseResults(kind), /run_kind must be screening, baseline, aa, or gate/);
+});
+
+test("suite_id is optional on schema 2.1.0 and a non-string is rejected", () => {
+  const doc = structuredClone(bundled);
+  assert.equal(Object.hasOwn(doc, "suite_id"), false);
+  assert.equal(parseResults(doc).suiteId, "");
+  doc.suite_id = "example";
+  assert.equal(parseResults(doc).suiteId, "example");
+  assert.equal(parseResults(doc).version, "2.1.0");
+  doc.suite_id = 3;
+  assert.throws(() => parseResults(doc), /suite_id must be a string/);
+});
+
+test("run_summary stopped is null or monthly_cap", () => {
+  const doc = structuredClone(bundled);
+  doc.run_summary.stopped = "monthly_cap";
+  assert.equal(parseResults(doc).runSummary.stopped, "monthly_cap");
+  assert.equal(parseResults(doc).headline, "Pass");
+  doc.run_summary.stopped = "hard_stop";
+  assert.throws(() => parseResults(doc), /run_summary\.stopped must be null or "monthly_cap"/);
+  delete doc.run_summary;
+  assert.equal(parseResults(doc).runSummary, null);
+  assert.equal(summaryRows(null).length, 0);
 });
 
 test("schema_version 2.1.0 can stand in for version and must agree when both are set", () => {
