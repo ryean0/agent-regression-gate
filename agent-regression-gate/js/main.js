@@ -856,6 +856,8 @@ if (filmRoot) {
 }
 
 initChrome();
+initCodeCopy();
+initOsTabs();
 if (document.getElementById("demo-root")) renderDemo();
 
 if (document.getElementById("results-root") || document.getElementById("results-teaser")) {
@@ -892,4 +894,72 @@ if (timingRoot) {
     .catch(() => {
       timingRoot.innerHTML = renderTimingHtml(readTiming(undefined));
     });
+}
+
+function initCodeCopy() {
+  for (const block of document.querySelectorAll(".docs-code")) {
+    const button = block.querySelector(".code-copy");
+    const code = block.querySelector("code");
+    if (!button || !code) continue;
+    button.addEventListener("click", async () => {
+      const text = code.textContent ?? "";
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
+        await navigator.clipboard.writeText(text);
+        button.textContent = "Copied";
+      } catch {
+        const range = document.createRange();
+        range.selectNodeContents(code);
+        const selection = window.getSelection();
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+        button.textContent = "Selected";
+      }
+      window.setTimeout(() => {
+        button.textContent = "Copy";
+      }, 1600);
+    });
+  }
+}
+
+function initOsTabs() {
+  const root = document.querySelector("[data-os-switch]");
+  if (!root) return;
+  const tablist = root.querySelector('[role="tablist"]');
+  if (!tablist) return;
+  const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  const status = document.getElementById("os-status");
+  const labels = {
+    mac: "macOS",
+    windows: "Windows (PowerShell)",
+    linux: "Linux",
+  };
+
+  function select(os, shouldFocus) {
+    if (!labels[os]) return;
+    root.dataset.os = os;
+    for (const tab of tabs) {
+      const on = tab.dataset.os === os;
+      tab.setAttribute("aria-selected", on ? "true" : "false");
+      tab.tabIndex = on ? 0 : -1;
+      if (on && shouldFocus) tab.focus();
+    }
+    if (status) status.textContent = `Showing steps for ${labels[os]}.`;
+  }
+
+  tablist.addEventListener("keydown", (event) => {
+    const index = tabs.findIndex((tab) => tab.getAttribute("aria-selected") === "true");
+    let next = index < 0 ? 0 : index;
+    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (next + 1) % tabs.length;
+    else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (next - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = tabs.length - 1;
+    else return;
+    event.preventDefault();
+    select(tabs[next].dataset.os, true);
+  });
+
+  for (const tab of tabs) {
+    tab.addEventListener("click", () => select(tab.dataset.os, false));
+  }
 }

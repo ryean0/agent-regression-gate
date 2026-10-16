@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Sample use cases · Anubys</title>
+  <meta name="description" content="Free Anubys checks that do not call a model. Replay and the GitHub Action are coming soon.">
+  <link rel="canonical" href="https://anubys.dev/use-cases/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://anubys.dev/use-cases/">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="https://anubys.dev/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="https://anubys.dev/og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg>
+        <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span>
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../">Product</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../performance/">Performance</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+        <a href="./" aria-current="page">Use cases</a>
+        <a href="../docs/getting-started/">Guide</a>
+        <a href="../about/">About</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <article class="page-head">
+      <div class="wrap">
+        <p class="kicker">Sample use cases</p>
+        <p class="beta-banner">(beta testing)</p>
+        <h1 id="use-title">Try the free checks.</h1>
+        <p class="lede">Run these from the project folder, with the virtual environment on. The free commands before the live-model section were run on Python 3.11 with <code>GEMINI_API_KEY</code> unset. They do not call a model, and they do not spend money.</p>
+        <p class="v-line">Anubys is free and open source, under the MIT license. There is no <code>pip install anubys</code> package on the public Python package index. Suite scoring, statistics, and report rendering are still placeholders. There is no command here that compares two live agents. Install steps are in the <a href="../docs/getting-started/">getting started guide</a>, and the canonical write-up is <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/docs/GETTING_STARTED.md" rel="noopener noreferrer">docs/GETTING_STARTED.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+        <p><code>python -m harness</code> runs the program even if the <code>harness</code> command is not on your PATH. After you download the repository, <code>harness</code> and <code>python -m harness</code> do the same job. The samples use <code>python -m harness</code>.</p>
+        <p>A finished comparison would show one verdict. Orange means <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-block" aria-describedby="tip-block">Block</button><span class="term-tip" id="tip-block" role="tooltip">The new agent was clearly worse than the current one, so this test says stop.</span></span>. The other three stay plain.</p>
+        <ul class="verdict-legend" aria-label="Verdict names">
+          <li><span class="verdict-chip" data-state="pass">Pass</span></li>
+          <li><span class="verdict-chip" data-state="block">Block</span></li>
+          <li><span class="verdict-chip" data-state="insufficient">Insufficient evidence</span></li>
+          <li><span class="verdict-chip" data-state="invalid">Invalid run</span></li>
+        </ul>
+
+        <section class="docs-sec" id="validate-examples">
+          <h2>Check that the example scenarios are valid</h2>
+          <p>You want to know that the small set of example shopping tasks is written in the shape Anubys accepts.</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: validate the example scenarios">Copy</button></div>
+            <pre tabindex="0"><code>python -m harness validate suites/tau_retail/examples</code></pre>
+          </div>
+          <p>This reads the example files and checks their shape. It does not run an agent.</p>
+          <p class="guide-see"><b>You should see</b></p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+            <pre tabindex="0"><code>ok 9 scenario(s), 0 suite file(s)</code></pre>
+          </div>
+          <p>That means all 9 example files are valid.</p>
+          <p>The same check covers the larger retail folder and its suite file:</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: validate the retail suite">Copy</button></div>
+            <pre tabindex="0"><code>python -m harness validate suites/tau_retail</code></pre>
+          </div>
+          <p>This walks the whole retail suite, including the examples and the scenario set used by the safety checks.</p>
+          <p class="guide-see"><b>You should see</b></p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+            <pre tabindex="0"><code>ok 87 scenario(s), 1 suite file(s)</code></pre>
+          </div>
+          <p>That means 87 scenario files and 1 suite file passed. The 9 example files and the 78 files in the scenarios folder are those 87.</p>
+          <p>More detail on the file shape is in <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/docs/scenario-format.md" rel="noopener noreferrer">scenario-format.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+        </section>
+
+        <section class="docs-sec" id="safety-checks">
+          <h2>Run the safety checks</h2>
+          <p>You want to know the sanitized scenarios are safe to keep: the shape is valid, the personal data is synthetic, there are no secrets, and the tasks are not copies of each other.</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: run the safety checks">Copy</button></div>
+            <pre tabindex="0"><code>python -m harness gates suites/tau_retail/scenarios</code></pre>
+          </div>
+          <p>This runs six safety checks on the scenarios folder. It does not call a model. Gitleaks, an optional extra secret scanner, is not required on your own computer.</p>
+          <p class="guide-see"><b>You should see</b></p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+            <pre tabindex="0"><code>schema: pass (78 scenario(s), 0 suite file(s))
+synthetic-pii: pass (78 scenario(s), 0 cassette file(s))
+secrets: pass (python scanner; gitleaks not installed, trufflehog not installed; 78 file(s))
+exact-duplicates: pass (78 scenario(s), canonical content hash)
+near-duplicates: pass (78 scenario(s), MinHash on user turns, threshold 0.8)
+splits: pass (26 family(ies), one split each)
+ok 6 gate(s)</code></pre>
+          </div>
+          <p><code>ok 6 gate(s)</code> means every check passed. <code>gitleaks not installed</code> and <code>trufflehog not installed</code> are normal on a laptop. The secrets line still says <code>pass</code>. The project's CI installs gitleaks and adds <code>--require-gitleaks</code>. You can leave that flag off.</p>
+          <p>Point this command at <code>suites/tau_retail/scenarios</code> only. The examples folder is a straight conversion and still has upstream personal data, so the synthetic-data check is supposed to reject it. A check of that folder ended with <code>1 gate(s) failed: synthetic-pii</code>. That failure is expected there. Use <code>validate</code> for the examples, and <code>gates</code> for <code>suites/tau_retail/scenarios</code>.</p>
+        </section>
+
+        <section class="docs-sec" id="results-file">
+          <h2>Check a results file and read its verdict</h2>
+          <p>You have a results file and you want the verdict in plain words. The file in the repository is practice data for a demo page. It is not a score from a real agent.</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: validate the sample results file">Copy</button></div>
+            <pre tabindex="0"><code>python -m harness validate-results docs/examples/results.preliminary.json</code></pre>
+          </div>
+          <p>This checks that the results file has the fields Anubys expects. It does not print the verdict.</p>
+          <p class="guide-see"><b>You should see</b></p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+            <pre tabindex="0"><code>ok 1 results file(s)</code></pre>
+          </div>
+          <p>That means the file is valid. Read the verdict with:</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: print the sample verdict">Copy</button></div>
+            <pre tabindex="0"><code>python -c "import json; doc=json.load(open('docs/examples/results.preliminary.json', encoding='utf-8')); labels=doc['verdicts']['verdict_captions']; print(doc['verdicts']['overall']['verdict']); print(doc['note']); print('pass:', labels['pass']['caption']); print('block:', labels['block']['caption']); print('insufficient_evidence:', labels['insufficient_evidence']['caption']); print('invalid_run:', labels['invalid_run']['caption'])"</code></pre>
+          </div>
+          <p>This opens the sample file and prints the verdict word, the note, and one sentence for each of the four verdicts.</p>
+          <p class="guide-see"><b>You should see</b></p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+            <pre tabindex="0"><code>insufficient_evidence
+FAKE preliminary data for the demo landing page. Not a baseline and not a gate result.
+pass: The new agent was close enough to the current one that this test says go ahead.
+block: The new agent was clearly worse than the current one, so this test says stop.
+insufficient_evidence: This test cannot yet tell whether the new agent is close enough, so it is not a yes or a no.
+invalid_run: The test run itself was not reliable, so this result should not be used to decide.</code></pre>
+          </div>
+          <p>The verdict on this file is <span class="verdict-chip" data-state="insufficient">Insufficient evidence</span>: the test cannot yet say yes or no. The second line says the numbers are fake, so do not treat them as a real comparison. The field guide for the file is <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/docs/results-format.md" rel="noopener noreferrer">results-format.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+        </section>
+
+        <section class="docs-sec" id="replay">
+          <h2>Replay a recorded run <span class="docs-badge" data-state="planned">Coming soon</span></h2>
+          <p>Replaying a saved model recording is supported inside the code, and that path writes a cost of <span class="example-tag">Example</span> $0 because it does not call a model. Replaying only the tool environment while the model itself is live still calls the model and can spend money.</p>
+          <p>There is no beginner command for either path. <code>python -m harness --help</code> has no <code>replay</code> or <code>run</code> command. The repository also has no sample recording you can point at. This page skips the replay exercise for that reason.</p>
+        </section>
+
+        <section class="docs-sec" id="tau-preview">
+          <h2>Preview converting tau-bench retail tasks</h2>
+          <p>You want a preview of how the vendored tau-bench retail tasks would be classified, without writing files and without spending money.</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: convert-tau-retail dry run">Copy</button></div>
+            <pre tabindex="0"><code>python -m harness convert-tau-retail --dry-run</code></pre>
+          </div>
+          <p>This counts the local retail tasks on the test split and prints three policy labels. <code>--dry-run</code> writes nothing. The tasks are already in the repository, so this does not download them and does not call a model.</p>
+          <p class="guide-see"><b>You should see</b></p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+            <pre tabindex="0"><code>split test: 115 tasks
+  allowed: 104
+  must_refuse: 7
+  ambiguous: 4</code></pre>
+          </div>
+          <p>That means the test split has 115 tasks: 104 the agent may carry out, 7 the agent must refuse, and 4 that are ambiguous. 115 is the original tau-bench task list. 87 is the number of Anubys's converted scenarios. No scenario files were written. Stop here for the preview. Adding <code>--out</code> would write files, and this page does not ask you to do that.</p>
+        </section>
+
+        <section class="docs-sec" id="live-model">
+          <h2>Run against a real model (costs money)</h2>
+          <p class="use-flag">Costs money</p>
+          <div class="docs-callout">
+            <p>A live run sends tasks to Google Gemini and can charge the Google account that owns the API key. Read this section so you know how the guard rails work. Do not start a live run from this page.</p>
+          </div>
+          <p><strong>There is no tiny live command on main.</strong> <code>python -m harness --help</code> has no command that calls Gemini. The manual workflow file <code>.github/workflows/experiment.yml</code> is still a placeholder. Its last step says that no Gemini call was made. Do not run that workflow as if it were a live test, and do not paste a workflow into your repository from this page.</p>
+          <p>When a real live command exists, it will be a labeled experiment. Until then, the steps below only prepare a key and show the free spend check.</p>
+          <h3>Get a Gemini API key</h3>
+          <ol>
+            <li>Sign in to <a href="https://aistudio.google.com/" rel="noopener noreferrer">Google AI Studio</a>.</li>
+            <li>Open the API keys page and create a key. Google's steps are in the <a href="https://ai.google.dev/gemini-api/docs/api-key" rel="noopener noreferrer">Gemini API key guide</a>.</li>
+            <li>Copy the key once. Keep it in the terminal only.</li>
+          </ol>
+          <h3>Keep the key out of the project</h3>
+          <p>Paste the key only into the current <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-terminal" aria-describedby="tip-terminal">terminal</button><span class="term-tip" id="tip-terminal" role="tooltip">A window where you type one line, press Enter, and read the reply.</span></span>, never into a file you could commit. Do not put it in a scenario, in <code>spend/spend_log.jsonl</code>, or in a note.</p>
+          <div data-os-switch data-os="mac">
+            <div class="os-switch">
+              <div class="os-tablist" role="tablist" aria-label="Choose your computer">
+                <button type="button" class="os-tab" role="tab" id="os-tab-mac" data-os="mac" aria-selected="true" aria-controls="mac-key" tabindex="0">macOS</button>
+                <button type="button" class="os-tab" role="tab" id="os-tab-windows" data-os="windows" aria-selected="false" aria-controls="windows-key" tabindex="-1">Windows (PowerShell)</button>
+                <button type="button" class="os-tab" role="tab" id="os-tab-linux" data-os="linux" aria-selected="false" aria-controls="linux-key" tabindex="-1">Linux</button>
+              </div>
+              <p class="sr-only">Use the left and right arrow keys to change the computer. Home and End jump to the first and last choice.</p>
+              <p class="os-status" id="os-status" role="status">Showing steps for macOS.</p>
+            </div>
+            <div class="os-panel" id="mac-key" data-os-panel="mac" role="tabpanel" aria-labelledby="os-tab-mac">
+              <h3 class="os-panel-label">macOS</h3>
+              <p>In the same terminal where the virtual environment is on, this holds the key in that terminal until you close the window.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell · placeholder</p><button type="button" class="code-copy" aria-label="Copy command: hold the key in this terminal">Copy</button></div>
+                <pre tabindex="0"><code>export GEMINI_API_KEY="paste-the-key-here"</code></pre>
+              </div>
+            </div>
+            <div class="os-panel" id="windows-key" data-os-panel="windows" role="tabpanel" aria-labelledby="os-tab-windows">
+              <h3 class="os-panel-label">Windows (PowerShell)</h3>
+              <p>This does the same thing in PowerShell.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">PowerShell · placeholder</p><button type="button" class="code-copy" aria-label="Copy command: hold the key in PowerShell">Copy</button></div>
+                <pre tabindex="0"><code>$env:GEMINI_API_KEY = "paste-the-key-here"</code></pre>
+              </div>
+            </div>
+            <div class="os-panel" id="linux-key" data-os-panel="linux" role="tabpanel" aria-labelledby="os-tab-linux">
+              <h3 class="os-panel-label">Linux</h3>
+              <p>In the same terminal where the virtual environment is on, this holds the key in that terminal until you close the window.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell · placeholder</p><button type="button" class="code-copy" aria-label="Copy command: hold the key in this terminal on Linux">Copy</button></div>
+                <pre tabindex="0"><code>export GEMINI_API_KEY="paste-the-key-here"</code></pre>
+              </div>
+            </div>
+          </div>
+          <p>Check that the key is present without printing it. This prints <code>set</code> when the variable has a key, and <code>missing</code> when it does not. It does not print the key.</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: check the key without printing it">Copy</button></div>
+            <pre tabindex="0"><code>python -c "import os; print('set' if os.environ.get('GEMINI_API_KEY','').strip() else 'missing')"</code></pre>
+          </div>
+          <p>With no key, which is how every free command on this page was run, you should see:</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+            <pre tabindex="0"><code>missing</code></pre>
+          </div>
+          <h3>Spend safety</h3>
+          <p>Two checks sit in front of a live rollout.</p>
+          <p><strong>Per-rollout dollar limit.</strong> A live rollout can be given a dollar ceiling. If the model cost of that one rollout is above the ceiling, Anubys marks it with the reason <code>spend_ceiling</code>. Going over that limit counts as a fail, not a miss. That is the agreed policy, and it lands in an upcoming pull request. The cost is still written to the spend log. The suite can continue with the next rollout. Only the monthly <span class="example-tag">Example</span> $38 stop counts as a miss.</p>
+          <p><strong>The <span class="example-tag">Example</span> $38 monthly check.</strong> Anubys adds up <code>spend/spend_log.jsonl</code> for the current calendar month in UTC. Once that logged total reaches <span class="example-tag">Example</span> $38, Anubys does not start another live rollout. Before it starts one, it also adds what the next rollout is allowed to cost: your per-rollout ceiling, or the cost of the previous logged row when no ceiling is set. If that sum would reach <span class="example-tag">Example</span> $38, the next rollout does not start. A rollout that has already started is allowed to finish, so the logged total can end a little above <span class="example-tag">Example</span> $38.</p>
+          <p>A budget alert in Google's own console does not stop the calls. The monthly check is what stops new live rollouts, and a small overshoot is possible.</p>
+          <p>You can run the monthly check itself for free. It only reads the log. This sums the log for the current UTC month and compares it with <span class="example-tag">Example</span> $38. It does not call a model.</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: check monthly spend">Copy</button></div>
+            <pre tabindex="0"><code>python scripts/check_monthly_spend.py --threshold 38</code></pre>
+          </div>
+          <p>The check on 16 October 2026 printed:</p>
+          <div class="docs-code">
+            <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+            <p class="guide-see"><span class="example-tag">Example</span></p><pre tabindex="0"><code>2026-10 logged spend is $0, under the $38 cap.</code></pre>
+          </div>
+          <p>Your line can start with a later month, such as the month you run it. <span class="example-tag">Example</span> $0 means the log has no spend in that month. The log file in the repository is empty until a labeled experiment appends a row. Leave the file alone.</p>
+        </section>
+
+        <section class="docs-sec" id="github-ci">
+          <h2>Use it in GitHub CI (coming soon) <span class="docs-badge" data-state="planned">Coming soon</span></h2>
+          <p>The packaged GitHub Action in <code>action/action.yml</code> is a stub that exits with an error on purpose, so a workflow cannot treat it as a passing check. A real Action is planned for November 5. Until then, pull-request CI includes the free checks from this page (scenario validation, the sanitization gates, the sample results file, and the monthly spend check) and does not call a model. This page does not include a workflow file, because a sample would not be a working gate yet. The stub is described in <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/action/README.md" rel="noopener noreferrer">action/README.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+        </section>
+      </div>
+    </article>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg> <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span></p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../">Overview</a>
+        <a href="../how-it-works/">How it works</a>
+        <a href="../method/">Method</a>
+        <a href="../gate/">Gate</a>
+        <a href="../results/">Results</a>
+        <a href="../performance/">Performance</a>
+        <a href="../integrations/">Integrations</a>
+        <a href="../docs/">Docs</a>
+        <a href="../docs/install/">Install</a>
+        <a href="../docs/getting-started/">Guide</a>
+        <a href="./">Use cases</a>
+        <a href="../about/">About</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a> <span class="beta-mark">(beta testing)</span>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../js/main.js"></script>
+</body>
+</html>

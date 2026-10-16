@@ -58,30 +58,6 @@ function initDocs() {
     apply();
   });
 
-  for (const block of document.querySelectorAll(".docs-code")) {
-    const button = block.querySelector(".code-copy");
-    const code = block.querySelector("code");
-    if (!button || !code) continue;
-    button.addEventListener("click", async () => {
-      const text = code.textContent ?? "";
-      try {
-        if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
-        await navigator.clipboard.writeText(text);
-        button.textContent = "Copied";
-      } catch {
-        const range = document.createRange();
-        range.selectNodeContents(code);
-        const selection = window.getSelection();
-        selection?.removeAllRanges();
-        selection?.addRange(range);
-        button.textContent = "Selected";
-      }
-      window.setTimeout(() => {
-        button.textContent = "Copy";
-      }, 1600);
-    });
-  }
-
   if (toc && typeof IntersectionObserver === "function") {
     const byId = new Map();
     for (const link of tocLinks) {

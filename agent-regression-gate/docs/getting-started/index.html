@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en" data-base="../../" data-docs-root="../">
+<head>
+  <!-- brand: title, og:title, twitter:title, og:description, twitter:description, header wordmark, footer wordmark. Name constant: js/brand.js. -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Getting started · Anubys</title>
+  <meta name="description" content="Try Anubys on your own computer. The free parts need no API key and no money.">
+  <link rel="canonical" href="https://anubys.dev/docs/getting-started/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://anubys.dev/docs/getting-started/">
+  <meta property="og:title" content="Anubys">
+  <meta property="og:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta property="og:image" content="https://anubys.dev/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Anubys">
+  <meta name="twitter:description" content="Anubys, a CI-native agent regression model harness.">
+  <meta name="twitter:image" content="https://anubys.dev/og.png">
+  <meta name="theme-color" content="#070708">
+  <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="../../css/site.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <a class="skip" href="#content">Skip to main content</a>
+  <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+  <div id="status-banner"></div>
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="../../">
+        <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg>
+        <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span>
+      </a>
+      <button type="button" class="nav-toggle" id="nav-toggle" aria-expanded="false" aria-controls="nav-menu">Menu</button>
+      <nav id="nav-menu" class="nav-links" aria-label="Primary">
+        <a href="../../">Product</a>
+        <a href="../../how-it-works/">How it works</a>
+        <a href="../../method/">Method</a>
+        <a href="../../gate/">Gate</a>
+        <a href="../../results/">Results</a>
+        <a href="../../performance/">Performance</a>
+        <a href="../../integrations/">Integrations</a>
+        <a href="../" aria-current="page">Docs</a>
+        <a href="../../use-cases/">Use cases</a>
+        <a href="./" aria-current="page">Guide</a>
+        <a href="../../about/">About</a>
+      </nav>
+    </div>
+  </header>
+  <main id="content">
+    <div class="docs-shell">
+      <div class="docs-tools">
+        <form class="docs-search" role="search" action="./">
+          <label for="docs-q">Search headings</label>
+          <input id="docs-q" type="search" name="q" placeholder="Filter headings" autocomplete="off" aria-controls="docs-hits" aria-expanded="false">
+        </form>
+        <p class="docs-hit-status" id="docs-hit-status" role="status" aria-live="polite"></p>
+        <ul class="docs-hits" id="docs-hits" hidden></ul>
+        <details class="docs-menu">
+          <summary>Documentation</summary>
+          <nav class="docs-nav" aria-label="Documentation">
+            <p class="docs-group">Start</p><a href="../">Introduction</a><a href="./" aria-current="page">Getting started</a><a href="../quickstart/">Quickstart</a><a href="../install/">Install</a><a href="../concepts/">Concepts</a><p class="docs-group">Guides</p><a href="../guides/scenarios/">Writing scenarios</a><a href="../guides/adapters/">Adding a provider adapter</a><a href="../guides/spend/">Spend governance</a><p class="docs-group">Reference</p><a href="../reference/results/">results.json</a><a href="../reference/adapter/">Adapter contract</a><a href="../reference/ci/">CI and OIDC</a><a href="../reference/data/">Where results go</a><p class="docs-group">Project</p><a href="../changelog/">Changelog</a><a href="../roadmap/">Roadmap</a><p class="docs-group">Site</p><a href="../dns-setup/">DNS setup</a>
+          </nav>
+        </details>
+      </div>
+      <article class="docs-article">
+        <header class="docs-head">
+          <p class="kicker">Start</p>
+          <p class="beta-banner">(beta testing)</p>
+          <h1>Getting started</h1>
+          <p class="docs-lede">This page is for someone who wants to try Anubys on their own computer. You do not need to know how to write a program. Plan on about 20 minutes. The free parts need no API key and no money.</p>
+        </header>
+        <nav class="docs-toc" aria-labelledby="on-this-page">
+          <p class="docs-toc-label" id="on-this-page">On this page</p>
+          <ol>
+            <li><a href="#what-anubys-does">What Anubys does</a></li>
+            <li><a href="#before-you-start">Before you start</a></li>
+            <li><a href="#install-anubys">Install Anubys</a></li>
+            <li><a href="#sample-use-cases">Sample use cases</a></li>
+            <li><a href="#glossary">Glossary</a></li>
+            <li><a href="#getting-help">Getting help</a></li>
+          </ol>
+        </nav>
+        <div class="docs-body" data-os-switch data-os="mac">
+          <p>Anubys is free and open source, under the MIT license. The program you type is called <code>harness</code>. The project folder is named <code>ci-agent-regression-harness</code>. Both of those names mean Anubys.</p>
+          <p>The same steps are in <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/docs/GETTING_STARTED.md" rel="noopener noreferrer">docs/GETTING_STARTED.md</a> <span class="beta-mark">(beta testing)</span>. That file is the canonical source. These checks are also listed on the <a href="../../use-cases/">use cases</a> page.</p>
+
+          <section class="docs-sec" id="what-anubys-does">
+            <h2>What Anubys does</h2>
+            <p>Anubys compares a new version of an AI agent with the version you already trust. You give it scenarios, which are practice tasks with a known shape. It runs the <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-baseline" aria-describedby="tip-baseline">baseline</button><span class="term-tip" id="tip-baseline" role="tooltip">The agent you already trust.</span></span> (the trusted agent) and the <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-candidate" aria-describedby="tip-candidate">candidate</button><span class="term-tip" id="tip-candidate" role="tooltip">The new agent you are considering.</span></span> (the new agent) on those same tasks. The comparison ends as one verdict.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">text</p></div>
+              <pre tabindex="0"><code>your agent -> scenarios -> baseline vs candidate -> one verdict
+
+  Pass
+  Block
+  Insufficient evidence
+  Invalid run</code></pre>
+            </div>
+            <p>Those are the only four verdicts. In files they are spelled <code>pass</code>, <code>block</code>, <code>insufficient_evidence</code>, and <code>invalid_run</code>.</p>
+            <table class="docs-table">
+              <caption>The sentences in this table are the ones stored on the sample results file.</caption>
+              <thead>
+                <tr><th scope="col">Verdict</th><th scope="col">In plain words</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><span class="verdict-chip" data-state="pass">Pass</span></td>
+                  <td>The new agent was close enough to the current one that this test says go ahead.</td>
+                </tr>
+                <tr>
+                  <td><span class="verdict-chip" data-state="block">Block</span></td>
+                  <td>The new agent was clearly worse than the current one, so this test says stop.</td>
+                </tr>
+                <tr>
+                  <td><span class="verdict-chip" data-state="insufficient">Insufficient evidence</span></td>
+                  <td>This test cannot yet tell whether the new agent is close enough, so it is not a yes or a no.</td>
+                </tr>
+                <tr>
+                  <td><span class="verdict-chip" data-state="invalid">Invalid run</span></td>
+                  <td>The test run itself was not reliable, so this result should not be used to decide.</td>
+                </tr>
+              </tbody>
+            </table>
+            <p>The <a href="#check-a-results-file-and-read-its-verdict">check a results file</a> section prints them from that file. Suite scoring, statistics, and report rendering are still placeholders. There is no command on this page that compares two live agents.</p>
+          </section>
+
+          <section class="docs-sec" id="before-you-start">
+            <h2>Before you start</h2>
+            <h3>What you need</h3>
+            <ul>
+              <li>A computer running macOS, Windows, or Linux.</li>
+              <li>About 20 minutes.</li>
+              <li>Python 3.11 or newer. Python 3.12 is fine. Python 3.10 is too old.</li>
+              <li>Git, the tool that downloads the project folder.</li>
+              <li>No API key for the free sections below.</li>
+              <li>No money for the free sections below.</li>
+            </ul>
+            <p>Windows PowerShell can run every command in this guide. You do not need Windows Subsystem for Linux (WSL).</p>
+
+            <div class="os-switch">
+              <div class="os-tablist" role="tablist" aria-label="Choose your computer">
+                <button type="button" class="os-tab" role="tab" id="os-tab-mac" data-os="mac" aria-selected="true" aria-controls="mac-terminal mac-python mac-pyinstall mac-git mac-versions mac-venv mac-key" tabindex="0">macOS</button>
+                <button type="button" class="os-tab" role="tab" id="os-tab-windows" data-os="windows" aria-selected="false" aria-controls="windows-terminal windows-python windows-pyinstall windows-git windows-versions windows-venv windows-key" tabindex="-1">Windows (PowerShell)</button>
+                <button type="button" class="os-tab" role="tab" id="os-tab-linux" data-os="linux" aria-selected="false" aria-controls="linux-terminal linux-python linux-pyinstall linux-git linux-versions linux-venv linux-key" tabindex="-1">Linux</button>
+              </div>
+              <p class="sr-only">Use the left and right arrow keys to change the computer. Home and End jump to the first and last choice.</p>
+              <p class="os-status" id="os-status" role="status">Showing steps for macOS.</p>
+            </div>
+
+            <h3 id="open-a-terminal">Open a <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-terminal" aria-describedby="tip-terminal">terminal</button><span class="term-tip" id="tip-terminal" role="tooltip">A window where you type one line, press Enter, and read the reply.</span></span></h3>
+            <p>A terminal is a window where you type one line, press Enter, and read the reply.</p>
+            <div class="os-panel" id="mac-terminal" data-os-panel="mac" role="tabpanel" aria-labelledby="os-tab-mac">
+              <h3 class="os-panel-label">macOS</h3>
+              <p>Open Spotlight (Command and the space bar), type <code>Terminal</code>, and press Return. You can also open Applications, then Utilities, then Terminal.</p>
+            </div>
+            <div class="os-panel" id="windows-terminal" data-os-panel="windows" role="tabpanel" aria-labelledby="os-tab-windows">
+              <h3 class="os-panel-label">Windows (PowerShell)</h3>
+              <p>Open the Start menu, type <code>PowerShell</code>, and open Windows PowerShell. Leave WSL uninstalled unless you already use it for something else.</p>
+            </div>
+            <div class="os-panel" id="linux-terminal" data-os-panel="linux" role="tabpanel" aria-labelledby="os-tab-linux">
+              <h3 class="os-panel-label">Linux</h3>
+              <p>Open the app named Terminal, or the terminal that came with your desktop.</p>
+            </div>
+            <p>The examples below use that window. Type each command yourself. Press Enter at the end of the line.</p>
+
+            <h3 id="install-python">Install Python 3.11 or newer</h3>
+            <p>Check what you already have before you download anything.</p>
+            <div class="os-panel" id="mac-python" data-os-panel="mac" role="tabpanel" aria-labelledby="os-tab-mac">
+              <h3 class="os-panel-label">macOS</h3>
+              <p>This prints the Python 3 version, if Python 3 is installed.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: python3 --version">Copy</button></div>
+                <pre tabindex="0"><code>python3 --version</code></pre>
+              </div>
+            </div>
+            <div class="os-panel" id="windows-python" data-os-panel="windows" role="tabpanel" aria-labelledby="os-tab-windows">
+              <h3 class="os-panel-label">Windows (PowerShell)</h3>
+              <p>This prints the Python version the <code>python</code> command points at.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">PowerShell</p><button type="button" class="code-copy" aria-label="Copy command: python --version">Copy</button></div>
+                <pre tabindex="0"><code>python --version</code></pre>
+              </div>
+            </div>
+            <div class="os-panel" id="linux-python" data-os-panel="linux" role="tabpanel" aria-labelledby="os-tab-linux">
+              <h3 class="os-panel-label">Linux</h3>
+              <p>This prints the Python 3 version, if Python 3 is installed.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: python3 --version on Linux">Copy</button></div>
+                <pre tabindex="0"><code>python3 --version</code></pre>
+              </div>
+            </div>
+            <p>You want a line that starts with <code>Python 3.11</code> or a newer 3.x, such as <code>Python 3.12</code>. If you see that, skip the installer and go to <a href="#install-git">Install Git</a>.</p>
+            <p>If the command is missing, or the version is older than 3.11, install Python from the official site: <a href="https://www.python.org/downloads/" rel="noopener noreferrer">https://www.python.org/downloads/</a>. Pick the latest Python 3 release. It will be 3.11 or newer.</p>
+            <div class="os-panel" id="mac-pyinstall" data-os-panel="mac" role="tabpanel" aria-labelledby="os-tab-mac">
+              <h3 class="os-panel-label">macOS</h3>
+              <p>Run the downloaded installer, then open a new Terminal window.</p>
+            </div>
+            <div class="os-panel" id="windows-pyinstall" data-os-panel="windows" role="tabpanel" aria-labelledby="os-tab-windows">
+              <h3 class="os-panel-label">Windows (PowerShell)</h3>
+              <p>Run the downloaded installer. On the first screen, check the box <strong>Add python.exe to PATH</strong>. Then finish the install. Close the terminal window and open a new PowerShell window so it can see Python.</p>
+            </div>
+            <div class="os-panel" id="linux-pyinstall" data-os-panel="linux" role="tabpanel" aria-labelledby="os-tab-linux">
+              <h3 class="os-panel-label">Linux</h3>
+              <p>If <code>python3 --version</code> is already 3.11 or newer, keep that Python. Use the python.org installer only when the version is missing or too old.</p>
+            </div>
+
+            <h3 id="install-git">Install Git</h3>
+            <p>Check Git next. This prints the Git version. Any current version is fine. If you see a version number, skip the Git installer.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: git --version">Copy</button></div>
+              <pre tabindex="0"><code>git --version</code></pre>
+            </div>
+            <p>If Git is missing, download it from <a href="https://git-scm.com/downloads" rel="noopener noreferrer">https://git-scm.com/downloads</a>.</p>
+            <div class="os-panel" id="mac-git" data-os-panel="mac" role="tabpanel" aria-labelledby="os-tab-mac">
+              <h3 class="os-panel-label">macOS</h3>
+              <p>The git-scm installer works. The first time you type <code>git</code>, macOS may also offer the Xcode command line tools. Either path is fine.</p>
+            </div>
+            <div class="os-panel" id="windows-git" data-os-panel="windows" role="tabpanel" aria-labelledby="os-tab-windows">
+              <h3 class="os-panel-label">Windows (PowerShell)</h3>
+              <p>Install Git for Windows and accept the default options. This does not install WSL. Close PowerShell and open it again afterward.</p>
+            </div>
+            <div class="os-panel" id="linux-git" data-os-panel="linux" role="tabpanel" aria-labelledby="os-tab-linux">
+              <h3 class="os-panel-label">Linux</h3>
+              <p>Install the <code>git</code> package from your system, or use the git-scm installer. Many Linux systems already have Git.</p>
+            </div>
+
+            <h3>Check the versions</h3>
+            <p>Run the version commands again in a new terminal window.</p>
+            <div class="os-panel" id="mac-versions" data-os-panel="mac" role="tabpanel" aria-labelledby="os-tab-mac">
+              <h3 class="os-panel-label">macOS</h3>
+              <p>You want <code>python3 --version</code> to show 3.11 or newer, and <code>git --version</code> to show a version.</p>
+            </div>
+            <div class="os-panel" id="windows-versions" data-os-panel="windows" role="tabpanel" aria-labelledby="os-tab-windows">
+              <h3 class="os-panel-label">Windows (PowerShell)</h3>
+              <p><code>python --version</code> and <code>git --version</code> do the same jobs.</p>
+            </div>
+            <div class="os-panel" id="linux-versions" data-os-panel="linux" role="tabpanel" aria-labelledby="os-tab-linux">
+              <h3 class="os-panel-label">Linux</h3>
+              <p>You want <code>python3 --version</code> to show 3.11 or newer, and <code>git --version</code> to show a version.</p>
+            </div>
+            <p>This guide was checked on Linux with Python 3.11.17 and Git 2.43.0. Your patch numbers can be newer. The Python major.minor version needs to be 3.11 or newer.</p>
+
+            <h3>If you see this error</h3>
+            <p>These are the failures that showed up while checking the install. The quoted lines are real messages from those checks.</p>
+            <p><strong>Python is not found.</strong> A shell with no <code>python</code> command printed:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>python: command not found</code></pre>
+            </div>
+            <p>On macOS and Linux, use <code>python3</code> until the virtual environment is on. After that, <code>python</code> works. On Windows, the same problem means the installer is missing or the <strong>Add python.exe to PATH</strong> box was unchecked. Run the installer again, choose Modify, check that box, then open a new PowerShell window.</p>
+            <p><strong><span class="term"><button type="button" aria-expanded="false" aria-controls="tip-pip" aria-describedby="tip-pip">pip</button><span class="term-tip" id="tip-pip" role="tooltip">The tool that installs Python packages. This guide uses python -m pip so the pip command itself does not have to be on your PATH.</span></span> is not found.</strong> <code>python -m pip</code> in a Python that was built without pip printed:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>No module named pip</code></pre>
+            </div>
+            <p>A normal install from python.org includes pip, and a virtual environment includes it too. Re-run the Python installer. On Windows, choose Modify and include pip. In this guide, install packages with <code>python -m pip</code> so the <code>pip</code> command itself does not have to be on your PATH.</p>
+            <p><strong>Permission errors.</strong> Creating a virtual environment in a folder the computer will not let you write printed:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>Error: [Errno 13] Permission denied: '/tmp/noperm/venv'</code></pre>
+            </div>
+            <p>Create the project folder inside your home folder, somewhere your user can write, and run the commands there.</p>
+            <p>Installing with the system Python, outside a virtual environment, printed:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>Defaulting to user installation because normal site-packages is not writeable</code></pre>
+            </div>
+            <p>That means the command missed the virtual environment. Turn the environment on (see below), then run the install again.</p>
+            <p><strong>The Python version is too old.</strong> Installing Anubys with Python 3.10.22 printed:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>ERROR: Package 'ci-agent-regression-harness' requires a different Python: 3.10.22 not in '>=3.11'</code></pre>
+            </div>
+            <p>The <code>3.10.22</code> piece is the old Python that was tried. Yours may show a different old number. Install Python 3.11 or newer, open a new terminal, and create the virtual environment with that Python.</p>
+          </section>
+
+          <section class="docs-sec" id="install-anubys">
+            <h2>Install Anubys</h2>
+            <p>There is no <code>pip install anubys</code> package on the public Python package index. Use one of the two options below.</p>
+            <p>A <span class="term"><button type="button" aria-expanded="false" aria-controls="tip-venv" aria-describedby="tip-venv">virtual environment</button><span class="term-tip" id="tip-venv" role="tooltip">A private folder of Python packages for this project, so the install does not change the Python used by the rest of your computer.</span></span> is a private folder of Python packages for this project, so the install does not change the Python used by the rest of your computer.</p>
+            <p>The sample tasks later on this page live in the project folder. Option B downloads that folder. Option A installs the program only.</p>
+
+            <h3 id="turn-on-a-virtual-environment">Turn on a virtual environment</h3>
+            <p>From the folder where you want the private environment (for Option B, that is the project folder):</p>
+            <div class="os-panel" id="mac-venv" data-os-panel="mac" role="tabpanel" aria-labelledby="os-tab-mac">
+              <h3 class="os-panel-label">macOS</h3>
+              <p>This creates a hidden folder named <code>.venv</code>.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: python3 -m venv .venv">Copy</button></div>
+                <pre tabindex="0"><code>python3 -m venv .venv</code></pre>
+              </div>
+              <p>This points the word <code>python</code> at that folder for this terminal.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: source .venv/bin/activate">Copy</button></div>
+                <pre tabindex="0"><code>source .venv/bin/activate</code></pre>
+              </div>
+            </div>
+            <div class="os-panel" id="windows-venv" data-os-panel="windows" role="tabpanel" aria-labelledby="os-tab-windows">
+              <h3 class="os-panel-label">Windows (PowerShell)</h3>
+              <p>This creates the same <code>.venv</code> folder.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">PowerShell</p><button type="button" class="code-copy" aria-label="Copy command: python -m venv .venv">Copy</button></div>
+                <pre tabindex="0"><code>python -m venv .venv</code></pre>
+              </div>
+              <p>This turns the environment on in PowerShell.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">PowerShell</p><button type="button" class="code-copy" aria-label="Copy command: Activate.ps1">Copy</button></div>
+                <pre tabindex="0"><code>.venv\Scripts\Activate.ps1</code></pre>
+              </div>
+              <p>If PowerShell will not run that script, skip activation and call the environment's Python by name.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">PowerShell</p><button type="button" class="code-copy" aria-label="Copy command: locked install with the private Python">Copy</button></div>
+                <pre tabindex="0"><code>.venv\Scripts\python.exe -m pip install --require-hashes -r requirements.lock</code></pre>
+              </div>
+              <p>This downloads the locked libraries with the private Python.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">PowerShell</p><button type="button" class="code-copy" aria-label="Copy command: install Anubys with the private Python">Copy</button></div>
+                <pre tabindex="0"><code>.venv\Scripts\python.exe -m pip install --no-deps -e .</code></pre>
+              </div>
+              <p>This installs Anubys from the project folder with the private Python.</p>
+            </div>
+            <div class="os-panel" id="linux-venv" data-os-panel="linux" role="tabpanel" aria-labelledby="os-tab-linux">
+              <h3 class="os-panel-label">Linux</h3>
+              <p>This creates a hidden folder named <code>.venv</code>.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: python3 -m venv .venv on Linux">Copy</button></div>
+                <pre tabindex="0"><code>python3 -m venv .venv</code></pre>
+              </div>
+              <p>This points the word <code>python</code> at that folder for this terminal.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: source .venv/bin/activate on Linux">Copy</button></div>
+                <pre tabindex="0"><code>source .venv/bin/activate</code></pre>
+              </div>
+            </div>
+            <p>After activation, check Python again. This prints the Python inside the environment. It should be 3.11 or newer. On the check for this page it printed <code>Python 3.11.17</code>.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: python --version inside the environment">Copy</button></div>
+              <pre tabindex="0"><code>python --version</code></pre>
+            </div>
+            <p>A notice that a newer pip exists can be ignored. The install still works.</p>
+
+            <h3>Option A. Install the program from GitHub</h3>
+            <p>Use this once your computer can read the repository. After the repository is public, that includes everyone. From a terminal where the virtual environment is on:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell · (beta testing)</p><button type="button" class="code-copy" aria-label="Copy command: install the program from GitHub">Copy</button></div>
+              <pre tabindex="0"><code>python -m pip install "git+https://github.com/rphua-dev/ci-agent-regression-harness"</code></pre>
+            </div>
+            <p>This downloads Anubys from GitHub and installs the <code>harness</code> program. Pip picks library versions inside the ranges the project allows. Option B, below, is the one that installs the locked hashes.</p>
+            <p>The command was run in a fresh Python 3.11 virtual environment. It finished by installing <code>ci-agent-regression-harness</code> version 0.0.1. Then:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: python -m harness --help">Copy</button></div>
+              <pre tabindex="0"><code>python -m harness --help</code></pre>
+            </div>
+            <p>This lists the commands the program accepts. The check printed these names: <code>validate</code>, <code>export-schema</code>, <code>convert-tau-retail</code>, <code>hash</code>, <code>gates</code>, <code>build-mvp-families</code>, and <code>validate-results</code>.</p>
+            <p>Option A does not put the sample scenarios in the folder you are standing in. Running a sample from the wrong folder prints a line like this (the path will be whatever folder you used):</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>/tmp/does-not-exist-scenarios: path does not exist
+1 error(s) in 0 file(s); 0 scenario(s) parsed</code></pre>
+            </div>
+            <p>The samples in the next section need Option B, because they read files that ship in the repository.</p>
+
+            <h3>Option B. Download the repository and install the pinned versions</h3>
+            <p>This is the setup the project contributors use, and it is the one the samples need. In a folder where you keep projects:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell · (beta testing)</p><button type="button" class="code-copy" aria-label="Copy command: git clone the repository">Copy</button></div>
+              <pre tabindex="0"><code>git clone https://github.com/rphua-dev/ci-agent-regression-harness.git</code></pre>
+            </div>
+            <p>This downloads the project. The check printed <code>Cloning into 'ci-agent-regression-harness'...</code> and left a folder of that name.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: cd ci-agent-regression-harness">Copy</button></div>
+              <pre tabindex="0"><code>cd ci-agent-regression-harness</code></pre>
+            </div>
+            <p>This moves into the project folder. You are in the right place when that folder contains a file named <code>requirements.lock</code>.</p>
+            <p>Create and turn on the virtual environment, as in <a href="#turn-on-a-virtual-environment">Turn on a virtual environment</a>. Then:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: install locked libraries">Copy</button></div>
+              <pre tabindex="0"><code>python -m pip install --require-hashes -r requirements.lock</code></pre>
+            </div>
+            <p>This downloads the exact library versions locked for this project and checks each file's hash. It can take a few minutes. It is done when the last line says <code>Successfully installed</code> and lists the libraries.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: python -m pip install --no-deps -e .">Copy</button></div>
+              <pre tabindex="0"><code>python -m pip install --no-deps -e .</code></pre>
+            </div>
+            <p>This installs Anubys from the folder you are in, and it reuses the libraries from the line above. The <code>-e</code> means Python reads this folder when you run <code>harness</code>. The check ended with:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>Successfully installed ci-agent-regression-harness-0.0.1</code></pre>
+            </div>
+            <p>If the clone fails because GitHub will not show you the repository, the project is still private. Wait until it is public, or use a copy someone has already shared with you. Then start at <code>cd</code> into that copy and run the two <code>python -m pip</code> lines.</p>
+          </section>
+
+          <section class="docs-sec" id="sample-use-cases">
+            <h2>Sample use cases</h2>
+            <p>Run these from the project folder, with the virtual environment on. The free commands before the live-model section were run on Python 3.11 with <code>GEMINI_API_KEY</code> unset. They do not call a model, and they do not spend money.</p>
+            <p><code>python -m harness</code> runs the program even if the <code>harness</code> command is not on your PATH. After Option B, <code>harness</code> and <code>python -m harness</code> do the same job. The samples use <code>python -m harness</code>.</p>
+
+            <h3 id="validate-examples">Check that the example scenarios are valid</h3>
+            <p>You want to know that the small set of example shopping tasks is written in the shape Anubys accepts.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: validate the example scenarios">Copy</button></div>
+              <pre tabindex="0"><code>python -m harness validate suites/tau_retail/examples</code></pre>
+            </div>
+            <p>This reads the example files and checks their shape. It does not run an agent.</p>
+            <p class="guide-see"><b>You should see</b></p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>ok 9 scenario(s), 0 suite file(s)</code></pre>
+            </div>
+            <p>That means all 9 example files are valid.</p>
+            <p>The same check covers the larger retail folder and its suite file:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: validate the retail suite">Copy</button></div>
+              <pre tabindex="0"><code>python -m harness validate suites/tau_retail</code></pre>
+            </div>
+            <p>This walks the whole retail suite, including the examples and the scenario set used by the safety checks.</p>
+            <p class="guide-see"><b>You should see</b></p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>ok 87 scenario(s), 1 suite file(s)</code></pre>
+            </div>
+            <p>That means 87 scenario files and 1 suite file passed. The 9 example files and the 78 files in the scenarios folder are those 87.</p>
+            <p>More detail on the file shape is in <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/docs/scenario-format.md" rel="noopener noreferrer">scenario-format.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+
+            <h3 id="safety-checks">Run the safety checks</h3>
+            <p>You want to know the sanitized scenarios are safe to keep: the shape is valid, the personal data is synthetic, there are no secrets, and the tasks are not copies of each other.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: run the safety checks">Copy</button></div>
+              <pre tabindex="0"><code>python -m harness gates suites/tau_retail/scenarios</code></pre>
+            </div>
+            <p>This runs six safety checks on the scenarios folder. It does not call a model. Gitleaks, an optional extra secret scanner, is not required on your own computer.</p>
+            <p class="guide-see"><b>You should see</b></p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>schema: pass (78 scenario(s), 0 suite file(s))
+synthetic-pii: pass (78 scenario(s), 0 cassette file(s))
+secrets: pass (python scanner; gitleaks not installed, trufflehog not installed; 78 file(s))
+exact-duplicates: pass (78 scenario(s), canonical content hash)
+near-duplicates: pass (78 scenario(s), MinHash on user turns, threshold 0.8)
+splits: pass (26 family(ies), one split each)
+ok 6 gate(s)</code></pre>
+            </div>
+            <p><code>ok 6 gate(s)</code> means every check passed. <code>gitleaks not installed</code> and <code>trufflehog not installed</code> are normal on a laptop. The secrets line still says <code>pass</code>. The project's CI installs gitleaks and adds <code>--require-gitleaks</code>. You can leave that flag off.</p>
+            <p>Point this command at <code>suites/tau_retail/scenarios</code> only. The examples folder is a straight conversion and still has upstream personal data, so the synthetic-data check is supposed to reject it. A check of that folder ended with <code>1 gate(s) failed: synthetic-pii</code>. That failure is expected there. Use <code>validate</code> for the examples, and <code>gates</code> for <code>suites/tau_retail/scenarios</code>.</p>
+
+            <h3 id="check-a-results-file-and-read-its-verdict">Check a results file and read its verdict</h3>
+            <p>You have a results file and you want the verdict in plain words. The file in the repository is practice data for a demo page. It is not a score from a real agent.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: validate the sample results file">Copy</button></div>
+              <pre tabindex="0"><code>python -m harness validate-results docs/examples/results.preliminary.json</code></pre>
+            </div>
+            <p>This checks that the results file has the fields Anubys expects. It does not print the verdict.</p>
+            <p class="guide-see"><b>You should see</b></p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>ok 1 results file(s)</code></pre>
+            </div>
+            <p>That means the file is valid. Read the verdict with:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: print the sample verdict">Copy</button></div>
+              <pre tabindex="0"><code>python -c "import json; doc=json.load(open('docs/examples/results.preliminary.json', encoding='utf-8')); labels=doc['verdicts']['verdict_captions']; print(doc['verdicts']['overall']['verdict']); print(doc['note']); print('pass:', labels['pass']['caption']); print('block:', labels['block']['caption']); print('insufficient_evidence:', labels['insufficient_evidence']['caption']); print('invalid_run:', labels['invalid_run']['caption'])"</code></pre>
+            </div>
+            <p>This opens the sample file and prints the verdict word, the note, and one sentence for each of the four verdicts.</p>
+            <p class="guide-see"><b>You should see</b></p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>insufficient_evidence
+FAKE preliminary data for the demo landing page. Not a baseline and not a gate result.
+pass: The new agent was close enough to the current one that this test says go ahead.
+block: The new agent was clearly worse than the current one, so this test says stop.
+insufficient_evidence: This test cannot yet tell whether the new agent is close enough, so it is not a yes or a no.
+invalid_run: The test run itself was not reliable, so this result should not be used to decide.</code></pre>
+            </div>
+            <p>The verdict on this file is <span class="verdict-chip" data-state="insufficient">Insufficient evidence</span>: the test cannot yet say yes or no. The second line says the numbers are fake, so do not treat them as a real comparison. The field guide for the file is <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/docs/results-format.md" rel="noopener noreferrer">results-format.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+
+            <h3 id="replay">Replay a recorded run <span class="docs-badge" data-state="planned">Coming soon</span></h3>
+            <p>Replaying a saved model recording is supported inside the code, and that path writes a cost of <span class="example-tag">Example</span> $0 because it does not call a model. Replaying only the tool environment while the model itself is live still calls the model and can spend money.</p>
+            <p>There is no beginner command for either path. <code>python -m harness --help</code> has no <code>replay</code> or <code>run</code> command. The repository also has no sample recording you can point at. This page skips the replay exercise for that reason.</p>
+
+            <h3 id="tau-preview">Preview converting tau-bench retail tasks</h3>
+            <p>You want a preview of how the vendored tau-bench retail tasks would be classified, without writing files and without spending money.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: convert-tau-retail dry run">Copy</button></div>
+              <pre tabindex="0"><code>python -m harness convert-tau-retail --dry-run</code></pre>
+            </div>
+            <p>This counts the local retail tasks on the test split and prints three policy labels. <code>--dry-run</code> writes nothing. The tasks are already in the repository, so this does not download them and does not call a model.</p>
+            <p class="guide-see"><b>You should see</b></p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>split test: 115 tasks
+  allowed: 104
+  must_refuse: 7
+  ambiguous: 4</code></pre>
+            </div>
+            <p>That means the test split has 115 tasks: 104 the agent may carry out, 7 the agent must refuse, and 4 that are ambiguous. 115 is the original tau-bench task list. 87 is the number of Anubys's converted scenarios. No scenario files were written. Stop here for the preview. Adding <code>--out</code> would write files, and this page does not ask you to do that.</p>
+
+            <h3 id="live-model">Run against a real model (costs money)</h3>
+            <p class="use-flag">Costs money</p>
+            <div class="docs-callout">
+              <p>A live run sends tasks to Google Gemini and can charge the Google account that owns the API key. Read this section so you know how the guard rails work. Do not start a live run from this page.</p>
+            </div>
+            <p><strong>There is no tiny live command on main.</strong> <code>python -m harness --help</code> has no command that calls Gemini. The manual workflow file <code>.github/workflows/experiment.yml</code> is still a placeholder. Its last step says that no Gemini call was made. Do not run that workflow as if it were a live test, and do not paste a workflow into your repository from this page.</p>
+            <p>When a real live command exists, it will be a labeled experiment. Until then, the steps below only prepare a key and show the free spend check.</p>
+
+            <h3>Get a Gemini API key</h3>
+            <ol>
+              <li>Sign in to <a href="https://aistudio.google.com/" rel="noopener noreferrer">Google AI Studio</a>.</li>
+              <li>Open the API keys page and create a key. Google's steps are in the <a href="https://ai.google.dev/gemini-api/docs/api-key" rel="noopener noreferrer">Gemini API key guide</a>.</li>
+              <li>Copy the key once. Keep it in the terminal only.</li>
+            </ol>
+
+            <h3>Keep the key out of the project</h3>
+            <p>Paste the key only into the current terminal, never into a file you could commit. Do not put it in a scenario, in <code>spend/spend_log.jsonl</code>, or in a note.</p>
+            <div class="os-panel" id="mac-key" data-os-panel="mac" role="tabpanel" aria-labelledby="os-tab-mac">
+              <h3 class="os-panel-label">macOS</h3>
+              <p>In the same terminal where the virtual environment is on, this holds the key in that terminal until you close the window.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell · placeholder</p><button type="button" class="code-copy" aria-label="Copy command: hold the key in this terminal">Copy</button></div>
+                <pre tabindex="0"><code>export GEMINI_API_KEY="paste-the-key-here"</code></pre>
+              </div>
+            </div>
+            <div class="os-panel" id="windows-key" data-os-panel="windows" role="tabpanel" aria-labelledby="os-tab-windows">
+              <h3 class="os-panel-label">Windows (PowerShell)</h3>
+              <p>This does the same thing in PowerShell.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">PowerShell · placeholder</p><button type="button" class="code-copy" aria-label="Copy command: hold the key in PowerShell">Copy</button></div>
+                <pre tabindex="0"><code>$env:GEMINI_API_KEY = "paste-the-key-here"</code></pre>
+              </div>
+            </div>
+            <div class="os-panel" id="linux-key" data-os-panel="linux" role="tabpanel" aria-labelledby="os-tab-linux">
+              <h3 class="os-panel-label">Linux</h3>
+              <p>In the same terminal where the virtual environment is on, this holds the key in that terminal until you close the window.</p>
+              <div class="docs-code">
+                <div class="docs-code-bar"><p class="docs-code-label">shell · placeholder</p><button type="button" class="code-copy" aria-label="Copy command: hold the key in this terminal on Linux">Copy</button></div>
+                <pre tabindex="0"><code>export GEMINI_API_KEY="paste-the-key-here"</code></pre>
+              </div>
+            </div>
+            <p>Check that the key is present without printing it. This prints <code>set</code> when the variable has a key, and <code>missing</code> when it does not. It does not print the key.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: check the key without printing it">Copy</button></div>
+              <pre tabindex="0"><code>python -c "import os; print('set' if os.environ.get('GEMINI_API_KEY','').strip() else 'missing')"</code></pre>
+            </div>
+            <p>With no key, which is how every free command on this page was run, you should see:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <pre tabindex="0"><code>missing</code></pre>
+            </div>
+
+            <h3>Spend safety</h3>
+            <p>Two checks sit in front of a live rollout.</p>
+            <p><strong>Per-rollout dollar limit.</strong> A live rollout can be given a dollar ceiling. If the model cost of that one rollout is above the ceiling, Anubys marks it with the reason <code>spend_ceiling</code>. Going over that limit counts as a fail, not a miss. That is the agreed policy, and it lands in an upcoming pull request. The cost is still written to the spend log. The suite can continue with the next rollout. Only the monthly <span class="example-tag">Example</span> $38 stop counts as a miss.</p>
+            <p><strong>The <span class="example-tag">Example</span> $38 monthly check.</strong> Anubys adds up <code>spend/spend_log.jsonl</code> for the current calendar month in UTC. Once that logged total reaches <span class="example-tag">Example</span> $38, Anubys does not start another live rollout. Before it starts one, it also adds what the next rollout is allowed to cost: your per-rollout ceiling, or the cost of the previous logged row when no ceiling is set. If that sum would reach <span class="example-tag">Example</span> $38, the next rollout does not start. A rollout that has already started is allowed to finish, so the logged total can end a little above <span class="example-tag">Example</span> $38.</p>
+            <p>A budget alert in Google's own console does not stop the calls. The monthly check is what stops new live rollouts, and a small overshoot is possible.</p>
+            <p>You can run the monthly check itself for free. It only reads the log. This sums the log for the current UTC month and compares it with <span class="example-tag">Example</span> $38. It does not call a model.</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">shell</p><button type="button" class="code-copy" aria-label="Copy command: check monthly spend">Copy</button></div>
+              <pre tabindex="0"><code>python scripts/check_monthly_spend.py --threshold 38</code></pre>
+            </div>
+            <p>The check on 16 October 2026 printed:</p>
+            <div class="docs-code">
+              <div class="docs-code-bar"><p class="docs-code-label">output</p></div>
+              <p class="guide-see"><span class="example-tag">Example</span></p><pre tabindex="0"><code>2026-10 logged spend is $0, under the $38 cap.</code></pre>
+            </div>
+            <p>Your line can start with a later month, such as the month you run it. <span class="example-tag">Example</span> $0 means the log has no spend in that month. The log file in the repository is empty until a labeled experiment appends a row. Leave the file alone.</p>
+
+            <h3 id="github-ci">Use it in GitHub CI (coming soon) <span class="docs-badge" data-state="planned">Coming soon</span></h3>
+            <p>The packaged GitHub Action in <code>action/action.yml</code> is a stub that exits with an error on purpose, so a workflow cannot treat it as a passing check. A real Action is planned for November 5. Until then, pull-request CI includes the free checks from this page (scenario validation, the sanitization gates, the sample results file, and the monthly spend check) and does not call a model. This page does not include a workflow file, because a sample would not be a working gate yet. The stub is described in <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/action/README.md" rel="noopener noreferrer">action/README.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+          </section>
+
+          <section class="docs-sec" id="glossary">
+            <h2>Glossary</h2>
+            <p><strong>Scenario.</strong> One practice task: a customer situation, the tools the agent may use, and the checks Anubys applies to the outcome.</p>
+            <p><strong>Baseline.</strong> The agent you already trust. Anubys compares the new agent against it.</p>
+            <p><strong>Candidate.</strong> The new agent you are considering.</p>
+            <p><strong>Verdict.</strong> The single decision for a comparison. It is Pass, Block, Insufficient evidence, or Invalid run.</p>
+            <p><strong>Rollout.</strong> One try of one scenario by one agent. A live rollout can call a model. The free commands on this page do not run rollouts.</p>
+            <p><strong>Sanitization gates.</strong> The six safety checks in <code>python -m harness gates</code>: file shape, synthetic personal data, secrets, exact copies, near copies, and one split per family.</p>
+            <p><strong>Virtual environment.</strong> A private folder of Python packages for this project, usually named <code>.venv</code>.</p>
+            <p><strong>Spend log.</strong> The file <code>spend/spend_log.jsonl</code>, an append-only list of what live runs cost. Replay of a model recording writes a <span class="example-tag">Example</span> $0 row. The monthly check reads this file.</p>
+            <p><strong>Cassette.</strong> A saved recording of a previous run. The code can replay one. There is no <code>harness</code> command for that yet.</p>
+            <p><strong>tau-bench retail.</strong> A public set of shopping support tasks. This repository already contains a copy. <code>convert-tau-retail --dry-run</code> only counts that local copy.</p>
+          </section>
+
+          <section class="docs-sec" id="getting-help">
+            <h2>Getting help</h2>
+            <p>Open an issue on the repository: <a href="https://github.com/rphua-dev/ci-agent-regression-harness/issues" rel="noopener noreferrer">https://github.com/rphua-dev/ci-agent-regression-harness/issues</a> <span class="beta-mark">(beta testing)</span>.</p>
+            <p>Include the command you ran, the full output, and the output of <code>python --version</code>. Say whether you are on macOS, Windows, or Linux. Remove any line that contains your API key before you post.</p>
+            <p>If GitHub says you cannot see the repository, it is not public yet.</p>
+            <p>The contributor checks (lint and tests) are listed in <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/CONTRIBUTING.md" rel="noopener noreferrer">CONTRIBUTING.md</a> <span class="beta-mark">(beta testing)</span>. The spend log rules are in <a href="https://github.com/rphua-dev/ci-agent-regression-harness/blob/main/spend/README.md" rel="noopener noreferrer">spend/README.md</a> <span class="beta-mark">(beta testing)</span>.</p>
+          </section>
+        </div>
+        <nav class="docs-pager" aria-label="Previous and next"><a class="docs-prev" href="../"><span>Previous</span><b>Introduction</b></a><a class="docs-next" href="../quickstart/"><span>Next</span><b>Quickstart</b></a></nav>
+      </article>
+    </div>
+  </main>
+  <footer class="footer">
+    <div class="wrap footer-grid">
+      <div>
+        <p class="brand"><svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 22V52M22 52H42" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square"/><path d="M10 22H54M10 22 6 36H18L14 22M54 22 50 36H62L58 22" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="square" stroke-linejoin="miter"/><circle class="mark-pivot" cx="32" cy="22" r="2.2" fill="currentColor"/></svg> <span class="wordmark"><span class="wordmark-name">Anubys</span><span class="wordmark-tld">.dev</span></span></p>
+        <p>Suite-level regression checks for agents in CI. Replace the results file without changing the page.</p>
+      </div>
+      <nav aria-label="Pages">
+        <p>Product</p>
+        <a href="../../">Overview</a>
+        <a href="../../how-it-works/">How it works</a>
+        <a href="../../method/">Method</a>
+        <a href="../../gate/">Gate</a>
+        <a href="../../results/">Results</a>
+        <a href="../../performance/">Performance</a>
+        <a href="../../integrations/">Integrations</a>
+        <a href="../">Docs</a>
+        <a href="../install/">Install</a>
+        <a href="./">Guide</a>
+        <a href="../../use-cases/">Use cases</a>
+        <a href="../../about/">About</a>
+      </nav>
+      <nav aria-label="Elsewhere">
+        <p>Contact</p>
+        <a href="https://github.com/rphua-dev/ci-agent-regression-harness" rel="noopener noreferrer">Source</a> <span class="beta-mark">(beta testing)</span>
+        <a href="https://ryean0.github.io/">Portfolio</a>
+      </nav>
+    </div>
+    <div class="wrap footer-bottom">
+      <p>Relative paths. Copy this folder to its own repository unchanged.</p>
+    </div>
+  </footer>
+  <dialog class="pilot" id="pilot" aria-labelledby="pilot-title">
+    <form id="pilot-form">
+      <p class="kicker">Pilot</p>
+      <h2 id="pilot-title">Request a pilot</h2>
+      <p class="lede">Opens an email draft. Nothing is stored on this page.</p>
+      <div class="fields">
+        <label>Name <input name="name" autocomplete="name" required></label>
+        <label>Work email <input name="email" type="email" autocomplete="email" required></label>
+        <label>Company <input name="company" autocomplete="organization" required></label>
+        <label>What should the gate watch? <textarea name="note"></textarea></label>
+      </div>
+      <div class="pilot-actions">
+        <button type="submit" class="btn btn-primary">Open email draft</button>
+        <button type="button" class="btn btn-ghost" id="pilot-cancel">Cancel</button>
+      </div>
+      <p class="fine" id="pilot-note" role="status"></p>
+    </form>
+  </dialog>
+  <script type="module" src="../../js/docs.js"></script>
+</body>
+</html>
