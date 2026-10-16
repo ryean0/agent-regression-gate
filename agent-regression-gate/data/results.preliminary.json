@@ -1,147 +1,188 @@
 {
-  "version": "2.1.0",
   "schema_version": "2.1.0",
+  "generated_at": "2026-10-08T12:00:00Z",
   "status": "preliminary",
-  "level": 0.9,
-  "likely_regression": false,
-  "invalid_run": false,
-  "suite": "preliminary-example",
+  "source": "screening",
   "run_kind": "screening",
-  "baseline_pool_model_id": "baseline model id (exact version set in suite config)",
+  "note": "FAKE preliminary data for the demo landing page. Not a baseline and not a gate result.",
+  "baseline_id": "fake-baseline-2026-10-08",
+  "baseline_pool_model_id": "tau-retail-baseline-pool",
+  "rollouts_per_scenario": {
+    "baseline": 5,
+    "candidate": 5
+  },
+  "total_rollouts": {
+    "baseline": 20,
+    "candidate": 20
+  },
   "min_valid_fraction_per_scenario": "0.6",
-  "rollouts_per_scenario": { "baseline": 20, "candidate": 20 },
-  "verdicts": {
-    "overall": {
-      "delta": "0.05",
-      "difference_ci": { "lower": "-0.04", "upper": "0.02", "level": "0.9" },
-      "likely_regression": false,
-      "model_ids": {
-        "baseline": "baseline model id (exact version set in suite config)",
-        "candidate": "a pinned Gemini Flash-Lite model id (exact version set in suite config)"
-      }
-    }
-  },
-  "notes": {
-    "summary": "Preliminary example in harness results schema 2.1.0, bundled so the results panel has a file to read. These figures are not a customer result and not a final gate. Replace data/results.preliminary.json with the real harness output around 30 October 2026.",
-    "mde": "Smallest drop we can reliably catch, set against how many rollouts you budget. This chart is preliminary.",
-    "aa": "The gate doesn't cry wolf. An A/A check runs the same agent on both arms. It is not in this file yet."
-  },
-  "arms": {
+  "environment_misses": {
     "baseline": {
-      "scheduled_rollouts": 80,
-      "environment_misses": 0,
-      "miss_counts": { "missing": 0, "infrastructure": 0 },
-      "pass_rate": "72/80",
-      "model_id": "baseline model id (exact version set in suite config)",
-      "caption": "Production arm stayed within 0.05 of the previous gate."
+      "scheduled": 20,
+      "misses": 0,
+      "rate": "0/20"
     },
     "candidate": {
-      "scheduled_rollouts": 20,
-      "environment_misses": 1,
-      "miss_counts": { "missing": 0, "infrastructure": 1 },
-      "pass_rate": "3/5",
-      "model_id": "a pinned Gemini Flash-Lite model id (exact version set in suite config)",
-      "caption": "Candidate arm under test, with a $1.25 sample fee in the prompt."
+      "scheduled": 20,
+      "misses": 1,
+      "rate": "1/20"
     }
   },
-  "scenarios": [
-    {
-      "id": "reset-locked-account",
-      "name": "Reset a locked account",
-      "baseline_rate": "18/20",
-      "candidate_rate": "0.6",
-      "caption": "Locked-account resets stayed within 0.05 of the baseline rate."
-    },
-    {
-      "id": "refund-duplicate-charge",
-      "name": "Refund a duplicate charge",
-      "baseline_rate": "17/20",
-      "candidate_rate": "4/5",
-      "caption": "Duplicate-charge refunds mention a $1.25 fee and stay a diagnostic."
-    },
-    {
-      "id": "explain-shipping-delay",
-      "name": "Explain a shipping delay",
-      "baseline_rate": "19/20",
-      "candidate_rate": "0.8",
-      "caption": "Shipping-delay explanations are a diagnostic, not a separate gate."
-    },
-    {
-      "id": "escalate-safety-complaint",
-      "name": "Escalate a safety complaint",
-      "baseline_rate": "16/20",
-      "candidate_rate": "3/5",
-      "caption": "Safety escalations stay a diagnostic row beside the suite label."
-    }
-  ],
-  "diagnostics": [
-    {
-      "scenario_id": "reset-locked-account",
-      "family_id": "support",
-      "scheduled_rollouts": { "baseline": 20, "candidate": 20 },
-      "miss_counts": {
-        "baseline": { "missing": 0, "infrastructure": 0 },
-        "candidate": { "missing": 0, "infrastructure": 0 }
+  "cost_usd": 1.25,
+  "verdicts": {
+    "caption": "This is the single decision for every task together: whether the new agent is close enough to the current one.",
+    "verdict_captions": {
+      "pass": {
+        "caption": "The new agent was close enough to the current one that this test says go ahead."
       },
-      "missing_cassette_keys": { "baseline": [], "candidate": [] },
-      "baseline_pass_rate": "18/20",
-      "candidate_pass_rate": "0.6",
-      "difference": "-0.3",
-      "difference_ci": { "lower": "-0.5", "upper": "0.1", "level": "0.9" }
-    },
-    {
-      "scenario_id": "refund-duplicate-charge",
-      "family_id": "support",
-      "scheduled_rollouts": { "baseline": 20, "candidate": 20 },
-      "miss_counts": {
-        "baseline": { "missing": 0, "infrastructure": 0 },
-        "candidate": { "missing": 0, "infrastructure": 0 }
+      "block": {
+        "caption": "The new agent was clearly worse than the current one, so this test says stop."
       },
-      "missing_cassette_keys": { "baseline": [], "candidate": [] },
-      "baseline_pass_rate": "17/20",
-      "candidate_pass_rate": "4/5",
-      "difference": "-0.05",
-      "difference_ci": { "lower": "-0.2", "upper": "0.1", "level": "0.9" }
-    },
-    {
-      "scenario_id": "explain-shipping-delay",
-      "family_id": "support",
-      "scheduled_rollouts": { "baseline": 20, "candidate": 20 },
-      "miss_counts": {
-        "baseline": { "missing": 0, "infrastructure": 0 },
-        "candidate": { "missing": 0, "infrastructure": 0 }
+      "insufficient_evidence": {
+        "caption": "This test cannot yet tell whether the new agent is close enough, so it is not a yes or a no."
       },
-      "missing_cassette_keys": { "baseline": [], "candidate": [] },
-      "baseline_pass_rate": "19/20",
-      "candidate_pass_rate": "0.8",
-      "difference": "-0.15",
-      "difference_ci": { "lower": "-0.3", "upper": "0.05", "level": "0.9" }
+      "invalid_run": {
+        "caption": "The test run itself was not reliable, so this result should not be used to decide."
+      }
     },
-    {
-      "scenario_id": "escalate-safety-complaint",
-      "family_id": "support",
-      "scheduled_rollouts": { "baseline": 20, "candidate": 20 },
-      "miss_counts": {
-        "baseline": { "missing": 0, "infrastructure": 0 },
-        "candidate": { "missing": 0, "infrastructure": 1 }
+    "overall": {
+      "verdict": "insufficient_evidence",
+      "difference": -0.04,
+      "difference_ci": {
+        "lower": -0.18,
+        "upper": 0.09,
+        "level": 0.9
       },
-      "missing_cassette_keys": { "baseline": [], "candidate": [] },
-      "baseline_pass_rate": "16/20",
-      "candidate_pass_rate": "3/5",
-      "difference": "-0.2",
-      "difference_ci": { "lower": "-0.4", "upper": "0.05", "level": "0.9" }
-    }
-  ],
-  "charts": {
-    "mde": {
-      "status": "preliminary",
-      "title": "Smallest drop we can reliably catch",
-      "x_label": "Rollout budget",
-      "y_label": "Smallest drop"
+      "delta": 0.05,
+      "likely_regression": false,
+      "model_ids": {
+        "baseline": "tau-retail-baseline-pool",
+        "candidate": "tau-retail-baseline-pool"
+      },
+      "note": "FAKE. The 90% interval crosses -delta, so the suite gate is not pass or block."
     },
-    "aa": {
-      "status": "coming_soon",
-      "title": "The gate doesn't cry wolf"
-    }
+    "diagnostics": [
+      {
+        "scenario_id": "example.family.v1",
+        "family_id": "example.family",
+        "scheduled_rollouts": {
+          "baseline": 5,
+          "candidate": 5
+        },
+        "miss_counts": {
+          "baseline": 0,
+          "candidate": 0
+        },
+        "missing_cassette_keys": {
+          "baseline": [],
+          "candidate": []
+        },
+        "baseline_pass_rate": 0.8,
+        "candidate_pass_rate": 0.82,
+        "difference": 0.02,
+        "difference_ci": {
+          "lower": -0.03,
+          "upper": 0.07,
+          "level": 0.9
+        },
+        "note": "FAKE diagnostic. Not a gate verdict."
+      },
+      {
+        "scenario_id": "example.other.v1",
+        "family_id": "example.other",
+        "scheduled_rollouts": {
+          "baseline": 5,
+          "candidate": 5
+        },
+        "miss_counts": {
+          "baseline": 0,
+          "candidate": 0
+        },
+        "missing_cassette_keys": {
+          "baseline": [],
+          "candidate": []
+        },
+        "baseline_pass_rate": 0.7,
+        "candidate_pass_rate": 0.58,
+        "difference": -0.12,
+        "difference_ci": {
+          "lower": -0.2,
+          "upper": -0.06,
+          "level": 0.9
+        },
+        "note": "FAKE diagnostic. The suite gate above is the only verdict."
+      },
+      {
+        "scenario_id": "example.broken.v1",
+        "family_id": "example.broken",
+        "scheduled_rollouts": {
+          "baseline": 5,
+          "candidate": 5
+        },
+        "miss_counts": {
+          "baseline": 0,
+          "candidate": 1
+        },
+        "missing_cassette_keys": {
+          "baseline": [],
+          "candidate": [
+            "example.broken.v1/get_order_details"
+          ]
+        },
+        "note": "FAKE diagnostic with no pass rates. One candidate cassette miss. The document miss rate is exactly 1/20, which is not over 5%."
+      },
+      {
+        "scenario_id": "example.clean.v1",
+        "family_id": "example.clean",
+        "scheduled_rollouts": {
+          "baseline": 5,
+          "candidate": 5
+        },
+        "miss_counts": {
+          "baseline": 0,
+          "candidate": 0
+        },
+        "missing_cassette_keys": {
+          "baseline": [],
+          "candidate": []
+        },
+        "baseline_pass_rate": 0.9,
+        "candidate_pass_rate": 0.9,
+        "difference": 0.0,
+        "difference_ci": {
+          "lower": -0.02,
+          "upper": 0.02,
+          "level": 0.9
+        },
+        "note": "FAKE diagnostic. Scheduled count equals rollouts_per_scenario on both arms."
+      }
+    ]
+  },
+  "aa": {
+    "status": "coming_soon",
+    "caption": "Running the current agent against itself should almost never say stop, which shows the test does not cry wolf, and this check is coming soon.",
+    "note": "A/A summary is not in this file. coverage is the Week 4 fraction of resamples whose 90% CI covers 0."
+  },
+  "mde": {
+    "status": "preliminary",
+    "caption": "This is the smallest drop in success rate the test can reliably catch with the number of tries in this budget, and more tries make that drop smaller.",
+    "undetectable": {
+      "caption": "A smaller drop than that comes back as not enough evidence, not as a stop."
+    },
+    "rows": [
+      {
+        "rollouts": 5,
+        "minimum_detectable_effect": 0.25,
+        "note": "Fake row."
+      },
+      {
+        "rollouts": 20,
+        "minimum_detectable_effect": 0.12
+      },
+      {
+        "rollouts": 50,
+        "minimum_detectable_effect": 0.08
+      }
+    ]
   }
 }

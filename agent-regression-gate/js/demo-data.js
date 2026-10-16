@@ -1,5 +1,28 @@
 /** Simulated demo fixtures. Not the results.json file, and not customer results. */
 
+const EXAMPLE = [
+  {
+    id: "example.clean.v1",
+    familyId: "example.clean",
+    name: "Clean example",
+    prompt: "Use the tool result. Tell the customer the date the tool returned.",
+    expectedHash: "9ee957d3c10792cb580a4f1699a580d8a17ff0b5070a875b06f306813bd89ed5",
+    baselineScheduled: 20,
+    candidateScheduled: 5,
+    baseline: { pass: 18, fail: 2 },
+  },
+  {
+    id: "example.broken.v1",
+    familyId: "example.broken",
+    name: "Broken example",
+    prompt: "Ignore the tool error and invent a refund amount.",
+    expectedHash: "fff508492c8dfa588c3175706032af1d69b1c98060722c485e086530a0b0b538",
+    baselineScheduled: 20,
+    candidateScheduled: 5,
+    baseline: { pass: 16, fail: 4 },
+  },
+];
+
 const SUPPORT = [
   {
     id: "reset-locked-account",
@@ -71,6 +94,12 @@ const CHECKOUT = [
 
 export const SCENARIO_SETS = [
   {
+    id: "example",
+    name: "example split",
+    summary: "example.clean.v1 and example.broken.v1",
+    scenarios: EXAMPLE,
+  },
+  {
     id: "support",
     name: "support-desk",
     summary: "4 scenarios · repeated rollouts per arm",
@@ -92,6 +121,18 @@ export const CANDIDATES = [
 ];
 
 const CANDIDATE_SLOTS = {
+  "example.clean.v1": {
+    stable: { pass: 5 },
+    subtle: { pass: 3, fail: 2 },
+    loops: { pass: 0, agentTimeout: 5 },
+    flaky: { pass: 4, infraTimeout: 1 },
+  },
+  "example.broken.v1": {
+    stable: { pass: 4, fail: 1 },
+    subtle: { pass: 2, fail: 3 },
+    loops: { pass: 0, agentTimeout: 5 },
+    flaky: { pass: 4, fail: 1 },
+  },
   "reset-locked-account": {
     stable: { pass: 5 },
     subtle: { pass: 3, fail: 2 },

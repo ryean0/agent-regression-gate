@@ -269,6 +269,10 @@ export const DOCS_INDEX = [
     "title": "Changelog",
     "headings": [
       {
+        "id": "example-results",
+        "text": "16 October 2026"
+      },
+      {
         "id": "performance-day",
         "text": "15 October 2026"
       },

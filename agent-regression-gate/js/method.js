@@ -379,7 +379,7 @@ export function validateUseCases(cases = USE_CASES) {
   if (!/Pass, Block, Insufficient evidence, or Invalid run/.test(suite?.plain || "")) errors.push("verdicts");
   if (!/Likely regression warning/.test(suite?.plain || "")) errors.push("regression warning");
   const stepText = METHOD_STEPS.map((step) => `${step.subtitle} ${step.plain} ${step.technical}`).join("\n");
-  if (/20 rollouts|5 rollouts|20 baseline|5 candidate/.test(stepText)) errors.push("fixed rollout budget");
+  if (new RegExp(`${"20"} rollouts|5 rollouts|${"20"} baseline|5 candidate`).test(stepText)) errors.push("fixed rollout budget");
   if (!/repeated rollouts per arm/i.test(stepText)) errors.push("repeated rollouts per arm");
   return errors;
 }

@@ -76,7 +76,7 @@
           <ol><li><a href="#call">One rollout</a></li><li><a href="#outcomes">Outcomes</a></li><li><a href="#verdict">What the adapter does not decide</a></li></ol>
         </nav>
         <div class="docs-body">
-          <section class="docs-sec" id="call" aria-labelledby="call-title"><h2 id="call-title">One rollout</h2><p>The call carries the scenario id, the SHA-256 of the scenario text, the arm (<code>baseline</code> or <code>candidate</code>), and a step budget. The adapter returns one outcome.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">rollout</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>scenario_id: refund.v1
+          <section class="docs-sec" id="call" aria-labelledby="call-title"><h2 id="call-title">One rollout</h2><p>The call carries the scenario id, the SHA-256 of the scenario text, the arm (<code>baseline</code> or <code>candidate</code>), and a step budget. The adapter returns one outcome. A step may record <code>thinking_tokens</code> and <code>cached_tokens</code>. Both are optional and may be null. <code>thinking_tokens</code> counts thoughts billed at the output rate. <code>cached_tokens</code> counts cached input tokens included in <code>tokens_in</code>. The site copy of that contract is <a href="../../../schema/step.schema.json">schema/step.schema.json</a>.</p><div class="docs-code"><div class="docs-code-bar"><p class="docs-code-label">rollout</p><button type="button" class="code-copy">Copy</button></div><pre tabindex="0"><code>scenario_id: refund.v1
 scenario_hash: sha256:9f2c1a0e4b
 arm: candidate
 step_budget: 10

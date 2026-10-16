@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "planned_rollouts": 40,
+  "completed_rollouts": 40,
+  "infra_misses": 1,
+  "stopped": null,
+  "total_cost_usd": 1.25,
+  "total_cached_input_tokens": 120,
+  "rollout_duration_p50_s": 12,
+  "rollout_duration_max_s": 40
+}

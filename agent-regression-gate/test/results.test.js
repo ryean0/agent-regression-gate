@@ -2,13 +2,97 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { INTERVAL_FALLBACK, parseResults, parseResultsV2 } from "../js/results.js";
+import { INTERVAL_FALLBACK, RUN_SUMMARY_PATH, parseResults, parseResultsV2, parseRunSummary, summaryRows } from "../js/results.js";
 
-const bundled = JSON.parse(
+const shipped = JSON.parse(
   readFileSync(new URL("../data/results.preliminary.json", import.meta.url), "utf8"),
 );
+const bundled = JSON.parse(
+  readFileSync(new URL("./fixtures/results.invalid-legacy.json", import.meta.url), "utf8"),
+);
+const runSummary = JSON.parse(
+  readFileSync(new URL(`../${RUN_SUMMARY_PATH}`, import.meta.url), "utf8"),
+);
 
-test("the bundled preliminary file parses and banners", () => {
+test("the shipped harness preliminary file parses as insufficient evidence", () => {
+  const view = parseResults(shipped);
+  assert.equal(parseResultsV2(shipped).headline, view.headline);
+  assert.equal(view.version, "2.1.0");
+  assert.equal(view.schemaVersion, "2.1.0");
+  assert.equal(view.shape, "harness");
+  assert.equal(view.headline, "Insufficient evidence");
+  assert.equal(view.verdict, "insufficient_evidence");
+  assert.equal(view.likelyRegression, false);
+  assert.equal(view.status, "preliminary");
+  assert.equal(view.runKind, "screening");
+  assert.equal(view.baselinePoolModelId, "tau-retail-baseline-pool");
+  assert.equal(view.modelIds.baseline, "tau-retail-baseline-pool");
+  assert.equal(view.modelIds.candidate, "tau-retail-baseline-pool");
+  assert.equal(view.modelIdSources.baseline, "overall");
+  assert.equal(view.modelIdSources.candidate, "overall");
+  assert.equal(view.arms.baseline.modelId, view.modelIds.baseline);
+  assert.equal(view.interval.fromFile, true);
+  assert.equal(view.interval.delta, 0.05);
+  assert.equal(view.interval.ciLevel, 0.9);
+  assert.equal(view.interval.text, "δ = 5 pp · 90% CI");
+  assert.doesNotMatch(view.interval.text, /\d+\/20\b/);
+  assert.equal(view.runSummary, null);
+  assert.equal(view.costUsd, 1.25);
+  assert.equal(view.arms.baseline.rateText, "0%");
+  assert.equal(view.arms.candidate.rateText, "5%");
+  assert.equal(view.arms.candidate.overMissLimit, false);
+  assert.equal(view.arms.candidate.environmentMisses, 1);
+  const broken = view.diagnostics.find((row) => row.scenarioId === "example.broken.v1");
+  const clean = view.diagnostics.find((row) => row.scenarioId === "example.clean.v1");
+  assert.equal(broken.familyId, "example.broken");
+  assert.equal(broken.baselineText, "Not in this file");
+  assert.equal(broken.candidateText, "Not in this file");
+  assert.equal(broken.missCounts.candidate, 1);
+  assert.deepEqual(broken.missingCassetteKeys.candidate, ["example.broken.v1/get_order_details"]);
+  assert.doesNotMatch(broken.note, /of 20/);
+  assert.doesNotMatch(broken.note, /\/20(?!\d)/);
+  assert.match(broken.note, /5%/);
+  assert.equal(clean.familyId, "example.clean");
+  assert.equal(clean.baselineText, "90%");
+  assert.equal(clean.candidateText, "90%");
+  assert.equal(clean.differenceText, "0 pp");
+  assert.equal(view.charts.mde.status, "preliminary");
+  assert.equal(view.charts.mde.points.length, 3);
+  assert.equal(view.charts.mde.points[0].dropText, "25%");
+  assert.equal(view.charts.aa.status, "coming_soon");
+  assert.equal(view.charts.aa.points.length, 0);
+  const summary = parseRunSummary(runSummary);
+  assert.equal(summary.plannedRollouts, 40);
+  assert.equal(summary.stopped, null);
+  assert.equal(summary.totalCostUsd, 1.25);
+  assert.equal(summary.rolloutDurationP50S, 12);
+  assert.equal(summary.rolloutDurationMaxS, 40);
+  const rows = summaryRows(summary);
+  assert.equal(rows.filter((row) => row.example).length, 7);
+  assert.equal(rows.find((row) => row.label === "Stopped").text, "None");
+  assert.equal(rows.find((row) => row.label === "Stopped").example, false);
+  assert.equal(rows.some((row) => /p95/i.test(row.label)), false);
+});
+
+test("harness run_kind rules refuse a model id mismatch", () => {
+  const shared = structuredClone(shipped);
+  shared.verdicts.overall.model_ids.baseline = "other-pool";
+  shared.verdicts.overall.model_ids.candidate = "other-pool";
+  assert.equal(parseResults(shared).modelIds.baseline, "other-pool");
+
+  const split = structuredClone(shipped);
+  split.verdicts.overall.model_ids.candidate = "other-candidate";
+  assert.throws(() => parseResults(split), /shared model id/);
+
+  const gate = structuredClone(shipped);
+  gate.run_kind = "gate";
+  gate.verdicts.overall.model_ids.candidate = "other-candidate";
+  assert.equal(parseResults(gate).runKind, "gate");
+  gate.verdicts.overall.model_ids.baseline = "not-the-pool";
+  assert.throws(() => parseResults(gate), /baseline_pool_model_id/);
+});
+
+test("an invalid legacy file parses and banners", () => {
   const view = parseResults(bundled);
   assert.equal(view.version, "2.1.0");
   assert.equal(view.schemaVersion, "2.1.0");
@@ -32,20 +116,39 @@ test("the bundled preliminary file parses and banners", () => {
   assert.equal(view.interval.delta, "0.05");
   assert.equal(view.interval.ciLevel, "0.9");
   assert.equal(view.interval.text, "δ = 5 pp · 90% CI");
-  assert.equal(view.diagnostics.length, 4);
-  assert.equal(view.diagnostics[0].scenarioId, "reset-locked-account");
-  assert.equal(view.diagnostics[0].familyId, "support");
+  assert.equal(view.suiteId, "");
+  assert.equal(view.diagnostics.length, 2);
+  assert.equal(view.diagnostics[0].scenarioId, "example.clean.v1");
+  assert.equal(view.diagnostics[1].scenarioId, "example.broken.v1");
+  assert.equal(view.diagnostics[0].familyId, "example");
   assert.equal(view.diagnostics[0].baselineText, "9/10");
-  assert.equal(view.diagnostics[0].candidateText, "3/5");
-  assert.equal(view.diagnostics[0].differenceText, "-3/10");
+  assert.equal(view.diagnostics[0].candidateText, "4/5");
+  assert.equal(view.diagnostics[0].differenceText, "-1/10");
   assert.equal(view.diagnostics[0].missingCassetteKeys.baseline.length, 0);
   assert.equal("verdict" in view.diagnostics[0], false);
   assert.equal(view.likelyRegression, false);
   assert.equal(view.arms.candidate.passRateText, "3/5");
   assert.equal(view.arms.candidate.environmentMisses, 1);
   assert.equal(view.arms.candidate.overMissLimit, false);
-  assert.equal(view.scenarios[0].candidateText, "3/5");
-  assert.equal(view.scenarios[2].candidateText, "4/5");
+  assert.equal(bundled.arms.baseline.model_id, view.modelIds.baseline);
+  assert.equal(bundled.arms.candidate.model_id, view.modelIds.candidate);
+  assert.equal(view.scenarios[0].id, "example.clean.v1");
+  assert.equal(view.scenarios[0].candidateText, "4/5");
+  assert.equal(view.scenarios[1].id, "example.broken.v1");
+  assert.equal(view.scenarios[1].candidateText, "3/5");
+  assert.equal(view.runSummary.plannedRollouts, 8);
+  assert.equal(view.runSummary.completedRollouts, 8);
+  assert.equal(view.runSummary.infraMisses, 1);
+  assert.equal(view.runSummary.stopped, null);
+  assert.equal(view.runSummary.totalCostUsd, 1.25);
+  assert.equal(view.runSummary.totalCachedInputTokens, 120);
+  assert.equal(view.runSummary.rolloutDurationP50S, 12);
+  assert.equal(view.runSummary.rolloutDurationMaxS, 40);
+  const rows = summaryRows(view.runSummary);
+  assert.equal(rows.filter((row) => row.example).length, 7);
+  assert.equal(rows.find((row) => row.label === "Stopped").example, false);
+  assert.equal(rows.find((row) => row.label === "Stopped").text, "None");
+  assert.equal(rows.some((row) => /p95/i.test(row.label)), false);
   assert.equal(view.charts.mde.status, "preliminary");
   assert.equal(view.charts.mde.title, "Smallest drop we can reliably catch");
   assert.match(view.charts.mde.caption, /Smallest drop/);
@@ -167,7 +270,7 @@ test("a version 1 file still shows a model id when one is recorded", () => {
   assert.equal(view.headline, "Pass");
 });
 
-test("the page's shipped data file parses via the 2.1.0 path", () => {
+test("an invalid legacy file still parses", () => {
   assert.equal(bundled.version, "2.1.0");
   assert.equal(bundled.schema_version, "2.1.0");
   const viaV2 = parseResultsV2(bundled);
@@ -417,6 +520,31 @@ test("2.1.0 fraction strings are exact and rollouts_per_scenario counts must mat
   const kind = structuredClone(bundled);
   kind.run_kind = "explore";
   assert.throws(() => parseResults(kind), /run_kind must be screening, baseline, aa, or gate/);
+});
+
+test("suite_id is optional on schema 2.1.0 and a non-string is rejected", () => {
+  const doc = structuredClone(bundled);
+  assert.equal(Object.hasOwn(doc, "suite_id"), false);
+  assert.equal(parseResults(doc).suiteId, "");
+  doc.suite_id = "example";
+  assert.equal(parseResults(doc).suiteId, "example");
+  assert.equal(parseResults(doc).version, "2.1.0");
+  doc.suite_id = "";
+  assert.throws(() => parseResults(doc), /suite_id must not be empty/);
+  doc.suite_id = 3;
+  assert.throws(() => parseResults(doc), /suite_id must be a string/);
+});
+
+test("run_summary stopped is null or monthly_cap", () => {
+  const doc = structuredClone(bundled);
+  doc.run_summary.stopped = "monthly_cap";
+  assert.equal(parseResults(doc).runSummary.stopped, "monthly_cap");
+  assert.equal(parseResults(doc).headline, "Pass");
+  doc.run_summary.stopped = "hard_stop";
+  assert.throws(() => parseResults(doc), /run_summary\.stopped must be null or "monthly_cap"/);
+  delete doc.run_summary;
+  assert.equal(parseResults(doc).runSummary, null);
+  assert.equal(summaryRows(null).length, 0);
 });
 
 test("schema_version 2.1.0 can stand in for version and must agree when both are set", () => {

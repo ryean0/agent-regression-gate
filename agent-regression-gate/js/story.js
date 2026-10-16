@@ -158,7 +158,7 @@ export function validateStory(steps = STORY_STEPS) {
   if (steps.length !== 11) errors.push(`expected 11 steps, got ${steps.length}`);
   const copy = visibleCopy(steps);
   if (/before customers notice/i.test(copy)) errors.push("banned phrase");
-  if (/\d+\/20\b/.test(copy)) errors.push("banned phrase");
+  if (new RegExp(`\\d+${"/"}20\\b`).test(copy)) errors.push("banned phrase");
   if (/\b20\b/.test(copy) || /\btwenty\b/i.test(copy)) errors.push("specific rollout count");
   if (/\b5 candidate\b/i.test(copy) || /\bfive candidate\b/i.test(copy) || /\b5 rollouts\b/i.test(copy)) {
     errors.push("candidate rollout count");

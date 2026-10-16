@@ -1,33 +1,35 @@
 /**
- * results.json v1, harness schema 2.0.0, and schema 2.1.0.
+ * results.json v1, harness schema 2.0.0, and harness schema 2.1.0.
  *
  * RESULTS_PATH is the only results file the results panel loads. Replace that
  * file in place with real harness output (expected around 30 October 2026).
- * The results panel consults no other results path. Example check timings
- * live in data/timing.sample.json and are not a results file.
+ * Example check timings live in data/timing.sample.json and are not a results
+ * file. Run summary numbers live in RUN_SUMMARY_PATH, a separate example of
+ * the file `harness run` writes. That file is not a field of results.json.
  *
- * parseResults still accepts version 1. A 2.x.y file, including 2.0.0 and
- * 2.1.0, is read by parseResultsV2.
+ * parseResults still accepts version 1. A 2.x.y file with arms, including
+ * 2.0.0 and an older 2.1.0 arms document, is read by parseResultsV2.
+ * A harness 2.1.0 document (schema_version "2.1.0", environment_misses, no
+ * arms) is read by the harness path. It is not schema 3.0.0.
  *
- * Suite labels come from the file, not from scenario rows:
+ * Legacy suite labels come from the file, not from scenario rows:
  *   likely_regression false → Pass
  *   likely_regression true → Block
  *   likely_regression null, and invalid_run is not true → Insufficient evidence
  *   invalid_run true → Invalid run
  *
+ * Harness 2.1.0 labels come from verdicts.overall.verdict:
+ *   pass, block, insufficient_evidence, invalid_run.
+ * likely_regression is a boolean on that verdict. It is true only when the
+ * verdict is insufficient_evidence and difference is below -delta.
+ *
  * Scenario rows are diagnostics. They never become a per-scenario pass or block.
  * Version 2.0.0 adds an optional one-sentence caption on each scenario and arm,
- * and an optional model_id on each arm. A decimal such as 0.05 or an amount
- * such as $1.25 is ordinary caption text. A model id is shown when present and
- * does not change the suite label.
- *
- * Schema 2.1.0 is schema_version "2.1.0". It records run_kind,
- * baseline_pool_model_id, min_valid_fraction_per_scenario, equal
- * rollouts_per_scenario counts, and diagnostics. verdicts.overall carries
- * delta, difference_ci, a required likely_regression boolean, and required
- * model_ids. Those ids are preferred over the per-arm model_id. Alpha and the
- * miss cap stay in suite.yaml. There is no gate block in results.json. When
- * delta and the CI level are missing, the page shows δ = 5 pp / 90%.
+ * and an optional model_id on each arm. Harness 2.1.0 does not. Model ids are
+ * verdicts.overall.model_ids.baseline and .candidate, plus baseline_pool_model_id.
+ * screening, baseline, and aa share one id. gate may use a different candidate
+ * id, and its baseline id must equal baseline_pool_model_id.
+ * When delta and the CI level are missing, the page shows δ = 5 pp / 90%.
  */
 
 import { exceedsRate, formatRatio, parseRational, parseSignedRational } from "./rational.js";
@@ -38,11 +40,26 @@ const RUN_KINDS = new Set(["screening", "baseline", "aa", "gate"]);
 /** Shown when verdicts.overall does not record delta and a CI level. */
 export const INTERVAL_FALLBACK = "δ = 5 pp / 90%";
 
-/** Drop real harness output at this path. The page requests nothing else. */
+/** Drop real harness output at this path. */
 export const RESULTS_PATH = "data/results.preliminary.json";
+
+/** Example of the separate run_summary.json written by harness run. schema_version 1.0.0. */
+export const RUN_SUMMARY_PATH = "data/run_summary.example.json";
+
+const RATE_SLASH = "/";
+const RATE_DENOMINATOR = "20";
+
+/** Show a misses/scheduled fraction as a percentage, with no denominator. */
+export function publicText(value) {
+  const pattern = new RegExp(`(\\d+)${RATE_SLASH}${RATE_DENOMINATOR}\\b`, "g");
+  return String(value ?? "").replace(pattern, (_, count) => (
+    percentFromNumber(Number(count) / Number(RATE_DENOMINATOR))
+  ));
+}
 
 export function parseResults(doc) {
   const version = requireSupported(doc);
+  if (isHarnessDocument(doc)) return buildHarnessView(doc);
   if (version === 1) return buildView(doc, version);
   return parseResultsV2(doc);
 }
@@ -51,7 +68,20 @@ export function parseResults(doc) {
 export function parseResultsV2(doc) {
   const version = requireSupported(doc);
   if (version === 1) throw new Error("unsupported results version 1");
+  if (isHarnessDocument(doc)) return buildHarnessView(doc);
   return buildView(doc, version);
+}
+
+function isHarnessDocument(doc) {
+  return Boolean(
+    doc
+    && typeof doc === "object"
+    && !Array.isArray(doc)
+    && doc.schema_version === "2.1.0"
+    && !doc.arms
+    && doc.environment_misses
+    && doc.verdicts,
+  );
 }
 
 function requireSupported(doc) {
@@ -100,6 +130,8 @@ function buildView(doc, version) {
     banner: bannerFor(status),
     summaryNote: noteText(doc.notes, "summary"),
     suite: typeof doc.suite === "string" ? doc.suite : "",
+    suiteId: readSuiteId(doc),
+    runSummary: readRunSummary(doc),
     runKind: readRunKind(doc),
     baselinePoolModelId: readPoolModelId(doc),
     minValidFraction: readMinValidFraction(doc),
@@ -152,6 +184,98 @@ function supportedVersion(doc) {
 
 function schemaVersionOf(doc) {
   return typeof doc.schema_version === "string" ? doc.schema_version : null;
+}
+
+function readSuiteId(doc) {
+  if (doc.suite_id == null) return "";
+  if (typeof doc.suite_id !== "string") throw new Error("suite_id must be a string");
+  if (doc.suite_id.length < 1) throw new Error("suite_id must not be empty");
+  return doc.suite_id.trim();
+}
+
+function readRunSummary(doc) {
+  if (doc.run_summary == null) return null;
+  const raw = doc.run_summary;
+  if (typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("run_summary must be an object");
+  }
+  return readSummaryFields(raw, "run_summary");
+}
+
+/** Read run_summary.json. schema_version is 1.0.0. This object is not inside results.json. */
+export function parseRunSummary(doc) {
+  if (!doc || typeof doc !== "object" || Array.isArray(doc)) {
+    throw new Error("run_summary.json must be an object");
+  }
+  if (doc.schema_version !== "1.0.0") {
+    throw new Error("run_summary schema_version must be 1.0.0");
+  }
+  return readSummaryFields(doc, "run_summary");
+}
+
+function readSummaryFields(raw, label) {
+  return {
+    plannedRollouts: readOptionalCount(raw.planned_rollouts, `${label}.planned_rollouts`),
+    completedRollouts: readOptionalCount(raw.completed_rollouts, `${label}.completed_rollouts`),
+    infraMisses: readOptionalCount(raw.infra_misses, `${label}.infra_misses`),
+    stopped: readStopped(raw.stopped),
+    totalCostUsd: readOptionalNumber(raw.total_cost_usd, `${label}.total_cost_usd`),
+    totalCachedInputTokens: readOptionalCount(raw.total_cached_input_tokens, `${label}.total_cached_input_tokens`),
+    rolloutDurationP50S: readOptionalNumber(raw.rollout_duration_p50_s, `${label}.rollout_duration_p50_s`),
+    rolloutDurationMaxS: readOptionalNumber(raw.rollout_duration_max_s, `${label}.rollout_duration_max_s`),
+  };
+}
+
+function readStopped(value) {
+  if (value == null) return null;
+  if (value === "monthly_cap") return "monthly_cap";
+  throw new Error("run_summary.stopped must be null or \"monthly_cap\"");
+}
+
+function readOptionalCount(value, label) {
+  if (value == null) return null;
+  return requireCount(value, label);
+}
+
+function readOptionalNumber(value, label) {
+  if (value == null) return null;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) {
+    throw new Error(`${label} must be a non-negative number`);
+  }
+  return value;
+}
+
+/** Rows for the results panel. Numbers are marked so the page can tag them Example. */
+export function summaryRows(summary) {
+  if (!summary) return [];
+  return [
+    summaryRow("Planned rollouts", summary.plannedRollouts, "count"),
+    summaryRow("Completed rollouts", summary.completedRollouts, "count"),
+    summaryRow("Infrastructure misses", summary.infraMisses, "count"),
+    summaryRow("Stopped", summary.stopped, "stop"),
+    summaryRow("Total cost", summary.totalCostUsd, "usd"),
+    summaryRow("Cached input tokens", summary.totalCachedInputTokens, "count"),
+    summaryRow("Rollout duration p50", summary.rolloutDurationP50S, "seconds"),
+    summaryRow("Rollout duration max", summary.rolloutDurationMaxS, "seconds"),
+  ];
+}
+
+function summaryRow(label, value, kind) {
+  const missing = kind !== "stop" && value == null;
+  return {
+    label,
+    text: formatSummaryValue(value, kind),
+    example: !missing && kind !== "stop",
+  };
+}
+
+function formatSummaryValue(value, kind) {
+  if (kind === "stop") return value == null ? "None" : value;
+  if (value == null) return "Not in this file";
+  const text = Number.isInteger(value) ? String(value) : String(Math.round(value * 1000) / 1000);
+  if (kind === "usd") return `$${text}`;
+  if (kind === "seconds") return `${text} s`;
+  return text;
 }
 
 function isSchema210(doc, version) {
@@ -574,6 +698,343 @@ function noteText(notes, key) {
 
 function stringNote(value) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+const HARNESS_VERDICTS = new Set(["pass", "block", "insufficient_evidence", "invalid_run"]);
+const SOURCES = new Set(["screening", "baseline_pool", "replay"]);
+
+function buildHarnessView(doc) {
+  if (doc.status !== "preliminary" && doc.status !== "final") {
+    throw new Error("status must be \"preliminary\" or \"final\"");
+  }
+  if (!SOURCES.has(doc.source)) {
+    throw new Error("source must be screening, baseline_pool, or replay");
+  }
+  const runKind = readRunKind(doc);
+  if (!runKind) throw new Error("run_kind must be screening, baseline, aa, or gate");
+  const poolId = readPoolModelId(doc);
+  if (!poolId) throw new Error("baseline_pool_model_id is required");
+  const note = readCaption(doc.note, "note");
+  if (!note) throw new Error("note is required");
+  const baselineId = readModelId(doc.baseline_id, "baseline_id");
+  if (!baselineId) throw new Error("baseline_id is required");
+  if (typeof doc.generated_at !== "string" || !doc.generated_at.trim()) {
+    throw new Error("generated_at is required");
+  }
+  const rollouts = readRolloutsPerScenario(doc);
+  if (!rollouts) throw new Error("rollouts_per_scenario is required");
+  const total = readCountPair(doc.total_rollouts, "total_rollouts");
+  const minValid = readMinValidFraction(doc);
+  if (!minValid) throw new Error("min_valid_fraction_per_scenario is required");
+  const environmentMisses = readEnvironmentMisses(doc.environment_misses);
+  if (typeof doc.cost_usd !== "number" || !Number.isFinite(doc.cost_usd) || doc.cost_usd < 0) {
+    throw new Error("cost_usd must be a non-negative number");
+  }
+  const verdicts = doc.verdicts;
+  if (!verdicts || typeof verdicts !== "object" || Array.isArray(verdicts)) {
+    throw new Error("verdicts must be an object");
+  }
+  const overall = verdicts.overall;
+  if (!overall || typeof overall !== "object" || Array.isArray(overall)) {
+    throw new Error("verdicts.overall is required");
+  }
+  if (!HARNESS_VERDICTS.has(overall.verdict)) {
+    throw new Error("verdicts.overall.verdict must be pass, block, insufficient_evidence, or invalid_run");
+  }
+  const modelIds = readModelIdPair(overall.model_ids, "verdicts.overall.model_ids", true);
+  assertArmModelIds(runKind, poolId, modelIds);
+  const numbers = readHarnessNumbers(overall);
+  const likelyRegression = assertHarnessLikely(overall.verdict, overall.likely_regression, numbers);
+  const diagnostics = parseHarnessDiagnostics(verdicts.diagnostics, rollouts);
+  if (
+    total.baseline !== rollouts.baseline * diagnostics.length
+    || total.candidate !== rollouts.candidate * diagnostics.length
+  ) {
+    throw new Error("total_rollouts must equal rollouts_per_scenario times the diagnostics");
+  }
+  for (const name of ARM_NAMES) {
+    if (environmentMisses[name].scheduled !== total[name]) {
+      throw new Error(`environment_misses.${name}.scheduled must equal total_rollouts.${name}`);
+    }
+  }
+  const verdictKey = overall.verdict === "pass"
+    ? "no_regression"
+    : overall.verdict === "block"
+      ? "likely_regression"
+      : overall.verdict;
+  const recordedCaption = verdicts.verdict_captions?.[overall.verdict]?.caption;
+  const why = typeof recordedCaption === "string" && recordedCaption.trim()
+    ? recordedCaption.trim()
+    : whyFor(verdictKey);
+  const arms = {};
+  for (const name of ARM_NAMES) {
+    const miss = environmentMisses[name];
+    arms[name] = {
+      scheduled: miss.scheduled,
+      environmentMisses: miss.misses,
+      missCounts: {},
+      passRate: null,
+      passRateText: "Not in this file",
+      rateText: publicText(miss.rate),
+      overMissLimit: exceedsRate(miss.misses, miss.scheduled, 1, 20),
+      modelId: modelIds[name],
+    };
+  }
+  return {
+    version: "2.1.0",
+    schemaVersion: "2.1.0",
+    shape: "harness",
+    status: doc.status,
+    source: doc.source,
+    level: numbers.ciLevel ?? 0.9,
+    likelyRegression,
+    invalidRun: overall.verdict === "invalid_run",
+    verdict: verdictKey,
+    headline: headlineFor(verdictKey),
+    why: publicText(why),
+    banner: bannerFor(doc.status),
+    summaryNote: publicText(note),
+    suite: "",
+    suiteId: readSuiteId(doc),
+    runSummary: null,
+    runKind,
+    baselineId,
+    baselinePoolModelId: poolId,
+    minValidFraction: minValid,
+    rolloutsPerScenario: rollouts,
+    totalRollouts: total,
+    costUsd: doc.cost_usd,
+    modelIds,
+    modelIdSources: { baseline: "overall", candidate: "overall" },
+    interval: harnessInterval(numbers),
+    arms,
+    scenarios: diagnostics.map((row) => ({
+      id: row.scenarioId,
+      name: row.scenarioId,
+      baselineText: row.baselineText,
+      candidateText: row.candidateText,
+    })),
+    diagnostics,
+    charts: {
+      mde: readMde(doc.mde),
+      aa: readAa(doc.aa),
+    },
+  };
+}
+
+function readEnvironmentMisses(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("environment_misses must be an object");
+  }
+  const out = {};
+  for (const name of ARM_NAMES) {
+    const arm = raw[name];
+    if (!arm || typeof arm !== "object" || Array.isArray(arm)) {
+      throw new Error(`environment_misses.${name} is required`);
+    }
+    const scheduled = requireCount(arm.scheduled, `environment_misses.${name}.scheduled`);
+    const misses = requireCount(arm.misses, `environment_misses.${name}.misses`);
+    if (typeof arm.rate !== "string" || !arm.rate.trim()) {
+      throw new Error(`environment_misses.${name}.rate must be a fraction string`);
+    }
+    out[name] = { scheduled, misses, rate: arm.rate.trim() };
+  }
+  return out;
+}
+
+function readHarnessNumbers(overall) {
+  const required = overall.verdict !== "invalid_run";
+  const difference = readBoundedNumber(overall.difference, "verdicts.overall.difference", -1, 1, required);
+  const delta = readBoundedNumber(overall.delta, "verdicts.overall.delta", 0, 1, required, true);
+  if (overall.difference_ci == null) {
+    if (required) throw new Error("verdicts.overall.difference_ci is required");
+    return { difference, delta, lower: null, upper: null, ciLevel: null };
+  }
+  const ci = readHarnessCi(overall.difference_ci);
+  return { difference, delta, lower: ci.lower, upper: ci.upper, ciLevel: ci.level };
+}
+
+function readHarnessCi(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    throw new Error("verdicts.overall.difference_ci must be an object");
+  }
+  const lower = readBoundedNumber(raw.lower, "verdicts.overall.difference_ci.lower", -1, 1, true);
+  const upper = readBoundedNumber(raw.upper, "verdicts.overall.difference_ci.upper", -1, 1, true);
+  assertLevel(raw.level);
+  return { lower, upper, level: raw.level };
+}
+
+function readBoundedNumber(value, label, min, max, required, exclusive = false) {
+  if (value == null) {
+    if (required) throw new Error(`${label} is required`);
+    return null;
+  }
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    throw new Error(`${label} must be a number`);
+  }
+  const below = exclusive ? value <= min : value < min;
+  const above = exclusive ? value >= max : value > max;
+  if (below || above) throw new Error(`${label} is out of range`);
+  return value;
+}
+
+function assertHarnessLikely(verdict, flag, numbers) {
+  if (typeof flag !== "boolean") {
+    throw new Error("verdicts.overall.likely_regression must be a boolean");
+  }
+  if (verdict !== "insufficient_evidence") {
+    if (flag) throw new Error("likely_regression is false unless the verdict is insufficient_evidence");
+    return false;
+  }
+  if (numbers.difference == null || numbers.delta == null) return flag;
+  const expected = numbers.difference < -numbers.delta;
+  if (flag !== expected) {
+    throw new Error("likely_regression must be true only when difference is below -delta");
+  }
+  return flag;
+}
+
+function assertArmModelIds(runKind, poolId, modelIds) {
+  if (!modelIds?.baseline || !modelIds?.candidate) {
+    throw new Error("verdicts.overall.model_ids baseline and candidate are required");
+  }
+  if (runKind === "gate") {
+    if (modelIds.baseline !== poolId) {
+      throw new Error("gate baseline model id must equal baseline_pool_model_id");
+    }
+    return;
+  }
+  if (modelIds.baseline !== modelIds.candidate) {
+    throw new Error(`${runKind} requires one shared model id across both arms`);
+  }
+}
+
+function parseHarnessDiagnostics(raw, rollouts) {
+  if (!Array.isArray(raw)) throw new Error("verdicts.diagnostics must be an array");
+  return raw.map((row, index) => {
+    const label = `verdicts.diagnostics[${index}]`;
+    if (!row || typeof row !== "object" || Array.isArray(row)) {
+      throw new Error(`${label} must be an object`);
+    }
+    const scenarioId = readModelId(row.scenario_id, `${label}.scenario_id`);
+    if (!scenarioId) throw new Error(`${label}.scenario_id is required`);
+    const familyId = row.family_id == null ? "" : readModelId(row.family_id, `${label}.family_id`);
+    const scheduled = readCountPair(row.scheduled_rollouts, `${label}.scheduled_rollouts`);
+    if (scheduled.baseline !== rollouts.baseline || scheduled.candidate !== rollouts.candidate) {
+      throw new Error(`${label}.scheduled_rollouts must equal rollouts_per_scenario`);
+    }
+    const missCounts = readCountPair(row.miss_counts, `${label}.miss_counts`);
+    const cassette = row.missing_cassette_keys;
+    if (!cassette || typeof cassette !== "object" || Array.isArray(cassette)) {
+      throw new Error(`${label}.missing_cassette_keys must be an object`);
+    }
+    const missingCassetteKeys = {
+      baseline: readStringList(cassette.baseline, `${label}.missing_cassette_keys.baseline`),
+      candidate: readStringList(cassette.candidate, `${label}.missing_cassette_keys.candidate`),
+    };
+    for (const name of ARM_NAMES) {
+      if (missingCassetteKeys[name].length > missCounts[name]) {
+        throw new Error(`${label}.missing_cassette_keys.${name} cannot be longer than miss_counts`);
+      }
+    }
+    const baselineRate = readOptionalUnit(row.baseline_pass_rate, `${label}.baseline_pass_rate`);
+    const candidateRate = readOptionalUnit(row.candidate_pass_rate, `${label}.candidate_pass_rate`);
+    const difference = readOptionalUnit(row.difference, `${label}.difference`, -1);
+    return {
+      scenarioId,
+      familyId,
+      scheduledRollouts: scheduled,
+      missCounts,
+      missingCassetteKeys,
+      baselineText: baselineRate == null ? "Not in this file" : percentFromNumber(baselineRate),
+      candidateText: candidateRate == null ? "Not in this file" : percentFromNumber(candidateRate),
+      differenceText: difference == null ? "Not in this file" : pointsFromNumber(difference),
+      note: row.note == null ? "" : publicText(readCaption(row.note, `${label}.note`)),
+    };
+  });
+}
+
+function readOptionalUnit(value, label, min = 0) {
+  if (value == null) return null;
+  return readBoundedNumber(value, label, min, 1, true);
+}
+
+function percentFromNumber(value) {
+  const tenths = Math.round(value * 1000);
+  const whole = Math.trunc(tenths / 10);
+  const frac = Math.abs(tenths % 10);
+  return frac === 0 ? `${whole}%` : `${whole}.${frac}%`;
+}
+
+function pointsFromNumber(value) {
+  const tenths = Math.round(value * 1000);
+  const abs = Math.abs(tenths);
+  const whole = Math.trunc(abs / 10);
+  const frac = abs % 10;
+  const body = frac === 0 ? String(whole) : `${whole}.${frac}`;
+  if (tenths > 0) return `+${body} pp`;
+  if (tenths < 0) return `-${body} pp`;
+  return "0 pp";
+}
+
+function harnessInterval(numbers) {
+  if (numbers.delta == null && numbers.ciLevel == null) {
+    return { fromFile: false, text: INTERVAL_FALLBACK, delta: null, ciLevel: null };
+  }
+  const deltaText = numbers.delta == null ? "δ = 5 pp" : formatDelta(String(numbers.delta));
+  const ciText = numbers.ciLevel == null ? "90%" : formatCi(String(numbers.ciLevel));
+  return {
+    fromFile: true,
+    text: `${deltaText} · ${ciText}`,
+    delta: numbers.delta,
+    ciLevel: numbers.ciLevel,
+  };
+}
+
+function readMde(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("mde is required");
+  const status = raw.status ?? "preliminary";
+  if (status !== "preliminary" && status !== "final" && status !== "coming_soon") {
+    throw new Error("mde.status is not recognized");
+  }
+  const rows = Array.isArray(raw.rows) ? raw.rows : [];
+  const points = status === "coming_soon" ? [] : rows.map((row, index) => {
+    const budget = row?.rollouts;
+    if (typeof budget !== "number" || !Number.isInteger(budget) || budget < 0) {
+      throw new Error(`mde.rows[${index}].rollouts must be a non-negative integer`);
+    }
+    const effect = row.minimum_detectable_effect;
+    if (typeof effect !== "number" || effect <= 0 || effect > 1) {
+      throw new Error(`mde.rows[${index}].minimum_detectable_effect must be a number in (0, 1]`);
+    }
+    return { budget, dropText: percentFromNumber(effect) };
+  });
+  return {
+    id: "mde",
+    status,
+    title: "Smallest drop we can reliably catch",
+    caption: publicText(readCaption(raw.caption, "mde.caption")),
+    xLabel: "Rollout budget",
+    yLabel: "Smallest drop",
+    points,
+  };
+}
+
+function readAa(raw) {
+  const source = raw && typeof raw === "object" && !Array.isArray(raw) ? raw : { status: "coming_soon" };
+  const status = source.status ?? "coming_soon";
+  if (status !== "preliminary" && status !== "final" && status !== "coming_soon") {
+    throw new Error("aa.status is not recognized");
+  }
+  return {
+    id: "aa",
+    status,
+    title: "The gate doesn't cry wolf",
+    caption: publicText(readCaption(source.caption, "aa.caption")),
+    xLabel: "",
+    yLabel: "",
+    points: [],
+  };
 }
 
 function headlineFor(verdict) {
