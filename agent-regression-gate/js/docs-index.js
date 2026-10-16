@@ -39,6 +39,10 @@ export const DOCS_INDEX = [
         "text": "Sample use cases"
       },
       {
+        "id": "keeping-it-free-and-safe",
+        "text": "Keeping it free and safe"
+      },
+      {
         "id": "glossary",
         "text": "Glossary"
       },

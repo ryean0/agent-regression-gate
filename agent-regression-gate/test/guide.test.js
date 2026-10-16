@@ -30,7 +30,6 @@ function rejectForbidden(html, label) {
   assert.doesNotMatch(html, /hard stop/i, `${label} hard stop`);
   assert.doesNotMatch(html, /\d+\/20\b/, `${label} n/20`);
   assert.doesNotMatch(html.replaceAll("https://ai.google.dev/gemini-api/docs/api-key", ""), /gemini-/i, `${label} model version`);
-  assert.doesNotMatch(html, /Set-ExecutionPolicy/, `${label} execution policy`);
   assert.doesNotMatch(html, /py --version/, `${label} py launcher`);
   assert.doesNotMatch(html, /py -m venv/, `${label} py venv`);
   assert.doesNotMatch(html, /git\+https:\/\/github\.com\/rphua-dev\/ci-agent-regression-harness\.git/, `${label} pip URL suffix`);
@@ -39,15 +38,15 @@ function rejectForbidden(html, label) {
   for (const match of html.matchAll(/<pre[^>]*>\s*<code>([\s\S]*?)<\/code>/g)) {
     assert.equal(/^\s*pip install anubys\b/i.test(match[1]), false, `${label} PyPI install block`);
     if (/pip install/i.test(match[1])) {
-      const allowed = match[1].includes("--require-hashes") || match[1].includes("--no-deps") || match[1].includes("git+https://github.com/rphua-dev/ci-agent-regression-harness");
+      const allowed = match[1].includes("--require-hashes") || match[1].includes("--no-deps") || match[1].includes("--upgrade pip") || match[1].includes("git+https://github.com/rphua-dev/ci-agent-regression-harness");
       assert.equal(allowed, true, `${label} pip line: ${match[1]}`);
     }
   }
 }
 
 function assertCostsTagged(html, label) {
-  for (const amount of html.matchAll(/\$38|\$0/g)) {
-    assert.match(html.slice(Math.max(0, amount.index - 80), amount.index), /Example/, `${label} ${amount[0]}`);
+  for (const amount of html.matchAll(/\$38|\$0|\$5/g)) {
+    assert.match(html.slice(Math.max(0, amount.index - 120), amount.index), /Example/, `${label} ${amount[0]}`);
   }
 }
 
@@ -59,6 +58,9 @@ const COMMANDS = [
   "source .venv/bin/activate",
   "python -m venv .venv",
   ".venv\\Scripts\\Activate.ps1",
+  "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass",
+  "sudo apt install python3-venv",
+  ".venv\\Scripts\\python.exe -m harness validate suites/tau_retail/examples",
   ".venv\\Scripts\\python.exe -m pip install --require-hashes -r requirements.lock",
   ".venv\\Scripts\\python.exe -m pip install --no-deps -e .",
   PIP_URL,
@@ -71,9 +73,12 @@ const COMMANDS = [
   "python -m harness validate suites/tau_retail",
   "python -m harness gates suites/tau_retail/scenarios",
   "python -m harness validate-results docs/examples/results.preliminary.json",
+  "python scripts/show_verdict.py docs/examples/results.preliminary.json",
   "python -m harness convert-tau-retail --dry-run",
   'export GEMINI_API_KEY="paste-the-key-here"',
+  'export GEMINI_API_KEY="paste-your-key-here"',
   '$env:GEMINI_API_KEY = "paste-the-key-here"',
+  '$env:GEMINI_API_KEY="paste-your-key-here"',
   `python -c "import os; print('set' if os.environ.get('GEMINI_API_KEY','').strip() else 'missing')"`,
   "python scripts/check_monthly_spend.py --threshold 38",
 ];
@@ -93,7 +98,12 @@ const OUTPUTS = [
   "1 gate(s) failed: synthetic-pii",
   "ok 1 results file(s)",
   "insufficient_evidence",
-  "FAKE preliminary data for the demo landing page. Not a baseline and not a gate result.",
+  "This test cannot yet tell whether the new agent is close enough, so it is not a yes or a no.",
+  "fatal: could not read Username for 'https://github.com': terminal prompts disabled",
+  "python: can't open file '/tmp/scripts/check_monthly_spend.py': [Errno 2] No such file or directory",
+  "The virtual environment was not created successfully because ensurepip is not",
+  "[notice] A new release of pip is available: 24.0 -> 26.2.1",
+  "[notice] To update, run: python -m pip install --upgrade pip",
   "split test: 115 tasks",
   "allowed: 104",
   "must_refuse: 7",
@@ -132,13 +142,28 @@ test("getting started ports the verified guide", () => {
   assert.match(main, /Coming soon/);
   assert.match(main, /Do not start a live run from this page/);
   assert.match(main, /There is no tiny live command on main/);
-  assert.match(main, /Going over that limit counts as a fail, not a miss/);
-  assert.match(main, /agreed policy/);
-  assert.match(main, /upcoming pull request/);
-  assert.match(main, /Only the monthly <span class="example-tag">Example<\/span> \$38 stop counts as a miss/);
-  assert.match(main, /115 is the original tau-bench task list\. 87 is the number of Anubys's converted scenarios\./);
-  assert.doesNotMatch(main, /That rollout counts as a miss/);
-  const order = ["what-anubys-does", "before-you-start", "install-anubys", "sample-use-cases", "glossary", "getting-help"];
+  assert.match(main, /On main today that rollout is recorded as a miss\. It is being changed to count as a fail \(team decision October 16\)\./);
+  assert.match(main, /The 115 is the original tau-bench task list\. The 87 earlier are the scenarios Anubys converted from it, so the numbers are not supposed to match\./);
+  assert.match(main, /Block: clearly worse, by more than the allowed margin\./);
+  assert.match(main, /Stay in this folder\./);
+  assert.match(main, /Every new terminal forgets the folder and the environment\./);
+  assert.match(main, /python3-venv/);
+  assert.match(main, /python3\.12-venv/);
+  assert.equal((main.match(/Username for 'https:\/\/github\.com':/g) || []).length, 2);
+  assert.equal((main.match(/Press Ctrl\+C\. Do not type a username or a password\./g) || []).length, 2);
+  assert.match(main, /When Git can't ask, it prints this instead\./);
+  assert.match(main, /If apt says there is no installation candidate, run <code>sudo apt update<\/code> and then run the install command again\./);
+  assert.match(main, /If a notice about a new pip release appears, it is harmless\./);
+  assert.doesNotMatch(main, /pip upgrade notice after/);
+  assert.doesNotMatch(main, /printed this notice afterward/);
+  assert.doesNotMatch(main, /[—–]/);
+  assert.doesNotMatch(main, /verdict_captions/);
+  assert.doesNotMatch(main, /Going over that limit counts as a fail, not a miss/);
+  const optionB = main.indexOf('id="option-b"');
+  const warning = main.indexOf("The repository is private until the public launch.");
+  const optionA = main.indexOf('id="option-a"');
+  assert.ok(optionB > -1 && optionB < warning && warning < optionA);
+  const order = ["what-anubys-does", "before-you-start", "install-anubys", "sample-use-cases", "keeping-it-free-and-safe", "glossary", "getting-help"];
   let cursor = -1;
   for (const id of order) {
     const at = main.indexOf(`id="${id}"`);
@@ -154,7 +179,7 @@ test("getting started ports the verified guide", () => {
     const code = piece.match(/<code>([\s\S]*?)<\/code>/);
     if (!code) continue;
     const first = code[1].split("\n")[0];
-    if (/^(python3? |git |source |\.venv|export |\$env)/.test(first)) {
+    if (/^(python3? |git |source |\.venv|export |\$env|sudo |Set-ExecutionPolicy)/.test(first)) {
       assert.match(piece, /class="code-copy"/, code[1].slice(0, 60));
     }
   }
@@ -178,13 +203,17 @@ test("sample use cases follow the verified checks", () => {
   assert.match(main, /stub that exits with an error on purpose/);
   assert.match(main, /Coming soon/);
   assert.match(main, /Do not start a live run from this page/);
-  assert.match(main, /Going over that limit counts as a fail, not a miss/);
-  assert.match(main, /Only the monthly <span class="example-tag">Example<\/span> \$38 stop counts as a miss/);
-  assert.match(main, /115 is the original tau-bench task list\. 87 is the number of Anubys's converted scenarios\./);
+  assert.match(main, /On main today that rollout is recorded as a miss\. It is being changed to count as a fail \(team decision October 16\)\./);
+  assert.match(main, /The 115 is the original tau-bench task list\. The 87 earlier are the scenarios Anubys converted from it, so the numbers are not supposed to match\./);
+  assert.match(main, /clearly worse, by more than the allowed margin/);
+  assert.match(main, /python scripts\/show_verdict\.py docs\/examples\/results\.preliminary\.json/);
+  assert.match(main, /Keeping it free and safe/);
+  assert.doesNotMatch(main, /[—–]/);
+  assert.doesNotMatch(main, /verdict_captions/);
   assert.match(main, /data-state="block">Block/);
   assert.match(main, /role="tablist"/);
   assert.match(main, /href="\.\.\/docs\/getting-started\/"/);
-  for (const id of ["validate-examples", "safety-checks", "results-file", "replay", "tau-preview", "live-model", "github-ci"]) {
+  for (const id of ["why-youd-use-this", "validate-examples", "safety-checks", "results-file", "replay", "tau-preview", "live-model", "github-ci", "keeping-it-free-and-safe"]) {
     assert.ok(main.includes(`id="${id}"`), id);
   }
   for (const verdict of ["Pass", "Block", "Insufficient evidence", "Invalid run"]) {
@@ -201,6 +230,7 @@ test("sample use cases follow the verified checks", () => {
   assert.match(home, /href="use-cases\/"/);
   assert.match(home, /class="btn btn-primary" href="docs\/getting-started\/">Get started/);
   for (const href of [
+    "use-cases/#why-youd-use-this",
     "use-cases/#validate-examples",
     "use-cases/#safety-checks",
     "use-cases/#results-file",
